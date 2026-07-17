@@ -1,0 +1,160 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Login – GRP Content Generator</title>
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      min-height: 100vh;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      background: linear-gradient(135deg, #1a1a2e 0%, #16213e 50%, #0f3460 100%);
+      font-family: 'Segoe UI', system-ui, sans-serif;
+    }
+
+    .card {
+      background: #ffffff;
+      border-radius: 16px;
+      box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+      padding: 48px 40px 40px;
+      width: 100%;
+      max-width: 420px;
+    }
+
+    .logo {
+      text-align: center;
+      margin-bottom: 32px;
+    }
+
+    .logo h1 {
+      font-size: 22px;
+      font-weight: 700;
+      color: #0f3460;
+      letter-spacing: -0.3px;
+    }
+
+    .logo p {
+      margin-top: 6px;
+      font-size: 13px;
+      color: #6b7280;
+    }
+
+    label {
+      display: block;
+      font-size: 13px;
+      font-weight: 600;
+      color: #374151;
+      margin-bottom: 6px;
+    }
+
+    input[type="text"],
+    input[type="password"] {
+      width: 100%;
+      padding: 10px 14px;
+      border: 1.5px solid #d1d5db;
+      border-radius: 8px;
+      font-size: 15px;
+      color: #111827;
+      transition: border-color 0.15s, box-shadow 0.15s;
+      outline: none;
+    }
+
+    input:focus {
+      border-color: #0f3460;
+      box-shadow: 0 0 0 3px rgba(15,52,96,0.12);
+    }
+
+    .field { margin-bottom: 20px; }
+
+    .error-box {
+      background: #fef2f2;
+      border: 1px solid #fca5a5;
+      color: #b91c1c;
+      border-radius: 8px;
+      padding: 10px 14px;
+      font-size: 13.5px;
+      margin-bottom: 20px;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .error-box::before { content: '⚠'; font-size: 15px; }
+
+    .btn {
+      width: 100%;
+      padding: 12px;
+      background: #0f3460;
+      color: #fff;
+      border: none;
+      border-radius: 8px;
+      font-size: 15px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: background 0.15s, transform 0.1s;
+    }
+
+    .btn:hover  { background: #16213e; }
+    .btn:active { transform: scale(0.98); }
+
+    .role-hint {
+      margin-top: 24px;
+      padding: 14px;
+      background: #f0f4ff;
+      border-radius: 8px;
+      font-size: 12.5px;
+      color: #4b5563;
+    }
+
+    .role-hint strong { color: #0f3460; }
+
+    .role-hint ul {
+      margin-top: 6px;
+      padding-left: 16px;
+      line-height: 1.7;
+    }
+  </style>
+</head>
+<body>
+  <div class="card">
+    <div class="logo">
+      <h1>GRP Content Generator</h1>
+      <p>Sign in to continue</p>
+    </div>
+
+    {% if error %}
+    <div class="error-box">{{ error }}</div>
+    {% endif %}
+
+    <form method="post" action="{{ url_for('login_page') }}{% if next %}?next={{ next }}{% endif %}">
+      <input type="hidden" name="next" value="{{ next }}" />
+
+      <div class="field">
+        <label for="username">Username</label>
+        <input id="username" name="username" type="text" autocomplete="username"
+               placeholder="Enter your username" required autofocus />
+      </div>
+
+      <div class="field">
+        <label for="password">Password</label>
+        <input id="password" name="password" type="password" autocomplete="current-password"
+               placeholder="Enter your password" required />
+      </div>
+
+      <button class="btn" type="submit">Sign In</button>
+    </form>
+
+    <div class="role-hint">
+      <strong>Access levels:</strong>
+      <ul>
+        <li><strong>User</strong> — Generator &amp; History</li>
+        <li><strong>Reviewer</strong> — Generator, History, Review &amp; Shop Config</li>
+      </ul>
+    </div>
+  </div>
+</body>
+</html>

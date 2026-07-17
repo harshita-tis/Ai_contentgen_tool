@@ -1,0 +1,1348 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Shop Config — ContentAI</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Syne:wght@500;600;700;800&family=DM+Sans:wght@400;500;600&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+:root,[data-theme="dark"]{
+  --bg:#080c0d;--bg-elev:#0e1416;--surface:#121a1d;--surface2:#1a2528;--surface3:#232f34;
+  --border:#223135;--border2:#2d4147;
+  --text:#e0f2f1;--text-2:#94a9ad;--text-3:#60787e;
+  --accent:#22d3ee;--accent-soft:rgba(34,211,238,0.13);--accent-glow:rgba(34,211,238,0.22);
+  --accent2:#14b8a6;--accent2-soft:rgba(20,184,166,0.12);
+  --danger:#f87171;--danger-soft:rgba(248,113,113,0.12);
+  --success:#34d399;--success-soft:rgba(52,211,153,.12);
+  --warning:#f59e0b;--warning-soft:rgba(245,158,11,0.12);
+  --shadow-sm:0 1px 2px rgba(0,0,0,0.4);--shadow-md:0 8px 24px -8px rgba(0,0,0,0.6);
+  --gradient-accent:linear-gradient(135deg,#22d3ee 0%,#0d9488 100%);
+}
+[data-theme="light"]{
+  --bg:#f0f9fa;--bg-elev:#ffffff;--surface:#ffffff;--surface2:#e6f2f3;--surface3:#d1e7e9;
+  --border:#cfe1e2;--border2:#b4d3d6;
+  --text:#0f172a;--text-2:#334155;--text-3:#64748b;
+  --accent:#0891b2;--accent-soft:rgba(8,145,178,0.10);--accent-glow:rgba(8,145,178,0.18);
+  --accent2:#0f766e;--accent2-soft:rgba(15,118,110,0.10);
+  --danger:#e11d48;--danger-soft:rgba(225,29,72,0.08);
+  --success:#059669;--success-soft:rgba(5,150,105,0.10);
+  --warning:#d97706;--warning-soft:rgba(217,119,6,0.10);
+  --shadow-sm:0 1px 2px rgba(8,145,178,0.06);--shadow-md:0 10px 30px -12px rgba(8,145,178,0.18);
+  --gradient-accent:linear-gradient(135deg,#0891b2 0%,#0f766e 100%);
+}
+:root{
+  --sidebar-w:188px;--sidebar-expanded:188px;--sidebar-collapsed:55px;
+  --radius:14px;--radius-sm:10px;
+  --font-head:'Syne',system-ui,sans-serif;
+  --font-body:'DM Sans',system-ui,-apple-system,sans-serif;
+  --font-mono:'DM Mono',ui-monospace,Menlo,monospace;
+}
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+html{font-size:15px}
+body{font-family:var(--font-body);background:var(--bg);color:var(--text);display:flex;min-height:100vh;overflow-x:hidden;-webkit-font-smoothing:antialiased;transition:background .25s,color .25s}
+textarea,input,button,select{font-family:inherit}
+::selection{background:var(--accent-soft);color:var(--text)}
+
+/* ── Sidebar ── */
+.sidebar{width:var(--sidebar-expanded);min-height:100vh;background:var(--bg-elev);border-right:1px solid var(--border);display:flex;flex-direction:column;position:fixed;left:0;top:0;z-index:100;padding:12px 0 14px;overflow:hidden;transition:width .22s cubic-bezier(.4,0,.2,1)}
+.sidebar.collapsed{width:var(--sidebar-collapsed)}
+.sidebar-logo-row{display:flex;align-items:center;gap:10px;padding:0 10px 16px;border-bottom:1px solid var(--border);margin-bottom:8px;flex-shrink:0;white-space:nowrap;overflow:hidden}
+.sidebar-logo-icon{width:28px;height:28px;min-width:28px;background:var(--gradient-accent);border-radius:7px;display:flex;align-items:center;justify-content:center;color:#fff;flex-shrink:0}
+.sidebar-logo-icon svg{width:14px;height:14px}
+.sidebar-logo-text{font-family:var(--font-head);font-size:.95rem;font-weight:700;letter-spacing:-.02em;color:var(--text);opacity:1;transition:opacity .15s}
+.sidebar.collapsed .sidebar-logo-text{opacity:0;pointer-events:none}
+.sidebar-nav{flex:1;padding:0 6px;display:flex;flex-direction:column;gap:2px;overflow:hidden}
+.nav-item{display:flex;align-items:center;gap:10px;padding:8px;border-radius:9px;color:var(--text-3);text-decoration:none;transition:background .15s,color .15s;cursor:pointer;border:none;background:none;white-space:nowrap;overflow:hidden;width:100%;position:relative}
+.nav-item:hover{background:var(--surface2);color:var(--text)}
+.nav-item.active{background:var(--accent-soft);color:var(--accent)}
+.nav-item svg{width:16px;height:16px;flex-shrink:0}
+.nav-label{font-size:.82rem;font-weight:500;opacity:1;transition:opacity .15s}
+.sidebar.collapsed .nav-label{opacity:0;pointer-events:none}
+.nav-item .tooltip{position:absolute;left:calc(var(--sidebar-collapsed) + 8px);top:50%;transform:translateY(-50%);background:var(--surface3);border:1px solid var(--border2);color:var(--text);font-size:.72rem;font-weight:600;white-space:nowrap;padding:4px 9px;border-radius:6px;pointer-events:none;opacity:0;transition:opacity .15s;z-index:200;box-shadow:var(--shadow-md)}
+.sidebar.collapsed .nav-item:hover .tooltip{opacity:1}
+.sidebar-bottom{margin-top:auto;padding:0 6px;display:flex;flex-direction:column;gap:6px;overflow:hidden}
+.sidebar-toggle-btn{display:flex;align-items:center;gap:10px;padding:7px 8px;border-radius:9px;background:none;border:none;cursor:pointer;color:var(--text-3);width:100%;white-space:nowrap;overflow:hidden;transition:background .15s,color .15s}
+.sidebar-toggle-btn:hover{background:var(--surface2);color:var(--text)}
+.sidebar-toggle-btn svg{width:15px;height:15px;flex-shrink:0;transition:transform .22s}
+.sidebar.collapsed .sidebar-toggle-btn svg{transform:rotate(180deg)}
+.sidebar-toggle-label{font-size:.78rem;font-weight:500;opacity:1;transition:opacity .15s}
+.sidebar.collapsed .sidebar-toggle-label{opacity:0;pointer-events:none}
+.theme-row{display:flex;align-items:center;gap:10px;padding:6px 8px;white-space:nowrap;overflow:hidden}
+.theme-row-label{font-size:.75rem;color:var(--text-3);font-weight:500;opacity:1;transition:opacity .15s}
+.sidebar.collapsed .theme-row-label{opacity:0;pointer-events:none}
+.theme-toggle{width:32px;height:18px;min-width:32px;background:var(--surface2);border:1px solid var(--border);border-radius:999px;position:relative;cursor:pointer;transition:background .2s;flex-shrink:0}
+.theme-toggle::after{content:'';position:absolute;top:2px;left:2px;width:12px;height:12px;background:var(--text-3);border-radius:50%;transition:transform .25s cubic-bezier(.4,0,.2,1)}
+[data-theme="light"] .theme-toggle::after{transform:translateX(14px);background:var(--accent)}
+
+/* ── Main ── */
+.main{margin-left:var(--sidebar-expanded);flex:1;padding:32px 36px 60px;max-width:calc(100vw - var(--sidebar-expanded));transition:margin-left .22s cubic-bezier(.4,0,.2,1),max-width .22s cubic-bezier(.4,0,.2,1)}
+.main.collapsed{margin-left:var(--sidebar-collapsed);max-width:calc(100vw - var(--sidebar-collapsed))}
+.page-header{margin-bottom:28px}
+.page-title{font-family:var(--font-head);font-size:1.85rem;font-weight:800;letter-spacing:-.025em}
+.page-subtitle{color:var(--text-2);font-size:.92rem;margin-top:5px}
+
+/* ── Cards ── */
+.card{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);padding:24px;box-shadow:var(--shadow-sm);margin-bottom:22px}
+.card-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:20px;padding-bottom:16px;border-bottom:1px solid var(--border)}
+.card-title{font-family:var(--font-head);font-size:1rem;font-weight:700;display:flex;align-items:center;gap:9px}
+.card-title svg{width:17px;height:17px;color:var(--accent);flex-shrink:0}
+
+/* ── Shop list ── */
+.shops-grid{display:flex;flex-direction:column;gap:12px;margin-bottom:18px}
+.shop-row{display:flex;align-items:center;gap:14px;background:var(--bg-elev);border:1px solid var(--border);border-radius:var(--radius-sm);padding:14px 16px;transition:border-color .15s,box-shadow .15s;cursor:default}
+.shop-row:hover{border-color:var(--border2);box-shadow:var(--shadow-sm)}
+.shop-row.active-shop{border-color:var(--accent2);background:var(--accent2-soft)}
+.shop-avatar{width:38px;height:38px;border-radius:9px;background:var(--gradient-accent);display:flex;align-items:center;justify-content:center;color:#fff;font-family:var(--font-head);font-size:.95rem;font-weight:700;flex-shrink:0}
+.shop-info{flex:1;min-width:0}
+.shop-name{font-family:var(--font-head);font-size:.9rem;font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.shop-domain{font-size:.76rem;color:var(--text-3);font-family:var(--font-mono);margin-top:2px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.shop-badges{display:flex;align-items:center;gap:6px;flex-shrink:0}
+.badge{display:inline-flex;align-items:center;gap:4px;font-size:.67rem;font-weight:600;padding:3px 8px;border-radius:20px;letter-spacing:.04em}
+.badge-active{background:var(--success-soft);color:var(--success);border:1px solid rgba(52,211,153,.25)}
+.badge-inactive{background:var(--surface2);color:var(--text-3);border:1px solid var(--border)}
+.badge-sections{background:var(--accent-soft);color:var(--accent);border:1px solid rgba(34,211,238,.2)}
+.shop-actions{display:flex;align-items:center;gap:6px;flex-shrink:0}
+.btn-icon{width:30px;height:30px;border-radius:7px;display:flex;align-items:center;justify-content:center;border:1px solid var(--border);background:var(--surface2);color:var(--text-3);cursor:pointer;transition:all .15s;font-size:.8rem}
+.btn-icon:hover{border-color:var(--border2);color:var(--text)}
+.btn-icon.edit:hover{border-color:var(--accent);color:var(--accent);background:var(--accent-soft)}
+.btn-icon.danger:hover{border-color:var(--danger);color:var(--danger);background:var(--danger-soft)}
+.btn-icon.set-active:hover{border-color:var(--success);color:var(--success);background:var(--success-soft)}
+
+/* ── Step indicator ── */
+.steps-bar{display:flex;align-items:center;gap:0;margin-bottom:24px}
+.step-item{display:flex;align-items:center;gap:8px}
+.step-num{width:28px;height:28px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:.75rem;font-weight:700;border:2px solid var(--border);color:var(--text-3);transition:all .3s;flex-shrink:0}
+.step-num.active{border-color:var(--accent);color:var(--accent);background:var(--accent-soft);box-shadow:0 0 0 4px var(--accent-glow)}
+.step-num.done{border-color:var(--success);background:var(--success-soft);color:var(--success)}
+.step-label{font-size:.82rem;font-weight:600;color:var(--text-3);transition:color .3s}
+.step-label.active{color:var(--text)}
+.step-connector{width:32px;height:2px;background:var(--border);margin:0 4px;transition:background .3s;flex-shrink:0}
+.step-connector.done{background:var(--success)}
+
+/* ── Form ── */
+.form-section{margin-bottom:22px}
+.form-section-title{font-size:.72rem;font-weight:700;letter-spacing:.09em;text-transform:uppercase;color:var(--text-3);margin-bottom:12px;display:flex;align-items:center;gap:7px}
+.form-section-title::after{content:'';flex:1;height:1px;background:var(--border)}
+.form-grid{display:grid;gap:14px}
+.form-grid-2{grid-template-columns:1fr 1fr}
+.form-group{display:flex;flex-direction:column;gap:6px}
+.form-label{font-size:.76rem;font-weight:600;color:var(--text-2);display:flex;align-items:center;gap:5px}
+.form-label .req{color:var(--accent)}
+.form-label .hint{font-size:.68rem;font-weight:400;color:var(--text-3);margin-left:auto}
+.form-input{width:100%;background:var(--surface2);border:1px solid var(--border);border-radius:var(--radius-sm);padding:9px 12px;color:var(--text);font-size:.88rem;outline:none;transition:border-color .15s,box-shadow .15s}
+.form-input:focus{border-color:var(--accent);box-shadow:0 0 0 3px var(--accent-soft)}
+.form-input::placeholder{color:var(--text-3)}
+.form-input.monospace{font-family:var(--font-mono);font-size:.82rem}
+.form-hint{font-size:.72rem;color:var(--text-3);line-height:1.5}
+.password-wrap{position:relative}
+.password-wrap .form-input{padding-right:40px}
+.btn-eye{position:absolute;right:10px;top:50%;transform:translateY(-50%);background:none;border:none;color:var(--text-3);cursor:pointer;font-size:.88rem;padding:4px;line-height:1;transition:color .15s}
+.btn-eye:hover{color:var(--accent)}
+
+/* ── Test connection ── */
+.test-result{display:none;margin-top:10px;padding:10px 14px;border-radius:var(--radius-sm);font-size:.8rem;font-weight:500;align-items:center;gap:8px}
+.test-result.visible{display:flex}
+.test-result.ok{background:var(--success-soft);color:var(--success);border:1px solid rgba(52,211,153,.25)}
+.test-result.fail{background:var(--danger-soft);color:var(--danger);border:1px solid rgba(248,113,113,.25)}
+
+/* ── Form actions ── */
+.form-actions{display:flex;align-items:center;gap:10px;padding-top:20px;border-top:1px solid var(--border);flex-wrap:wrap}
+.btn-primary{display:inline-flex;align-items:center;gap:8px;background:var(--gradient-accent);color:#fff;border:none;border-radius:var(--radius-sm);padding:10px 22px;font-size:.88rem;font-weight:600;cursor:pointer;transition:transform .1s,box-shadow .2s,opacity .2s;box-shadow:0 6px 18px -6px var(--accent-soft)}
+.btn-primary:hover{transform:translateY(-1px);box-shadow:0 10px 24px -6px rgba(34,211,238,.3)}
+.btn-primary:active{transform:translateY(0)}
+.btn-primary:disabled{opacity:.5;cursor:not-allowed;transform:none}
+.btn-secondary{display:inline-flex;align-items:center;gap:7px;padding:9px 18px;background:var(--surface2);border:1px solid var(--border);border-radius:var(--radius-sm);color:var(--text-2);font-size:.88rem;font-weight:500;cursor:pointer;transition:all .15s}
+.btn-secondary:hover{border-color:var(--border2);color:var(--text)}
+.btn-secondary:disabled{opacity:.5;cursor:not-allowed}
+.btn-danger-outline{display:inline-flex;align-items:center;gap:7px;padding:9px 18px;background:transparent;border:1px solid rgba(248,113,113,.3);border-radius:var(--radius-sm);color:var(--danger);font-size:.88rem;font-weight:500;cursor:pointer;transition:all .15s;margin-left:auto}
+.btn-danger-outline:hover{background:var(--danger-soft);border-color:var(--danger)}
+
+/* ══════════════════════════════════════════
+   SECTIONS CONFIG (Step 2)
+══════════════════════════════════════════ */
+.sections-wrapper{display:flex;flex-direction:column;gap:12px;margin-bottom:16px}
+
+.section-card{background:var(--bg-elev);border:1px solid var(--border);border-radius:var(--radius-sm);overflow:hidden;transition:border-color .15s,box-shadow .15s}
+.section-card:focus-within{border-color:var(--accent);box-shadow:0 0 0 3px var(--accent-glow)}
+
+.section-card-header{display:flex;align-items:center;gap:10px;padding:12px 14px;background:var(--surface2);border-bottom:1px solid var(--border);cursor:pointer;user-select:none}
+.section-drag-handle{color:var(--text-3);cursor:grab;font-size:.9rem;padding:2px 4px;opacity:.5}
+.section-drag-handle:hover{opacity:1}
+.section-number{width:22px;height:22px;border-radius:50%;background:var(--accent-soft);border:1px solid rgba(34,211,238,.25);color:var(--accent);font-size:.68rem;font-weight:700;display:flex;align-items:center;justify-content:center;flex-shrink:0}
+.section-name-display{font-family:var(--font-head);font-size:.85rem;font-weight:600;flex:1;min-width:0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;color:var(--text)}
+.section-name-display.placeholder{color:var(--text-3);font-style:italic;font-weight:400}
+.section-metafield-pill{display:inline-flex;align-items:center;gap:4px;background:var(--surface3);border:1px solid var(--border2);border-radius:6px;padding:2px 8px;font-family:var(--font-mono);font-size:.65rem;color:var(--text-3);flex-shrink:0;max-width:180px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.section-chevron{color:var(--text-3);transition:transform .2s;flex-shrink:0}
+.section-chevron.open{transform:rotate(180deg)}
+.btn-remove-section{width:26px;height:26px;background:transparent;border:1px solid transparent;border-radius:6px;color:var(--text-3);cursor:pointer;display:flex;align-items:center;justify-content:center;font-size:.8rem;transition:all .15s;flex-shrink:0}
+.btn-remove-section:hover{background:var(--danger-soft);border-color:rgba(248,113,113,.3);color:var(--danger)}
+
+.section-card-body{padding:14px;display:flex;flex-direction:column;gap:12px}
+.section-body-row{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+
+.field-group{display:flex;flex-direction:column;gap:5px}
+.field-label{font-size:.68rem;font-weight:700;letter-spacing:.07em;text-transform:uppercase;color:var(--text-3);display:flex;align-items:center;gap:5px}
+.field-label svg{width:11px;height:11px;opacity:.7}
+
+.section-name-input{width:100%;background:var(--surface3);border:1px solid var(--border);border-radius:8px;padding:8px 11px;color:var(--text);font-size:.87rem;font-family:var(--font-head);font-weight:600;outline:none;transition:border-color .15s}
+.section-name-input:focus{border-color:var(--accent);box-shadow:0 0 0 2px var(--accent-soft)}
+.section-name-input::placeholder{color:var(--text-3);font-weight:400}
+
+.metafield-select{width:100%;background:var(--surface3);border:1px solid var(--border);border-radius:8px;padding:8px 11px;color:var(--text);font-size:.8rem;font-family:var(--font-mono);outline:none;cursor:pointer;transition:border-color .15s;appearance:none;background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 24 24' fill='none' stroke='%2360787e' stroke-width='2'%3E%3Cpolyline points='6 9 12 15 18 9'/%3E%3C/svg%3E");background-repeat:no-repeat;background-position:right 10px center;padding-right:30px}
+.metafield-select:focus{border-color:var(--accent);box-shadow:0 0 0 2px var(--accent-soft)}
+.metafield-select option{background:var(--surface)}
+
+/* Prompt and Template area */
+.prompt-area-wrap{position:relative}
+.prompt-textarea, .template-textarea{width:100%;background:var(--surface3);border:1px solid var(--border);border-radius:8px;padding:10px 11px;color:var(--text);font-size:.78rem;font-family:var(--font-mono);line-height:1.6;outline:none;resize:vertical;min-height:120px;transition:border-color .15s}
+.prompt-textarea:focus, .template-textarea:focus{border-color:var(--accent);box-shadow:0 0 0 2px var(--accent-soft)}
+.prompt-textarea::placeholder, .template-textarea::placeholder{color:var(--text-3)}
+.prompt-actions{display:flex;align-items:center;gap:7px;margin-top:7px}
+.btn-reset-prompt{display:inline-flex;align-items:center;gap:5px;padding:5px 10px;background:transparent;border:1px solid var(--border);border-radius:7px;color:var(--text-3);font-size:.73rem;cursor:pointer;transition:all .15s}
+.btn-reset-prompt:hover{border-color:var(--warning);color:var(--warning);background:var(--warning-soft)}
+.prompt-saved-indicator{display:inline-flex;align-items:center;gap:4px;font-size:.7rem;color:var(--success);opacity:0;transition:opacity .3s}
+.prompt-saved-indicator.show{opacity:1}
+
+/* Metafield loading state */
+.mf-loading{display:flex;align-items:center;gap:7px;font-size:.78rem;color:var(--text-3);padding:6px 0}
+.mf-spinner{width:14px;height:14px;border:2px solid var(--border2);border-top-color:var(--accent);border-radius:50%;animation:spin .7s linear infinite}
+
+/* Add section button */
+.btn-add-section{display:flex;align-items:center;gap:8px;width:100%;padding:11px 16px;background:transparent;border:2px dashed var(--border2);border-radius:var(--radius-sm);color:var(--accent);font-size:.85rem;font-weight:600;cursor:pointer;transition:all .18s;justify-content:center}
+.btn-add-section:hover{background:var(--accent-soft);border-color:var(--accent)}
+.btn-add-section svg{width:14px;height:14px}
+
+/* Step 2 header with shop info */
+.step2-shop-badge{display:inline-flex;align-items:center;gap:7px;background:var(--accent2-soft);border:1px solid rgba(20,184,166,.25);border-radius:8px;padding:5px 12px;font-size:.78rem;font-weight:600;color:var(--accent2);margin-bottom:16px}
+.step2-shop-badge svg{width:13px;height:13px}
+
+/* Metafield fetch status banner */
+.mf-fetch-banner{display:flex;align-items:center;gap:8px;padding:8px 12px;border-radius:8px;font-size:.78rem;font-weight:500;margin-bottom:14px}
+.mf-fetch-banner.loading{background:var(--accent-soft);color:var(--accent);border:1px solid rgba(34,211,238,.2)}
+.mf-fetch-banner.ok{background:var(--success-soft);color:var(--success);border:1px solid rgba(52,211,153,.25)}
+.mf-fetch-banner.fail{background:var(--warning-soft);color:var(--warning);border:1px solid rgba(245,158,11,.25)}
+.mf-fetch-banner svg{width:14px;height:14px;flex-shrink:0}
+
+/* Section count info */
+.sections-meta{display:flex;align-items:center;justify-content:space-between;margin-bottom:10px}
+.sections-count{font-size:.75rem;color:var(--text-3)}
+.sections-count strong{color:var(--text-2)}
+
+/* ── Toast ── */
+.toast-stack{position:fixed;bottom:24px;right:24px;z-index:300;display:flex;flex-direction:column;gap:8px;pointer-events:none}
+.toast{display:flex;align-items:center;gap:10px;padding:11px 16px;border-radius:10px;font-size:.82rem;font-weight:500;box-shadow:var(--shadow-md);pointer-events:all;animation:toast-in .25s ease;background:var(--bg-elev);border:1px solid var(--border);color:var(--text);max-width:340px}
+.toast.success{border-color:rgba(52,211,153,.4);background:var(--success-soft);color:var(--success)}
+.toast.error{border-color:rgba(248,113,113,.4);background:var(--danger-soft);color:var(--danger)}
+.toast.info{border-color:rgba(34,211,238,.3);background:var(--accent-soft);color:var(--accent)}
+.toast-out{animation:toast-out .25s ease forwards}
+
+/* ── Confirm modal ── */
+.modal-overlay{position:fixed;inset:0;background:rgba(0,0,0,.6);z-index:200;display:flex;align-items:center;justify-content:center;opacity:0;pointer-events:none;transition:opacity .2s;backdrop-filter:blur(6px)}
+.modal-overlay.active{opacity:1;pointer-events:all}
+.modal{background:var(--bg-elev);border:1px solid var(--border);border-radius:var(--radius);width:90%;max-width:440px;overflow:hidden;transform:translateY(16px) scale(.98);transition:transform .25s cubic-bezier(.4,0,.2,1);box-shadow:var(--shadow-md)}
+.modal-overlay.active .modal{transform:translateY(0) scale(1)}
+.modal-header{padding:18px 20px 14px;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between}
+.modal-title{font-family:var(--font-head);font-size:.95rem;font-weight:700}
+.modal-close{background:var(--surface2);border:1px solid var(--border);color:var(--text-2);cursor:pointer;font-size:.85rem;width:28px;height:28px;border-radius:7px;display:flex;align-items:center;justify-content:center;transition:all .15s}
+.modal-close:hover{color:var(--text);border-color:var(--border2)}
+.modal-body{padding:18px 20px}
+.modal-body p{font-size:.88rem;color:var(--text-2);line-height:1.6}
+.modal-footer{padding:14px 20px 18px;display:flex;align-items:center;justify-content:flex-end;gap:10px;border-top:1px solid var(--border)}
+
+.no-shops-placeholder{text-align:center;padding:40px 20px;color:var(--text-3)}
+.no-shops-placeholder svg{width:48px;height:48px;margin:0 auto 14px;display:block;opacity:.25}
+.no-shops-placeholder p{font-size:.9rem;margin-bottom:4px}
+.no-shops-placeholder small{font-size:.78rem}
+
+@keyframes spin{to{transform:rotate(360deg)}}
+@keyframes toast-in{from{opacity:0;transform:translateY(12px)}to{opacity:1;transform:translateY(0)}}
+@keyframes toast-out{to{opacity:0;transform:translateY(8px)}}
+@keyframes fadeSlideIn{from{opacity:0;transform:translateY(12px)}to{opacity:1;transform:translateY(0)}}
+.animate-in{animation:fadeSlideIn .3s ease forwards}
+
+@media(max-width:880px){
+  .sidebar{width:100%;height:auto;min-height:0;position:relative}
+  .main{margin-left:0;max-width:100vw;padding:20px 16px 48px}
+  .form-grid-2,.section-body-row{grid-template-columns:1fr}
+}
+</style>
+</head>
+<body>
+
+<aside class="sidebar" id="sidebar">
+  <div class="sidebar-logo-row">
+    <div class="sidebar-logo-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M13 2L3 14h7l-1 8 10-12h-7l1-8z"/></svg></div>
+    <span class="sidebar-logo-text">ContentAI</span>
+  </div>
+  <nav class="sidebar-nav">
+    <a href="/" class="nav-item">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2v4M12 18v4M4.93 4.93l2.83 2.83M16.24 16.24l2.83 2.83M2 12h4M18 12h4M4.93 19.07l2.83-2.83M16.24 7.76l2.83-2.83"/></svg>
+      <span class="nav-label">Generator</span>
+      <span class="tooltip">Generator</span>
+    </a>
+    <a href="/image-search" class="nav-item">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/></svg>
+      <span class="nav-label">Image Search</span>
+      <span class="tooltip">Image Search</span>
+    </a>
+    <a href="/history" class="nav-item">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/></svg>
+      <span class="nav-label">History</span>
+      <span class="tooltip">History</span>
+    </a>
+    <a href="/history-image-search " class="nav-item">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/></svg>
+      <span class="nav-label">History Image</span>
+      <span class="tooltip">History image</span>
+    </a>
+    <a href="/review" class="nav-item">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 11l3 3L22 4"/><path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"/></svg>
+      <span class="nav-label">Review</span>
+      <span class="tooltip">Review</span>
+    </a>
+    <a href="/review-image-search " class="nav-item">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/></svg>
+      <span class="nav-label">Review Images</span>
+      <span class="tooltip">Review images</span>
+    </a>
+    <a href="/shop-config" class="nav-item active">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"/><path d="M19.07 4.93a10 10 0 0 1 0 14.14M4.93 4.93a10 10 0 0 0 0 14.14"/></svg>
+      <span class="nav-label">Shop Config</span>
+      <span class="tooltip">Shop Config</span>
+    </a>
+  </nav>
+  <div class="sidebar-bottom">
+    <button class="sidebar-toggle-btn" id="sidebarToggleBtn" onclick="toggleSidebar()">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="15 18 9 12 15 6"/></svg>
+      <span class="sidebar-toggle-label">Collapse</span>
+    </button>
+    <div class="theme-row">
+      <div class="theme-toggle" id="themeToggle" role="switch" aria-label="Toggle theme"></div>
+      <span class="theme-row-label">Appearance</span>
+    </div>
+  </div>
+</aside>
+
+<main class="main">
+  <header class="page-header">
+    <h1 class="page-title">Shop Configuration</h1>
+    <p class="page-subtitle">Connect your Shopify store and configure content sections with metafield mapping</p>
+  </header>
+
+  <!-- Connected Shops List -->
+  <section class="card">
+    <div class="card-header">
+      <div class="card-title">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>
+        Connected Shops
+      </div>
+      <button class="btn-primary" onclick="showAddForm()">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" width="13" height="13"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+        Add Shop
+      </button>
+    </div>
+    <div class="shops-grid" id="shopsList"></div>
+    <div class="no-shops-placeholder" id="noShopsPlaceholder" style="display:none">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>
+      <p>No shops configured yet</p>
+      <small>Click "Add Shop" to connect your first Shopify store</small>
+    </div>
+  </section>
+
+  <!-- FORM AREA (hidden by default) -->
+  <section class="card" id="shopFormCard" style="display:none">
+    <div class="card-header">
+      <div class="card-title">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 20h9"/><path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z"/></svg>
+        <span id="formTitle">Add New Shop</span>
+      </div>
+      <button class="btn-secondary" onclick="hideForm()">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="13" height="13"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+        Cancel
+      </button>
+    </div>
+
+    <!-- Step Indicator -->
+    <div class="steps-bar">
+      <div class="step-item">
+        <div class="step-num active" id="step1Num">1</div>
+        <span class="step-label active" id="step1Label">Shop Credentials</span>
+      </div>
+      <div class="step-connector" id="stepConnector"></div>
+      <div class="step-item">
+        <div class="step-num" id="step2Num">2</div>
+        <span class="step-label" id="step2Label">Content Sections</span>
+      </div>
+    </div>
+
+    <input type="hidden" id="editShopId" value="">
+
+    <!-- ════ STEP 1: Credentials ════ -->
+    <div id="step1Panel">
+      <div class="form-section">
+        <div class="form-section-title">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="12" height="12"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>
+          Shop Credentials
+        </div>
+        <div class="form-grid form-grid-2">
+          <div class="form-group">
+            <label class="form-label" for="shopName">Shop Name <span class="req">*</span><span class="hint">Display label</span></label>
+            <input type="text" id="shopName" class="form-input" placeholder="e.g. Genuine Replacement Parts" autocomplete="off">
+          </div>
+          <div class="form-group">
+            <label class="form-label" for="shopDomain">Store Domain <span class="req">*</span><span class="hint">myshopify.com</span></label>
+            <input type="text" id="shopDomain" class="form-input monospace" placeholder="yourstore.myshopify.com" autocomplete="off">
+            <span class="form-hint">Without https:// — e.g. spark236.myshopify.com</span>
+          </div>
+          <div class="form-group">
+            <label class="form-label" for="shopWebsiteDomain">Website Domain<span class="hint">Public storefront</span></label>
+            <input type="text" id="shopWebsiteDomain" class="form-input monospace" placeholder="e.g. genuinereplacementparts.com" autocomplete="off">
+            <span class="form-hint">The public-facing domain — helps identify which site this shop powers</span>
+          </div>
+          <div class="form-group" style="grid-column:1/-1">
+            <label class="form-label" for="shopAccessToken">Admin Access Token <span class="req">*</span></label>
+            <div class="password-wrap">
+              <input type="password" id="shopAccessToken" class="form-input monospace" placeholder="shpat_xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx" autocomplete="off">
+              <button class="btn-eye" type="button" onclick="toggleTokenVisibility()" id="btnEye" title="Show/hide token">👁</button>
+            </div>
+            <span class="form-hint">Admin API access token from your Shopify Partners dashboard or store settings</span>
+          </div>
+          <div class="form-group">
+            <label class="form-label" for="shopApiVersion">API Version<span class="hint">Optional</span></label>
+            <input type="text" id="shopApiVersion" class="form-input monospace" placeholder="2024-01" autocomplete="off">
+            <span class="form-hint">Leave blank to use the app default</span>
+          </div>
+          <div class="form-group" style="align-self:center;padding-top:16px">
+            <button class="btn-secondary" id="btnTestConn" onclick="testConnection()" style="width:100%;justify-content:center">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="13" height="13"><path d="M5 12h14"/><path d="M12 5l7 7-7 7"/></svg>
+              Test Connection
+            </button>
+            <div class="test-result" id="testResult"></div>
+          </div>
+        </div>
+      </div>
+
+      <div class="form-actions">
+        <button class="btn-primary" id="btnNextStep" onclick="goToStep2()">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" width="14" height="14"><path d="M5 12h14"/><path d="M12 5l7 7-7 7"/></svg>
+          <span id="btnNextLabel">Next: Configure Sections</span>
+        </button>
+        <button class="btn-secondary" onclick="hideForm()">Cancel</button>
+        <button class="btn-danger-outline" id="btnDeleteShop" style="display:none" onclick="confirmDeleteShop()">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="13" height="13"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"/></svg>
+          Delete Shop
+        </button>
+      </div>
+    </div>
+
+    <!-- ════ STEP 2: Content Sections ════ -->
+    <div id="step2Panel" style="display:none" class="animate-in">
+
+      <!-- Shop badge showing connected store -->
+      <div class="step2-shop-badge" id="step2ShopBadge">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>
+        <span id="step2ShopName">shop.myshopify.com</span>
+      </div>
+
+      <!-- Metafield fetch status -->
+      <div class="mf-fetch-banner loading" id="mfFetchBanner">
+        <div class="mf-spinner"></div>
+        Fetching metafields from your store…
+      </div>
+
+      <!-- Sections area -->
+      <div class="form-section" style="margin-bottom:16px">
+        <div class="form-section-title">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="12" height="12"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/></svg>
+          Content Sections
+        </div>
+        <p class="form-hint" style="margin-bottom:14px">Each section maps a content type to a Shopify metafield. The prompt and template structures control what AI will build for that section.</p>
+      </div>
+
+      <div class="sections-meta">
+        <span class="sections-count"><strong id="sectionCountLabel">0</strong> sections configured</span>
+      </div>
+
+      <div class="sections-wrapper" id="sectionsList"></div>
+
+      <button class="btn-add-section" onclick="addSectionRow()">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+        Add Section
+      </button>
+
+      <div class="form-actions" style="margin-top:20px">
+        <button class="btn-secondary" onclick="goBackToStep1()">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="13" height="13"><path d="M19 12H5"/><path d="M12 19l-7-7 7-7"/></svg>
+          Back
+        </button>
+        <button class="btn-primary" id="btnSaveShop" onclick="saveShop()">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" width="14" height="14"><path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"/><polyline points="17 21 17 13 7 13 7 21"/><polyline points="7 3 7 8 15 8"/></svg>
+          <span id="btnSaveLabel">Save Shop</span>
+        </button>
+        <button class="btn-secondary" onclick="hideForm()">Cancel</button>
+        <button class="btn-danger-outline" id="btnDeleteShop2" style="display:none" onclick="confirmDeleteShop()">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="13" height="13"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"/></svg>
+          Delete Shop
+        </button>
+      </div>
+    </div>
+  </section>
+</main>
+
+<!-- Delete confirmation modal -->
+<div class="modal-overlay" id="confirmModal">
+  <div class="modal">
+    <div class="modal-header">
+      <span class="modal-title">Delete Shop?</span>
+      <button class="modal-close" onclick="closeModal()">✕</button>
+    </div>
+    <div class="modal-body">
+      <p>This will permanently remove <strong id="deleteShopName"></strong> and all its credentials and section config. This action cannot be undone.</p>
+    </div>
+    <div class="modal-footer">
+      <button class="btn-secondary" onclick="closeModal()">Cancel</button>
+      <button class="btn-primary" style="background:var(--danger);box-shadow:none" onclick="doDeleteShop()">Delete</button>
+    </div>
+  </div>
+</div>
+
+<div class="toast-stack" id="toastStack"></div>
+
+<script>
+/* ══════════════════════════════════════════════════════════
+   DEFAULT PROMPTS (keyed by section name suggestion)
+══════════════════════════════════════════════════════════ */
+const DEFAULT_PROMPTS = {
+  "Product Description": `You are a professional product copywriter.
+
+Product Title: {product_title}
+Part Number: {part_number}
+
+Write a compelling product description. Output EXACTLY these three sections:
+
+---OPENING---
+3-5 plain-text sentences. Describe what the part is, its function in the appliance, symptoms of a failing part, and that this genuine OEM replacement restores performance.
+---WHY_BUY---
+2 plain-text sentences covering: authentic OEM parts guarantee compatibility/reliability; fast shipping/easy returns/expert support.
+---FEATURES---
+5-6 lines, each in this EXACT format (no bullets, no HTML):
+Feature Name: One concise sentence.
+---END---`,
+
+  "Technical Specifications": `You are a technical documentation specialist.
+
+Product Title: {product_title}
+Part Number: {part_number}
+
+Output ONLY these 5 specification lines:
+Part Number: {part_number}
+Part Type: [type of part]
+Function: [one sentence — what it does]
+Location: [where it sits inside the appliance]
+Compatibility: [compatible appliance types / models]`,
+
+  "Installation Guide": `You are a technical writer.
+
+Product Title: {product_title}
+Part Number: {part_number}
+
+Write 6-8 installation steps. Output ONLY plain text, one step per line, no numbering, no bullets, no HTML.
+Each step is one or two short actionable sentences.
+
+Output — one step per line, nothing else.`,
+
+  "Common Problems": `You are a product support specialist.
+
+Product Title: {product_title}
+Part Number: {part_number}
+
+List 4-6 common symptoms or causes that indicate this part needs replacement.
+Output ONLY plain text, one item per line, no bullets, no HTML, no numbering.
+Each item is one short sentence or phrase.`,
+
+  "Short Description": `You are a professional product copywriter.
+
+Product Title: {product_title}
+Part Number: {part_number}
+
+Write 5-6 short product description items. Output ONLY plain text, one item per line, no bullet characters, no HTML, no numbering.
+First item: what the product is and its primary function (1 sentence, mention part number).
+Remaining items: each a single short sentence about a specific benefit or feature.`,
+
+  "SEO Meta Title": `You are an SEO specialist.
+
+Product Title: {product_title}
+Part Number: {part_number}
+
+Write a single SEO-optimized meta title for this product page.
+Rules: under 60 characters, include the part number, clearly describe the product.
+Output ONLY the meta title text — nothing else, no quotes, no labels.`,
+
+  "SEO Meta Description": `You are an SEO specialist.
+
+Product Title: {product_title}
+Part Number: {part_number}
+
+Write a single SEO-optimized meta description for this product page.
+Rules: 140-160 characters, include the part number, highlight key benefits, end with a call to action.
+Output ONLY the meta description text — nothing else, no quotes, no labels.`
+};
+
+const FALLBACK_PROMPT = `You are a professional product content writer.
+
+Product Title: {product_title}
+Part Number: {part_number}
+
+Generate content for this section. Be concise, accurate, and professional.
+Output plain text only — no HTML, no markdown formatting.`;
+
+/* ══════════════════════════════════════════════════════════
+   STATE
+══════════════════════════════════════════════════════════ */
+let shops = [];
+let editingId = null;
+let deleteTargetId = null;
+let currentStep = 1;
+let fetchedMetafields = []; // [{namespace, key, type}]
+let sectionCounter = 0;
+
+/* ══════════════════════════════════════════════════════════
+   INIT
+══════════════════════════════════════════════════════════ */
+document.addEventListener('DOMContentLoaded', () => {
+  initTheme();
+  document.getElementById('themeToggle').addEventListener('click', toggleTheme);
+  fetchShops();
+});
+
+/* ══════════════════════════════════════════════════════════
+   THEME
+══════════════════════════════════════════════════════════ */
+function initTheme() {
+  const saved = localStorage.getItem('theme') || 'dark';
+  document.documentElement.setAttribute('data-theme', saved);
+}
+function toggleTheme() {
+  const curr = document.documentElement.getAttribute('data-theme');
+  const next = curr === 'dark' ? 'light' : 'dark';
+  document.documentElement.setAttribute('data-theme', next);
+  localStorage.setItem('theme', next);
+}
+
+/* ══════════════════════════════════════════════════════════
+   API CALLS
+══════════════════════════════════════════════════════════ */
+async function fetchShops() {
+  try {
+    const res = await fetch('/api/shops');
+    if (!res.ok) throw new Error('Failed to load shops');
+    const data = await res.json();
+    shops = data.shops || [];
+    window._loadedShops = shops;
+    console.log('[fetchShops] Loaded %d shops | cached in window._loadedShops', shops.length);
+  } catch (e) {
+    shops = [];
+    window._loadedShops = [];
+    console.error('[fetchShops] Failed to load shops | error=%s', e.message);
+  }
+  renderShops();
+}
+
+async function testConnection() {
+  const domain  = document.getElementById('shopDomain').value.trim();
+  const token   = document.getElementById('shopAccessToken').value.trim();
+  const version = document.getElementById('shopApiVersion').value.trim();
+
+  if (!domain) {
+    showToast('Enter domain first', 'info');
+    return;
+  }
+
+  if (!token && editingId) {
+    showToast('Testing with stored credentials…', 'info');
+    const btn = document.getElementById('btnTestConn');
+    btn.disabled = true;
+    btn.innerHTML = '<div style="width:13px;height:13px;border:2px solid rgba(255,255,255,.3);border-top-color:#fff;border-radius:50%;animation:spin .7s linear infinite"></div> Testing…';
+    const resultEl = document.getElementById('testResult');
+    resultEl.className = 'test-result';
+    try {
+      const res = await fetch(`/api/shops/${editingId}/test-connection`, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({}) });
+      const data = await res.json();
+      if (data.success) {
+        resultEl.className = 'test-result visible ok';
+        resultEl.innerHTML = '✅ Connected — ' + (data.shop_name || domain);
+      } else {
+        resultEl.className = 'test-result visible fail';
+        resultEl.innerHTML = '❌ ' + (data.error || 'Connection failed');
+      }
+    } catch (e) {
+      resultEl.className = 'test-result visible fail';
+      resultEl.innerHTML = '❌ ' + e.message;
+    } finally {
+      btn.disabled = false;
+      btn.innerHTML = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="13" height="13"><path d="M5 12h14"/><path d="M12 5l7 7-7 7"/></svg> Test Connection';
+    }
+    return;
+  }
+
+  if (!token) {
+    showToast('Enter access token first', 'info');
+    return;
+  }
+
+  const btn = document.getElementById('btnTestConn');
+  btn.disabled = true;
+  btn.innerHTML = '<div style="width:13px;height:13px;border:2px solid rgba(255,255,255,.3);border-top-color:#fff;border-radius:50%;animation:spin .7s linear infinite"></div> Testing…';
+
+  const resultEl = document.getElementById('testResult');
+  resultEl.className = 'test-result';
+
+  try {
+    const res = await fetch('/api/shops/test-connection', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ domain, access_token: token, api_version: version })
+    });
+    const data = await res.json();
+    if (data.success) {
+      resultEl.className = 'test-result visible ok';
+      resultEl.innerHTML = '✅ Connected — ' + (data.shop_name || domain);
+    } else {
+      resultEl.className = 'test-result visible fail';
+      resultEl.innerHTML = '❌ ' + (data.error || 'Connection failed');
+    }
+  } catch (e) {
+    resultEl.className = 'test-result visible fail';
+    resultEl.innerHTML = '❌ ' + e.message;
+  } finally {
+    btn.disabled = false;
+    btn.innerHTML = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="13" height="13"><path d="M5 12h14"/><path d="M12 5l7 7-7 7"/></svg> Test Connection';
+  }
+}
+
+async function fetchMetafields(domain, token, apiVersion) {
+  let shopId = editingId;
+  console.log('[fetchMetafields] START | domain=%s | editingId=%s | apiVersion=%s', domain, editingId, apiVersion);
+
+  if (!shopId) {
+    const match = (window._loadedShops || []).find(s => s.domain === domain);
+    shopId = match?.id || null;
+  }
+
+  if (!shopId) {
+    return await _fetchMetafieldsDirect(domain, token, apiVersion);
+  }
+
+  const url = `/api/shops/${shopId}/metafields`;
+  const res = await fetch(url);
+
+  if (!res.ok) {
+    const errText = await res.text();
+    throw new Error(`Server error ${res.status}: ${errText}`);
+  }
+
+  const data = await res.json();
+  if (!data.success) throw new Error(data.error || 'Failed to fetch metafields from server');
+
+  return data.metafields || [];
+}
+
+async function _fetchMetafieldsDirect(domain, token, apiVersion) {
+  const res = await fetch('/api/shops/fetch-metafields-direct', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ domain, access_token: token, api_version: apiVersion || '2024-01' })
+  });
+
+  if (!res.ok) {
+    const errText = await res.text();
+    throw new Error(`Server error ${res.status}: ${errText}`);
+  }
+
+  const data = await res.json();
+  if (!data.success) throw new Error(data.error || 'Failed to fetch metafields');
+  return data.metafields || [];
+}
+
+async function saveShop() {
+  const payload = buildPayload();
+  if (!payload) return;
+
+  const btn = document.getElementById('btnSaveShop');
+  btn.disabled = true;
+  document.getElementById('btnSaveLabel').textContent = 'Saving…';
+
+  try {
+    const isEdit = !!editingId;
+    const url    = isEdit ? `/api/shops/${editingId}` : '/api/shops';
+    const method = isEdit ? 'PUT' : 'POST';
+    const res = await fetch(url, {
+      method,
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(payload)
+    });
+    const data = await res.json();
+    if (!res.ok) throw new Error(data.error || 'Save failed');
+    showToast(isEdit ? 'Shop updated successfully' : 'Shop added successfully', 'success');
+    hideForm();
+    await fetchShops();
+  } catch (e) {
+    showToast('Error: ' + e.message, 'error');
+  } finally {
+    btn.disabled = false;
+    document.getElementById('btnSaveLabel').textContent = editingId ? 'Update Shop' : 'Save Shop';
+  }
+}
+
+async function setActiveShop(id) {
+  try {
+    const res = await fetch(`/api/shops/${id}/set-active`, { method: 'POST' });
+    const data = await res.json();
+    if (!res.ok) throw new Error(data.error || 'Failed');
+    showToast('Active shop updated', 'success');
+    await fetchShops();
+  } catch (e) {
+    showToast('Error: ' + e.message, 'error');
+  }
+}
+
+async function doDeleteShop() {
+  closeModal();
+  try {
+    const res = await fetch(`/api/shops/${deleteTargetId}`, { method: 'DELETE' });
+    const data = await res.json();
+    if (!res.ok) throw new Error(data.error || 'Delete failed');
+    showToast('Shop deleted', 'success');
+    hideForm();
+    await fetchShops();
+  } catch (e) {
+    showToast('Error: ' + e.message, 'error');
+  }
+}
+
+/* ══════════════════════════════════════════════════════════
+   STEP NAVIGATION
+══════════════════════════════════════════════════════════ */
+async function goToStep2() {
+  const name   = document.getElementById('shopName').value.trim();
+  const domain = document.getElementById('shopDomain').value.trim();
+  const token  = document.getElementById('shopAccessToken').value.trim();
+
+  if (!name || !domain) {
+    showToast('Shop name and domain are required', 'error');
+    return;
+  }
+
+  if (!editingId && !token) {
+    showToast('Access token is required', 'error');
+    return;
+  }
+
+  document.getElementById('step1Panel').style.display = 'none';
+  document.getElementById('step2Panel').style.display = '';
+  document.getElementById('step2Panel').classList.add('animate-in');
+
+  document.getElementById('step1Num').textContent = '✓';
+  document.getElementById('step1Num').className = 'step-num done';
+  document.getElementById('step1Label').className = 'step-label';
+  document.getElementById('stepConnector').className = 'step-connector done';
+  document.getElementById('step2Num').className = 'step-num active';
+  document.getElementById('step2Label').className = 'step-label active';
+
+  document.getElementById('step2ShopName').textContent = domain;
+  currentStep = 2;
+
+  const banner = document.getElementById('mfFetchBanner');
+  banner.className = 'mf-fetch-banner loading';
+  banner.innerHTML = '<div class="mf-spinner"></div> Fetching metafields from your store…';
+
+  try {
+    const apiVersion = document.getElementById('shopApiVersion').value.trim();
+    fetchedMetafields = await fetchMetafields(domain, token, apiVersion);
+
+    if (fetchedMetafields.length > 0) {
+      banner.className = 'mf-fetch-banner ok';
+      banner.innerHTML = `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="20 6 9 17 4 12"/></svg> ${fetchedMetafields.length} metafield${fetchedMetafields.length !== 1 ? 's' : ''} found`;
+    } else {
+      banner.className = 'mf-fetch-banner fail';
+      banner.innerHTML = `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg> No metafield definitions found in this store. You can still configure sections manually.`;
+    }
+  } catch (e) {
+    fetchedMetafields = [];
+    banner.className = 'mf-fetch-banner fail';
+    banner.innerHTML = `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg> Could not fetch metafields: ${e.message}`;
+  }
+
+  const dropdowns = document.querySelectorAll('.metafield-select');
+  dropdowns.forEach(sel => refreshMetafieldDropdown(sel));
+  document.getElementById('shopFormCard').scrollIntoView({ behavior: 'smooth', block: 'start' });
+}
+
+function goBackToStep1() {
+  document.getElementById('step1Panel').style.display = '';
+  document.getElementById('step2Panel').style.display = 'none';
+  currentStep = 1;
+
+  document.getElementById('step1Num').textContent = '1';
+  document.getElementById('step1Num').className = 'step-num active';
+  document.getElementById('step1Label').className = 'step-label active';
+  document.getElementById('stepConnector').className = 'step-connector';
+  document.getElementById('step2Num').className = 'step-num';
+  document.getElementById('step2Label').className = 'step-label';
+}
+
+/* ══════════════════════════════════════════════════════════
+   SECTIONS
+══════════════════════════════════════════════════════════ */
+const PRODUCT_DESCRIPTION_VALUE = '__product_description__';
+const SEO_TITLE_VALUE           = '__seo_title__';
+const SEO_DESCRIPTION_VALUE     = '__seo_description__';
+
+function buildMetafieldOptions(selectedValue = '') {
+  const pdSel   = selectedValue === PRODUCT_DESCRIPTION_VALUE ? 'selected' : '';
+  const seoTSel = selectedValue === SEO_TITLE_VALUE           ? 'selected' : '';
+  const seoDSel = selectedValue === SEO_DESCRIPTION_VALUE     ? 'selected' : '';
+
+  let opts = '<option value="">— Select metafield —</option>';
+  opts += '<option value="' + PRODUCT_DESCRIPTION_VALUE + '" ' + pdSel + '>\uD83D\uDCC4 Product Description (body_html)</option>';
+  opts += '<option value="' + SEO_TITLE_VALUE           + '" ' + seoTSel + '>\uD83D\uDD0D SEO Meta Title (seo.title)</option>';
+  opts += '<option value="' + SEO_DESCRIPTION_VALUE     + '" ' + seoDSel + '>\uD83D\uDD0D SEO Meta Description (seo.description)</option>';
+
+  if (fetchedMetafields.length === 0) {
+    opts += '<option value="" disabled>No metafields found</option>';
+  } else {
+    opts += '<option value="" disabled>\u2500\u2500 Custom metafields \u2500\u2500</option>';
+    fetchedMetafields.forEach((mf, i) => {
+      const val = mf.namespace + '.' + mf.key;
+      const sel = val === selectedValue ? 'selected' : '';
+      opts += '<option value="' + esc(val) + '" ' + sel + '>' + esc(mf.label) + '</option>';
+    });
+  }
+  return opts;
+}
+
+function refreshMetafieldDropdown(selectEl) {
+  const current = selectEl.value;
+  selectEl.innerHTML = buildMetafieldOptions(current);
+}
+
+function addSectionRow(data = {}) {
+  sectionCounter++;
+  const id = 'sec_' + sectionCounter;
+  const list = document.getElementById('sectionsList');
+
+  const sectionName = data.name || '';
+  const selectedMf  = data.metafield || '';
+  const prompt      = data.prompt || getDefaultPrompt(sectionName);
+  const template    = data.template || getDefaultPrompt(sectionName); // Using presets to build structural template mirror maps
+  const isOpen      = !data.name; 
+
+  const card = document.createElement('div');
+  card.className = 'section-card';
+  card.id = id;
+
+  const mfPillText = selectedMf || 'no metafield';
+  const chevronClass = isOpen ? 'section-chevron open' : 'section-chevron';
+  const bodyDisplay = isOpen ? '' : 'none';
+
+  card.innerHTML = `
+    <div class="section-card-header" onclick="toggleSection('${id}')">
+      <span class="section-drag-handle" title="Drag to reorder">⠿</span>
+      <div class="section-number" id="${id}_num">${sectionCounter}</div>
+      <span class="section-name-display ${sectionName ? '' : 'placeholder'}" id="${id}_nameDisplay">${esc(sectionName) || 'Untitled section…'}</span>
+      <span class="section-metafield-pill" id="${id}_mfPill">${esc(mfPillText)}</span>
+      <svg class="${chevronClass}" id="${id}_chevron" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="14" height="14"><polyline points="6 9 12 15 18 9"/></svg>
+      <button class="btn-remove-section" onclick="removeSection(event,'${id}')" title="Remove section">✕</button>
+    </div>
+    <div class="section-card-body" id="${id}_body" style="display:${bodyDisplay}">
+      <div class="section-body-row">
+        <div class="field-group">
+          <label class="field-label">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 20h9"/><path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z"/></svg>
+            Section Name
+          </label>
+          <input
+            type="text"
+            class="section-name-input"
+            placeholder="e.g. Product Description"
+            value="${esc(sectionName)}"
+            id="${id}_nameInput"
+            oninput="onSectionNameChange('${id}')"
+          >
+        </div>
+        <div class="field-group">
+          <label class="field-label">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 6h16M4 12h8m-8 6h16"/></svg>
+            Metafield
+          </label>
+          <select class="metafield-select" id="${id}_mfSelect" onchange="onMetafieldChange('${id}')">
+            ${buildMetafieldOptions(selectedMf)}
+          </select>
+        </div>
+      </div>
+      
+      <!-- New Template Structure Field Block -->
+      <div class="field-group" style="margin-top: 5px;">
+        <label class="field-label">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="11" height="11"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>
+          Fixed Template Structure
+        </label>
+        <div class="prompt-area-wrap">
+          <textarea
+            class="template-textarea"
+            id="${id}_template"
+            placeholder="Define structural output parameters or custom markdown tags layout maps..."
+            oninput="onPromptInput('${id}')"
+          >${esc(template)}</textarea>
+        </div>
+      </div>
+
+      <div class="field-group">
+        <label class="field-label">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
+          Prompt
+        </label>
+        <div class="prompt-area-wrap">
+          <textarea
+            class="prompt-textarea"
+            id="${id}_prompt"
+            placeholder="Enter the AI prompt for this section…"
+            oninput="onPromptInput('${id}')"
+          >${esc(prompt)}</textarea>
+          <div class="prompt-actions">
+            <button class="btn-reset-prompt" onclick="resetPrompt('${id}')" title="Restore default configuration states">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="11" height="11"><polyline points="1 4 1 10 7 10"/><path d="M3.51 15a9 9 0 1 0 .49-4.95"/></svg>
+              Reset to default
+            </button>
+            <span class="prompt-saved-indicator" id="${id}_savedInd">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" width="11" height="11"><polyline points="20 6 9 17 4 12"/></svg>
+              Saved
+            </span>
+          </div>
+        </div>
+      </div>
+    </div>
+  `;
+
+  list.appendChild(card);
+  updateSectionCount();
+
+  if (isOpen) {
+    card.querySelector(`#${id}_nameInput`).focus();
+  }
+}
+
+function toggleSection(id) {
+  const body    = document.getElementById(id + '_body');
+  const chevron = document.getElementById(id + '_chevron');
+  const isOpen  = body.style.display !== 'none';
+  body.style.display    = isOpen ? 'none' : '';
+  chevron.className     = isOpen ? 'section-chevron' : 'section-chevron open';
+}
+
+function removeSection(evt, id) {
+  evt.stopPropagation();
+  document.getElementById(id)?.remove();
+  updateSectionCount();
+  renumberSections();
+}
+
+function renumberSections() {
+  let n = 1;
+  document.querySelectorAll('.section-card').forEach(card => {
+    const numEl = card.querySelector('.section-number');
+    if (numEl) numEl.textContent = n++;
+  });
+  sectionCounter = n - 1;
+}
+
+function updateSectionCount() {
+  const count = document.querySelectorAll('.section-card').length;
+  document.getElementById('sectionCountLabel').textContent = count;
+}
+
+function onSectionNameChange(id) {
+  const val     = document.getElementById(id + '_nameInput').value;
+  const display = document.getElementById(id + '_nameDisplay');
+  if (val.trim()) {
+    display.textContent = val;
+    display.classList.remove('placeholder');
+  } else {
+    display.textContent = 'Untitled section…';
+    display.classList.add('placeholder');
+  }
+}
+
+function onMetafieldChange(id) {
+  const val  = document.getElementById(id + '_mfSelect').value;
+  const pill = document.getElementById(id + '_mfPill');
+  if (val === PRODUCT_DESCRIPTION_VALUE) {
+    pill.textContent = 'body_html';
+  } else if (val === SEO_TITLE_VALUE) {
+    pill.textContent = 'seo.title';
+  } else if (val === SEO_DESCRIPTION_VALUE) {
+    pill.textContent = 'seo.description';
+  } else {
+    pill.textContent = val || 'no metafield';
+  }
+}
+
+function onPromptInput(id) {
+  const ind = document.getElementById(id + '_savedInd');
+  ind.classList.add('show');
+  clearTimeout(ind._timer);
+  ind._timer = setTimeout(() => ind.classList.remove('show'), 2000);
+}
+
+function resetPrompt(id) {
+  const sectionName = document.getElementById(id + '_nameInput').value.trim();
+  const def = getDefaultPrompt(sectionName);
+  document.getElementById(id + '_prompt').value = def;
+  document.getElementById(id + '_template').value = def;
+  showToast('Configuration structures reset to default', 'info');
+}
+
+function getDefaultPrompt(sectionName) {
+  if (!sectionName) return FALLBACK_PROMPT;
+  for (const [key, val] of Object.entries(DEFAULT_PROMPTS)) {
+    if (sectionName.toLowerCase().includes(key.toLowerCase()) ||
+        key.toLowerCase().includes(sectionName.toLowerCase())) {
+      return val;
+    }
+  }
+  return FALLBACK_PROMPT;
+}
+
+function addDefaultSections() {
+  const defaults = [
+    { name: 'Product Description',      metafield: PRODUCT_DESCRIPTION_VALUE },
+    { name: 'Technical Specifications', metafield: '' },
+    { name: 'Installation Guide',       metafield: '' },
+    { name: 'Common Problems',          metafield: '' },
+    { name: 'SEO Meta Title',           metafield: SEO_TITLE_VALUE },
+    { name: 'SEO Meta Description',     metafield: SEO_DESCRIPTION_VALUE },
+  ];
+  defaults.forEach(d => addSectionRow(d));
+}
+
+/* ══════════════════════════════════════════════════════════
+   BUILD PAYLOAD
+══════════════════════════════════════════════════════════ */
+function buildPayload() {
+  const name          = document.getElementById('shopName').value.trim();
+  const domain        = document.getElementById('shopDomain').value.trim();
+  const websiteDomain = document.getElementById('shopWebsiteDomain').value.trim();
+  const accessToken   = document.getElementById('shopAccessToken').value.trim();
+  const apiVersion    = document.getElementById('shopApiVersion').value.trim();
+
+  if (!name || !domain) {
+    showToast('Shop name and domain are required', 'error');
+    return null;
+  }
+
+  if (!editingId && !accessToken) {
+    showToast('Access token is required', 'error');
+    return null;
+  }
+
+  const sections = [];
+  document.querySelectorAll('#sectionsList .section-card').forEach(card => {
+    const id = card.id;
+    const sectionName = document.getElementById(id + '_nameInput')?.value.trim() || '';
+    const metafield   = document.getElementById(id + '_mfSelect')?.value || '';
+    const template    = document.getElementById(id + '_template')?.value.trim() || '';
+    const prompt      = document.getElementById(id + '_prompt')?.value.trim() || '';
+    if (sectionName) {
+      if (metafield === PRODUCT_DESCRIPTION_VALUE) {
+        sections.push({ name: sectionName, metafield: PRODUCT_DESCRIPTION_VALUE,
+                        namespace: '', key: '', target: 'body_html', template, prompt });
+      } else if (metafield === SEO_TITLE_VALUE) {
+        sections.push({ name: sectionName, metafield: SEO_TITLE_VALUE,
+                        namespace: '', key: 'meta_title', target: 'seo_title', template, prompt });
+      } else if (metafield === SEO_DESCRIPTION_VALUE) {
+        sections.push({ name: sectionName, metafield: SEO_DESCRIPTION_VALUE,
+                        namespace: '', key: 'meta_description', target: 'seo_description', template, prompt });
+      } else {
+        const [namespace, key] = metafield.includes('.') ? metafield.split('.') : ['', metafield];
+        sections.push({ name: sectionName, metafield, namespace: namespace || '', key: key || '', target: 'metafield', template, prompt });
+      }
+    }
+  });
+
+  const payload = { name, domain, website_domain: websiteDomain, api_version: apiVersion, sections };
+  if (accessToken) payload.access_token = accessToken;
+  return payload;
+}
+
+/* ══════════════════════════════════════════════════════════
+   RENDER SHOPS
+══════════════════════════════════════════════════════════ */
+function renderShops() {
+  const list  = document.getElementById('shopsList');
+  const empty = document.getElementById('noShopsPlaceholder');
+  list.innerHTML = '';
+
+  if (!shops.length) {
+    empty.style.display = '';
+    return;
+  }
+  empty.style.display = 'none';
+
+  shops.forEach(shop => {
+    const initials = (shop.name || 'S').substring(0, 2).toUpperCase();
+    const secCount  = (shop.sections || shop.metafields || []).length;
+    const isActive  = shop.is_active;
+
+    const row = document.createElement('div');
+    row.className = 'shop-row' + (isActive ? ' active-shop' : '');
+    row.innerHTML = `
+      <div class="shop-avatar">${esc(initials)}</div>
+      <div class="shop-info">
+        <div class="shop-name">${esc(shop.name)}</div>
+        <div class="shop-domain">${esc(shop.domain)}</div>
+        ${shop.website_domain ? `<div class="shop-domain" style="color:var(--accent2);margin-top:1px">🌐 ${esc(shop.website_domain)}</div>` : ''}
+      </div>
+      <div class="shop-badges">
+        <span class="badge ${isActive ? 'badge-active' : 'badge-inactive'}">${isActive ? '● Active' : '○ Inactive'}</span>
+        ${secCount ? `<span class="badge badge-sections">${secCount} section${secCount !== 1 ? 's' : ''}</span>` : ''}
+      </div>
+      <div class="shop-actions">
+        ${!isActive ? `<button class="btn-icon set-active" onclick="setActiveShop(${shop.id})" title="Set as active shop">✓</button>` : ''}
+        <button class="btn-icon edit" onclick="openEditForm(${shop.id})" title="Edit">✎</button>
+      </div>
+    `;
+    list.appendChild(row);
+  });
+}
+
+/* ══════════════════════════════════════════════════════════
+   FORM SHOW / HIDE
+══════════════════════════════════════════════════════════ */
+function showAddForm() {
+  editingId = null;
+  currentStep = 1;
+  document.getElementById('formTitle').textContent = 'Add New Shop';
+  document.getElementById('btnSaveLabel').textContent = 'Save Shop';
+  document.getElementById('btnDeleteShop').style.display = 'none';
+  document.getElementById('btnDeleteShop2').style.display = 'none';
+  document.getElementById('editShopId').value = '';
+  clearForm();
+
+  goBackToStep1();
+  document.getElementById('shopFormCard').style.display = '';
+  document.getElementById('shopFormCard').scrollIntoView({ behavior: 'smooth', block: 'start' });
+}
+
+function openEditForm(id) {
+  const shop = shops.find(s => s.id === id);
+  if (!shop) return;
+  editingId = id;
+  currentStep = 1;
+
+  document.getElementById('formTitle').textContent = 'Edit Shop — ' + shop.name;
+  document.getElementById('btnSaveLabel').textContent = 'Update Shop';
+  document.getElementById('btnDeleteShop').style.display = '';
+  document.getElementById('btnDeleteShop2').style.display = '';
+  document.getElementById('editShopId').value = id;
+
+  goBackToStep1();
+
+  document.getElementById('shopName').value           = shop.name || '';
+  document.getElementById('shopDomain').value         = shop.domain || '';
+  document.getElementById('shopWebsiteDomain').value  = shop.website_domain || '';
+  document.getElementById('shopAccessToken').value    = '';
+  document.getElementById('shopAccessToken').placeholder = '(unchanged — leave blank to keep current token)';
+  document.getElementById('shopApiVersion').value     = shop.api_version || '';
+  document.getElementById('testResult').className = 'test-result';
+
+  document.getElementById('sectionsList').innerHTML = '';
+  updateSectionCount();
+
+  const savedSections = shop.sections || [];
+
+  document.getElementById('shopFormCard').style.display = '';
+  document.getElementById('shopFormCard').scrollIntoView({ behavior: 'smooth', block: 'start' });
+
+  if (savedSections.length && shop.domain) {
+    goToStep2().then(() => {
+      savedSections.forEach(s => addSectionRow(s));
+    });
+  }
+}
+
+function hideForm() {
+  document.getElementById('shopFormCard').style.display = 'none';
+  clearForm();
+  editingId = null;
+  currentStep = 1;
+  fetchedMetafields = [];
+  sectionCounter = 0;
+}
+
+function clearForm() {
+  ['shopName','shopDomain','shopWebsiteDomain','shopAccessToken','shopApiVersion'].forEach(id => {
+    document.getElementById(id).value = '';
+  });
+  document.getElementById('sectionsList').innerHTML = '';
+  document.getElementById('testResult').className = 'test-result';
+  updateSectionCount();
+  goBackToStep1();
+}
+
+/* ══════════════════════════════════════════════════════════
+   DELETE
+══════════════════════════════════════════════════════════ */
+function confirmDeleteShop() {
+  deleteTargetId = editingId;
+  const shop = shops.find(s => s.id === editingId);
+  document.getElementById('deleteShopName').textContent = shop ? shop.name : 'this shop';
+  document.getElementById('confirmModal').classList.add('active');
+}
+function closeModal() {
+  document.getElementById('confirmModal').classList.remove('active');
+}
+
+/* ══════════════════════════════════════════════════════════
+   MISC UI
+══════════════════════════════════════════════════════════ */
+function toggleTokenVisibility() {
+  const inp = document.getElementById('shopAccessToken');
+  const btn = document.getElementById('btnEye');
+  if (inp.type === 'password') { inp.type = 'text'; btn.textContent = '🙈'; }
+  else { inp.type = 'password'; btn.textContent = '👁'; }
+}
+
+function showToast(msg, type = 'info') {
+  const stack = document.getElementById('toastStack');
+  const t = document.createElement('div');
+  t.className = 'toast ' + type;
+  t.textContent = msg;
+  stack.appendChild(t);
+  setTimeout(() => { t.classList.add('toast-out'); setTimeout(() => t.remove(), 260); }, 3000);
+}
+
+function esc(s) {
+  if (!s) return '';
+  return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+}
+
+function toggleSidebar() {
+  const sidebar = document.getElementById('sidebar');
+  const main = document.querySelector('.main');
+  sidebar.classList.toggle('collapsed');
+  if (main) main.classList.toggle('collapsed');
+  localStorage.setItem('sidebarCollapsed', sidebar.classList.contains('collapsed') ? '1' : '0');
+}
+(function(){
+  if (localStorage.getItem('sidebarCollapsed') === '1') {
+    const sidebar = document.getElementById('sidebar');
+    const main = document.querySelector('.main');
+    if (sidebar) sidebar.classList.add('collapsed');
+    if (main) main.classList.add('collapsed');
+  }
+})();
+</script>
+</body>
+</html>
