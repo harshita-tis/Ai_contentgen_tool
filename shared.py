@@ -888,27 +888,53 @@ def _is_storefront_url(raw_url: str) -> bool:
 def _shopify_graphql_with_creds(query: str, variables: dict, domain: str, token: str, api_version: str) -> dict:
     endpoint = f"{_shopify_base_url(domain)}/admin/api/{api_version}/graphql.json"
     headers  = {'Content-Type': 'application/json', 'X-Shopify-Access-Token': token}
-    resp = requests.post(endpoint, json={'query': query, 'variables': variables or {}}, headers=headers, timeout=45)
-    if not resp.ok: raise RuntimeError(f'Shopify API HTTP {resp.status_code}')
-    return resp.json()
+    masked_token = (token[:4] + '...' + token[-4:]) if token and len(token) > 8 else '(empty/short)'
+    logger.info(f"[shopify_graphql] endpoint={endpoint} token={masked_token} vars={variables}")
+
+    try:
+        resp = requests.post(endpoint, json={'query': query, 'variables': variables or {}}, headers=headers, timeout=45)
+    except requests.exceptions.RequestException as e:
+        logger.error(f"[shopify_graphql] request failed: {e}")
+        raise RuntimeError(f"Shopify request failed: {e}")
+
+    logger.info(f"[shopify_graphql] status={resp.status_code}")
+    if not resp.ok:
+        logger.error(f"[shopify_graphql] HTTP {resp.status_code} body={resp.text[:1000]}")
+        raise RuntimeError(f'Shopify API HTTP {resp.status_code}')
+
+    data = resp.json()
+    if data.get('errors'):
+        logger.error(f"[shopify_graphql] GraphQL errors={data['errors']}")
+    return data
 
 def _fetch_by_product_id(product_id: str, _domain: str = '', _token: str = '', _api_version: str = '') -> dict:
     domain, token, api_version = _domain.strip(), _token.strip(), _api_version.strip() or '2024-01'
     if not domain or not token:
         shop = _get_active_shop()
+        logger.info(f"shop-:{shop}")
         if not shop: raise ValueError("No active shop configured.")
         domain, token, api_version = shop.domain.strip(), shop.access_token.strip(), (shop.api_version or '2024-01').strip()
 
-    body = _shopify_graphql_with_creds(_GQL_PRODUCT, {'id': f"gid://shopify/Product/{product_id}"}, domain, token, api_version)
+    gid = f"gid://shopify/Product/{product_id}"
+    logger.info(f"[fetch_by_product_id] domain={domain} api_version={api_version} gid={gid}")
+    body = _shopify_graphql_with_creds(_GQL_PRODUCT, {'id': gid}, domain, token, api_version)
+    logger.info(f"body-:{body}")
     product = (body.get('data') or {}).get('product')
-    if not product: raise ValueError("Product not found.")
+    logger.info(f"product-:{product}")
+    if not product:
+        logger.warning(f"[fetch_by_product_id] no product for {gid} — likely not a real internal ID, just a numeric handle")
+        raise ValueError("Product not found.")
     return _parse_gql_product(product)
  
 def _fetch_by_storefront_url(raw_url: str) -> dict:
     url = raw_url.strip().split('#')[0].split('?')[0].rstrip('/')
     if re.search(r'/products/[^/]+$', url) and not url.endswith('.json'): url += '.json'
+    logger.info(f"[fetch_by_storefront_url] GET {url}")
     resp = requests.get(url, headers={'User-Agent': 'Mozilla/5.0'}, timeout=10)
-    if not resp.ok: raise ValueError("Shopify storefront error.")
+    logger.info(f"[fetch_by_storefront_url] status={resp.status_code}")
+    if not resp.ok:
+        logger.error(f"[fetch_by_storefront_url] body={resp.text[:500]}")
+        raise ValueError("Shopify storefront error.")
     return _parse_rest_product(resp.json()['product'])
  
 def _webcate_from_tags(tags) -> str:
@@ -958,15 +984,19 @@ def _parse_gql_product(product: dict) -> dict:
         'part_type': _webcate_from_tags(tags), 'appliance_type': _subcate_from_tags(tags), 'description': plain_body,
         'tags': ', '.join(tags), 'handle': product.get('handle', ''), 'product_image_url': image_url
     }
-
 def _fetch_by_handle_admin(handle: str, _domain: str = '', _token: str = '', _api_version: str = '') -> dict:
     domain, token, api_version = _domain.strip(), _token.strip(), _api_version.strip() or '2024-01'
     if not domain or not token:
         shop = _get_active_shop()
         if not shop: raise ValueError('No active shop config found.')
         domain, token, api_version = shop.domain.strip(), shop.access_token.strip(), (shop.api_version or '2024-01').strip()
+    logger.info(f"[fetch_by_handle_admin] domain={domain} handle={handle}")
     body = _shopify_graphql_with_creds(_GQL_PRODUCT_BY_HANDLE, {'handle': handle}, domain, token, api_version)
-    return _parse_gql_product((body.get('data') or {}).get('productByHandle'))
+    product = (body.get('data') or {}).get('productByHandle')
+    logger.info(f"[fetch_by_handle_admin] product={product}")
+    if not product:
+        raise ValueError(f"No product found for handle '{handle}'.")
+    return _parse_gql_product(product)
 
 def _parse_rest_product(product: dict) -> dict:
     variant   = (product.get('variants') or [{}])[0]
@@ -982,23 +1012,39 @@ def _parse_rest_product(product: dict) -> dict:
         'part_type': _webcate_from_tags(tags), 'appliance_type': _subcate_from_tags(tags), 'description': plain_body,
         'tags': tags, 'handle': product.get('handle', ''), 'product_image_url': image_url
     }
- 
 def _fetch_shopify_product(raw_url: str, _domain: str = '', _token: str = '', _api_version: str = '') -> dict:
     product_id = _extract_admin_product_id(raw_url)
+    logger.info(f"product_id-{product_id}")
     if product_id: return _fetch_by_product_id(product_id, _domain=_domain, _token=_token, _api_version=_api_version)
     seg = _extract_products_path_segment(raw_url)
+    logger.info(f"segments-:{seg}")
     if not seg: raise ValueError("Invalid layout URL structure link.")
-    if seg.isdigit(): return _fetch_by_product_id(seg, _domain=_domain, _token=_token, _api_version=_api_version)
 
     domain, token = _domain.strip(), _token.strip()
     if not domain or not token:
         active_shop = _get_active_shop()
         if active_shop:
             domain, token, _api_version = active_shop.domain.strip(), active_shop.access_token.strip(), (active_shop.api_version or '2024-01').strip()
+
+    if seg.isdigit():
+        try:
+            logger.info(f"[fetch_shopify_product] segment '{seg}' is numeric — trying as internal product ID first")
+            return _fetch_by_product_id(seg, _domain=_domain, _token=_token, _api_version=_api_version)
+        except Exception as e:
+            logger.warning(f"[fetch_shopify_product] numeric ID lookup failed ({e}), falling back to handle lookup for '{seg}'")
+
     if domain and token:
-        try: return _fetch_by_handle_admin(seg, _domain=domain, _token=token, _api_version=_api_version)
-        except Exception: pass
-    if _is_storefront_url(raw_url): return _fetch_by_storefront_url(raw_url)
+        try:
+            return _fetch_by_handle_admin(seg, _domain=domain, _token=token, _api_version=_api_version)
+        except Exception as e:
+            logger.warning(f"[fetch_shopify_product] handle lookup failed for '{seg}': {e}")
+
+    if _is_storefront_url(raw_url):
+        try:
+            return _fetch_by_storefront_url(raw_url)
+        except Exception as e:
+            logger.warning(f"[fetch_shopify_product] storefront lookup failed: {e}")
+            raise
     raise ValueError("Could not access data paths.")
 
 def fetch_shopify_image_by_product_url(shopify_url: str, _domain: str = '', _token: str = '', _api_version: str = '') -> str:
