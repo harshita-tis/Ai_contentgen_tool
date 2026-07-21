@@ -6,7 +6,7 @@ content_generation and image_search modules.
 Both feature modules do `from shared import app, db, ...` and register their
 routes directly on this single shared `app` object.
 """
-from flask import Flask, render_template, request, jsonify, Response, stream_with_context, Blueprint, redirect, url_for, session, flash
+from flask import Flask, render_template, request, jsonify, Response, stream_with_context, Blueprint, redirect, url_for, session, flash, has_request_context
 from flask_sqlalchemy import SQLAlchemy
 from datetime import datetime, timezone
 import openai
@@ -39,7 +39,7 @@ CORS(
     supports_credentials=True,
     origins=[
         "https://spark236.myshopify.com",
-        "https://42e8-2405-201-3009-5c56-1b93-652d-7596-880f.ngrok-free.app",
+        "https://e857-150-129-146-122.ngrok-free.app",
         "https://genuinereplacementparts.com"
     ],
 )
@@ -73,6 +73,7 @@ logger = logging.getLogger(__name__)
 
 
 # ─── Auth Decorators & Small Helpers ─────────────────────────────────────
+
 # ─── Auth Decorators ──────────────────────────────────────────────────────────
 
 def login_required(f):
@@ -81,7 +82,10 @@ def login_required(f):
         if 'username' not in session:
             if request.path.startswith('/api/'):
                 return jsonify({'error': 'Authentication required'}), 401
-            return redirect(url_for('login_page', next='/'))
+            return redirect(url_for(
+    'login_page',
+    next='/'
+))
         return f(*args, **kwargs)
     return decorated
 
@@ -92,7 +96,10 @@ def reviewer_required(f):
         if 'username' not in session:
             if request.path.startswith('/api/'):
                 return jsonify({'error': 'Authentication required'}), 401
-            return redirect(url_for('login_page', next='/'))
+            return redirect(url_for(
+    'login_page',
+    next='/'
+))
         if session.get('role') != 'reviewer':
             if request.path.startswith('/api/'):
                 return jsonify({'error': 'Reviewer access required'}), 403
@@ -111,19 +118,30 @@ def _get_active_shop() -> 'ShopConfig | None':
     Falls back to the DB-wide default shop (legacy `is_active` flag) and
     then to the first created shop if the session has no selection yet
     or points at a shop that no longer exists.
+
+    IMPORTANT: this is also called from worker.py, a completely separate
+    process (spun up by cron/systemd) that never has a Flask request
+    context. Touching `session` outside a request context raises
+    RuntimeError, so all session access below is guarded with
+    has_request_context(). Without this guard, the function silently
+    returned None for every call made from the worker, which caused it
+    to fall back to the unauthenticated storefront API and hit
+    Shopify's storefront rate limit (429s) instead of using the
+    Admin API.
     """
     try:
-        shop_id = session.get('active_shop_id')
-        if shop_id:
-            shop = ShopConfig.query.get(shop_id)
-            if shop:
-                return shop
-            # Session pointed at a shop that's been deleted — clear it and fall through.
-            session.pop('active_shop_id', None)
+        if has_request_context():
+            shop_id = session.get('active_shop_id')
+            if shop_id:
+                shop = ShopConfig.query.get(shop_id)
+                if shop:
+                    return shop
+                # Session pointed at a shop that's been deleted — clear it and fall through.
+                session.pop('active_shop_id', None)
 
         shop = ShopConfig.query.filter_by(is_active=True).first() \
             or ShopConfig.query.order_by(ShopConfig.created_at.asc()).first()
-        if shop:
+        if shop and has_request_context():
             session['active_shop_id'] = shop.id
         return shop
     except Exception:
@@ -393,7 +411,7 @@ class ProductHistory(db.Model):
     part_number = db.Column(db.String(100), nullable=False)
     part_type = db.Column(db.String(100))
     brand = db.Column(db.String(100))
-    appliance_type = db.Column(db.String(100))  
+    appliance_type = db.Column(db.String(100))
     source = db.Column(db.String(20), default='manual')
     shopify_url = db.Column(db.String(1024))
     product_image_url = db.Column(db.String(1024))
@@ -607,6 +625,8 @@ class AppSetting(db.Model):
         else:
             db.session.add(cls(key=key, value=value))
         db.session.commit()
+
+
 # ─── Shop Config Routes (used by both modules' UIs) ──────────────────────
 # ─── Shop Config Routes ───────────────────────────────────────────────────────
 
@@ -872,6 +892,7 @@ def test_shop_connection():
 
 
 _image_cache: dict = {}
+_image_cache_lock = threading.Lock()
 
 
 # ─── Shopify product-fetch helpers shared by content_generation & image_search ──
@@ -888,27 +909,53 @@ def _is_storefront_url(raw_url: str) -> bool:
 def _shopify_graphql_with_creds(query: str, variables: dict, domain: str, token: str, api_version: str) -> dict:
     endpoint = f"{_shopify_base_url(domain)}/admin/api/{api_version}/graphql.json"
     headers  = {'Content-Type': 'application/json', 'X-Shopify-Access-Token': token}
-    resp = requests.post(endpoint, json={'query': query, 'variables': variables or {}}, headers=headers, timeout=45)
-    if not resp.ok: raise RuntimeError(f'Shopify API HTTP {resp.status_code}')
-    return resp.json()
+    masked_token = (token[:4] + '...' + token[-4:]) if token and len(token) > 8 else '(empty/short)'
+    logger.info(f"[shopify_graphql] endpoint={endpoint} token={masked_token} vars={variables}")
+
+    try:
+        resp = requests.post(endpoint, json={'query': query, 'variables': variables or {}}, headers=headers, timeout=45)
+    except requests.exceptions.RequestException as e:
+        logger.error(f"[shopify_graphql] request failed: {e}")
+        raise RuntimeError(f"Shopify request failed: {e}")
+
+    logger.info(f"[shopify_graphql] status={resp.status_code}")
+    if not resp.ok:
+        logger.error(f"[shopify_graphql] HTTP {resp.status_code} body={resp.text[:1000]}")
+        raise RuntimeError(f'Shopify API HTTP {resp.status_code}')
+
+    data = resp.json()
+    if data.get('errors'):
+        logger.error(f"[shopify_graphql] GraphQL errors={data['errors']}")
+    return data
 
 def _fetch_by_product_id(product_id: str, _domain: str = '', _token: str = '', _api_version: str = '') -> dict:
     domain, token, api_version = _domain.strip(), _token.strip(), _api_version.strip() or '2024-01'
     if not domain or not token:
         shop = _get_active_shop()
+        logger.info(f"shop-:{shop}")
         if not shop: raise ValueError("No active shop configured.")
         domain, token, api_version = shop.domain.strip(), shop.access_token.strip(), (shop.api_version or '2024-01').strip()
 
-    body = _shopify_graphql_with_creds(_GQL_PRODUCT, {'id': f"gid://shopify/Product/{product_id}"}, domain, token, api_version)
+    gid = f"gid://shopify/Product/{product_id}"
+    logger.info(f"[fetch_by_product_id] domain={domain} api_version={api_version} gid={gid}")
+    body = _shopify_graphql_with_creds(_GQL_PRODUCT, {'id': gid}, domain, token, api_version)
+    logger.info(f"body-:{body}")
     product = (body.get('data') or {}).get('product')
-    if not product: raise ValueError("Product not found.")
+    logger.info(f"product-:{product}")
+    if not product:
+        logger.warning(f"[fetch_by_product_id] no product for {gid} — likely not a real internal ID, just a numeric handle")
+        raise ValueError("Product not found.")
     return _parse_gql_product(product)
  
 def _fetch_by_storefront_url(raw_url: str) -> dict:
     url = raw_url.strip().split('#')[0].split('?')[0].rstrip('/')
     if re.search(r'/products/[^/]+$', url) and not url.endswith('.json'): url += '.json'
+    logger.info(f"[fetch_by_storefront_url] GET {url}")
     resp = requests.get(url, headers={'User-Agent': 'Mozilla/5.0'}, timeout=10)
-    if not resp.ok: raise ValueError("Shopify storefront error.")
+    logger.info(f"[fetch_by_storefront_url] status={resp.status_code}")
+    if not resp.ok:
+        logger.error(f"[fetch_by_storefront_url] body={resp.text[:500]}")
+        raise ValueError("Shopify storefront error.")
     return _parse_rest_product(resp.json()['product'])
  
 def _webcate_from_tags(tags) -> str:
@@ -965,8 +1012,13 @@ def _fetch_by_handle_admin(handle: str, _domain: str = '', _token: str = '', _ap
         shop = _get_active_shop()
         if not shop: raise ValueError('No active shop config found.')
         domain, token, api_version = shop.domain.strip(), shop.access_token.strip(), (shop.api_version or '2024-01').strip()
+    logger.info(f"[fetch_by_handle_admin] domain={domain} handle={handle}")
     body = _shopify_graphql_with_creds(_GQL_PRODUCT_BY_HANDLE, {'handle': handle}, domain, token, api_version)
-    return _parse_gql_product((body.get('data') or {}).get('productByHandle'))
+    product = (body.get('data') or {}).get('productByHandle')
+    logger.info(f"[fetch_by_handle_admin] product={product}")
+    if not product:
+        raise ValueError(f"No product found for handle '{handle}'.")
+    return _parse_gql_product(product)
 
 def _parse_rest_product(product: dict) -> dict:
     variant   = (product.get('variants') or [{}])[0]
@@ -985,20 +1037,37 @@ def _parse_rest_product(product: dict) -> dict:
  
 def _fetch_shopify_product(raw_url: str, _domain: str = '', _token: str = '', _api_version: str = '') -> dict:
     product_id = _extract_admin_product_id(raw_url)
+    logger.info(f"product_id-{product_id}")
     if product_id: return _fetch_by_product_id(product_id, _domain=_domain, _token=_token, _api_version=_api_version)
     seg = _extract_products_path_segment(raw_url)
+    logger.info(f"segments-:{seg}")
     if not seg: raise ValueError("Invalid layout URL structure link.")
-    if seg.isdigit(): return _fetch_by_product_id(seg, _domain=_domain, _token=_token, _api_version=_api_version)
 
     domain, token = _domain.strip(), _token.strip()
     if not domain or not token:
         active_shop = _get_active_shop()
         if active_shop:
             domain, token, _api_version = active_shop.domain.strip(), active_shop.access_token.strip(), (active_shop.api_version or '2024-01').strip()
+
+    if seg.isdigit():
+        try:
+            logger.info(f"[fetch_shopify_product] segment '{seg}' is numeric — trying as internal product ID first")
+            return _fetch_by_product_id(seg, _domain=_domain, _token=_token, _api_version=_api_version)
+        except Exception as e:
+            logger.warning(f"[fetch_shopify_product] numeric ID lookup failed ({e}), falling back to handle lookup for '{seg}'")
+
     if domain and token:
-        try: return _fetch_by_handle_admin(seg, _domain=domain, _token=token, _api_version=_api_version)
-        except Exception: pass
-    if _is_storefront_url(raw_url): return _fetch_by_storefront_url(raw_url)
+        try:
+            return _fetch_by_handle_admin(seg, _domain=domain, _token=token, _api_version=_api_version)
+        except Exception as e:
+            logger.warning(f"[fetch_shopify_product] handle lookup failed for '{seg}': {e}")
+
+    if _is_storefront_url(raw_url):
+        try:
+            return _fetch_by_storefront_url(raw_url)
+        except Exception as e:
+            logger.warning(f"[fetch_shopify_product] storefront lookup failed: {e}")
+            raise
     raise ValueError("Could not access data paths.")
 
 def fetch_shopify_image_by_product_url(shopify_url: str, _domain: str = '', _token: str = '', _api_version: str = '') -> str:
@@ -1006,24 +1075,6 @@ def fetch_shopify_image_by_product_url(shopify_url: str, _domain: str = '', _tok
     if not u: return ''
     try:
         p = _fetch_shopify_product(u, _domain=_domain, _token=_token, _api_version=_api_version)
-        return (p.get('product_image_url') or '').strip()
-    except Exception: return ''
-
-def fetch_shopify_image_by_handle(handle: str, _domain: str = '', _token: str = '', _api_version: str = '') -> str:
-    """
-    Look up a product's image straight from its Shopify handle (the slug in
-    /products/<handle>) via the Admin GraphQL API, using the same
-    _fetch_by_handle_admin -> _parse_gql_product path (and its variant-image
-    -> product-image fallback) as the URL-based lookup.
-
-    Use this wherever a product handle is known instead of trying to resolve
-    an image by SKU -- there is no SKU-based fetch path wired up in this
-    codebase (see _GQL_PRODUCT_BY_SKU, which is defined but never called).
-    """
-    h = (handle or '').strip().strip('/')
-    if not h: return ''
-    try:
-        p = _fetch_by_handle_admin(h, _domain=_domain, _token=_token, _api_version=_api_version)
         return (p.get('product_image_url') or '').strip()
     except Exception: return ''
  
@@ -1062,7 +1113,7 @@ def logout():
 @login_required
 def index():
     return render_template('index.html', sections=SECTION_LABELS)
-  
+
 
 
 
@@ -1118,4 +1169,4 @@ def run_migrations():
                     if 'MEDIUMTEXT' not in col_type_str and 'LONGTEXT' not in col_type_str:
                         conn.execute(text('ALTER TABLE job_event MODIFY COLUMN payload MEDIUMTEXT NOT NULL'))
 
-            conn.commit()                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                               
+            conn.commit()
