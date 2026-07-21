@@ -1767,6 +1767,7 @@
     <div class="toast-wrap" id="toastWrap"></div>
 
     <script>
+      const API_BASE_URL = "{{ BASE_URL }}";
       /* ── Theme ── */
       (function () {
         var root = document.documentElement,
@@ -1880,7 +1881,7 @@
       };
 
       function loadActiveSections() {
-        return fetch("/api/shops")
+        return fetch(`${API_BASE_URL}/api/shops`)
           .then(function (r) {
             return r.json();
           })
@@ -1944,7 +1945,7 @@
         document.getElementById("batchList").innerHTML =
           '<div class="list-loading"><div class="spinner"></div> Loading…</div>';
         /* per_page=9999 fetches everything; the server's existing endpoint supports this */
-        return fetch("/api/review/products?page=1&per_page=9999")
+        return fetch(`${API_BASE_URL}/api/review/products?page=1&per_page=9999`)
           .then(function (r) {
             return r.json();
           })
@@ -2313,7 +2314,7 @@
         document.getElementById("footerSavedNote").style.display = "none";
 
         fetch(
-          "/api/product-sections?product_title=" +
+          "${API_BASE_URL}/api/product-sections?product_title=" +
             encodeURIComponent((p.product_title || "").trim()) +
             "&part_number=" +
             encodeURIComponent((p.part_number || "").trim()) +
@@ -2736,7 +2737,7 @@
         saveBtn.disabled = true;
         saveBtn.textContent = "⏳…";
         try {
-          var res = await fetch("/api/update/" + rid, {
+          var res = await fetch("${API_BASE_URL}/api/update/" + rid, {
             method: "PUT",
             headers: { "Content-Type": "application/json" },
             body: JSON.stringify({
@@ -2792,7 +2793,7 @@
           }
         });
         try {
-          var res = await fetch("/api/update-bulk", {
+          var res = await fetch(`${API_BASE_URL}/api/update-bulk`, {
             method: "PUT",
             headers: { "Content-Type": "application/json" },
             body: JSON.stringify({ sections: payload }),
@@ -2846,7 +2847,7 @@
       async function updateReviewStatus(status) {
         if (!_currentProduct) return;
         try {
-          var res = await fetch("/api/review/status", {
+          var res = await fetch(`${API_BASE_URL}/api/review/status`, {
             method: "POST",
             headers: { "Content-Type": "application/json" },
             body: JSON.stringify({
