@@ -449,14 +449,24 @@
   </div>
 
   <script>
+    const API_BASE_URL = "{{ BASE_URL }}";
   // ───────────────────────────── theme / sidebar ─────────────────────────────
   function toggleTheme(){
-    var html = document.documentElement;
-    var next = html.getAttribute('data-theme')==='dark' ? 'light' : 'dark';
-    html.setAttribute('data-theme', next);
-    localStorage.setItem('contentai-theme', next);
+        var root = document.documentElement,
+          toggle = document.getElementById("themeToggle"),
+          saved = localStorage.getItem("theme") || "dark";
+        root.setAttribute("data-theme", saved);
+        toggle.addEventListener("click", function () {
+          var n = root.getAttribute("data-theme") === "dark" ? "light" : "dark";
+          root.setAttribute("data-theme", n);
+          localStorage.setItem("theme", n);
+        });
   }
-  (function(){ var t = localStorage.getItem('contentai-theme'); if(t) document.documentElement.setAttribute('data-theme', t); })();
+(function () {
+    var root = document.documentElement;
+    var saved = localStorage.getItem('theme') || 'dark';
+    root.setAttribute('data-theme', saved);
+})();
   function toggleSidebar(){
     document.getElementById('sidebar').classList.toggle('collapsed');
     document.getElementById('mainContent').classList.toggle('collapsed');
@@ -489,7 +499,7 @@
 
   // ───────────────────────────── shops dropdown ─────────────────────────────
   function loadShops(){
-    fetch('/api/shops').then(function(r){return r.json();}).then(function(d){
+    fetch(`${API_BASE_URL}/api/shops`).then(function(r){return r.json();}).then(function(d){
       var sel = document.getElementById('shopFilterSelect');
       (d.shops||[]).forEach(function(s){
         var opt = document.createElement('option');
@@ -504,7 +514,7 @@
     _page = page || 1;
     document.getElementById('batchList').innerHTML = '<div class="empty-note" style="padding:14px 8px">Loading batches…</div>';
     try{
-      var resp = await fetch('/api/image-search/batches?page='+_page+'&per_page=10');
+      var resp = await fetch(`${API_BASE_URL}/api/image-search/batches?page=${_page}&per_page=10`);
       var data = await resp.json();
       if(!resp.ok) throw new Error(data.error||'Failed to load batches');
       _batches = data.batches || [];
@@ -604,7 +614,7 @@
     pane.innerHTML = '<div class="empty-note" style="padding:30px"><span class="spinner"></span> Loading images…</div>';
 
     try{
-      var resp = await fetch('/api/image-search/generation/'+it.generation_id);
+      var resp = await fetch(`${API_BASE_URL}/api/image-search/generation/${it.generation_id}`);
       var data = await resp.json();
       if(!resp.ok) throw new Error(data.error || 'Failed to load generation');
       _activeDetail = data;
@@ -733,7 +743,7 @@
     _searchMoreMsg = null;
 
     try{
-      var resp = await fetch('/api/image-search/search-more', {
+      var resp = await fetch(`${API_BASE_URL}/api/image-search/search-more`, {
         method:'POST', headers:{'Content-Type':'application/json'},
         body: JSON.stringify({ generation_id: _activeDetail.generation_id })
       });
@@ -765,7 +775,7 @@
   async function saveSelection(){
     var urls = _selectedOrder.slice();
     try{
-      var resp = await fetch('/api/image-search/save-selection', {
+      var resp = await fetch(`${API_BASE_URL}/api/image-search/save-selection`, {
         method:'POST', headers:{'Content-Type':'application/json'},
         body: JSON.stringify({ generation_id: _activeDetail.generation_id, selected_urls: urls })
       });
@@ -950,7 +960,7 @@
     // Fetch shops and render
     document.getElementById('smapBody').innerHTML = '<div class="empty-note" style="padding:24px 0;text-align:center"><span class="spinner"></span> Loading shops…</div>';
     try{
-      var resp = await fetch('/api/shops');
+      var resp = await fetch(`${API_BASE_URL}/api/shops`);
       var data = await resp.json();
       _smapShops = data.shops || [];
       renderShopRows();
@@ -1090,7 +1100,7 @@
     resBar.innerHTML = '';
 
     try{
-      var resp = await fetch('/api/image-search/publish-to-shops', {
+      var resp = await fetch(`${API_BASE_URL}/api/image-search/publish-to-shops`, {
         method:'POST', headers:{'Content-Type':'application/json'},
         body: JSON.stringify({
           generation_id: _activeDetail.generation_id,
@@ -1138,7 +1148,7 @@
   async function publishOne(url, btnEl){
     btnEl.disabled = true; var orig = btnEl.textContent; btnEl.textContent = 'Publishing…';
     try{
-      var resp = await fetch('/api/image-search/publish-image', {
+      var resp = await fetch(`${API_BASE_URL}/api/image-search/publish-image`, {
         method:'POST', headers:{'Content-Type':'application/json'},
         body: JSON.stringify({ generation_id: _activeDetail.generation_id, image_url: url, shopify_url: _activeDetail.shopify_url })
       });
@@ -1158,7 +1168,7 @@
     var btn = document.getElementById('markReviewedBtn');
     btn.disabled = true;
     try{
-      var resp = await fetch('https://d5715.www65-181-111-45.a2hosted.com/contentgen/api/image-search/mark-reviewed', {
+      var resp = await fetch(`${API_BASE_URL}/api/image-search/mark-reviewed`, {
         method:'POST', headers:{'Content-Type':'application/json'},
         body: JSON.stringify({ generation_id: _activeDetail.generation_id, status: 'reviewed' })
       });

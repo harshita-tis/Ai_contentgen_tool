@@ -8,6 +8,7 @@
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;600;700&family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
 <style>
+  
 /* ─── Theme tokens ──────────────────────────────────────────────── */
 :root,
 [data-theme="dark"] {
@@ -616,6 +617,7 @@ textarea, input, button { font-family: inherit; }
 </div>
 
 <script>
+  const API_BASE_URL = "{{ BASE_URL }}";
 (function() {
   const root = document.documentElement;
   const toggle = document.getElementById('themeToggle');
@@ -664,7 +666,7 @@ let SECTION_LABELS = {
  */
 async function loadActiveSections(){
   try {
-    const res = await fetch('/api/shops');
+    const res = await fetch(`${API_BASE_URL}/api/shops`);
     const d = await res.json();
     const shops = d.shops || [];
     const activeShop = shops.find(s => s.is_active) || shops[0] || null;
@@ -683,7 +685,7 @@ async function loadActiveSections(){
 async function loadHistory(page = 1) {
   currentPage = page;
   try {
-    const res = await fetch(`/api/batch-history?page=${page}`);
+    const res = await fetch(`${API_BASE_URL}/api/batch-history?page=${page}`);
     const data = await res.json();
     allRecords = data.records;
     renderTable(allRecords);
@@ -738,7 +740,7 @@ async function toggleBatch(batchId, idx, btn) {
   if (!isOpen && !expandedRows[batchId]) {
     // Load products for this batch
     try {
-      const res = await fetch(`/api/batch-products/${encodeURIComponent(batchId)}`);
+      const res = await fetch(`${API_BASE_URL}/api/batch-products/${encodeURIComponent(batchId)}`);
       const data = await res.json();
       expandedRows[batchId] = data.products || [];
       renderSubTable(batchId, expandedRows[batchId]);
@@ -841,7 +843,7 @@ async function viewProduct(p) {
   });
 
   try {
-    const res = await fetch(`/api/product-sections?product_title=${encodeURIComponent(product_title)}&part_number=${encodeURIComponent(part_number)}`);
+    const res = await fetch(`${API_BASE_URL}/api/product-sections?product_title=${encodeURIComponent(product_title)}&part_number=${encodeURIComponent(part_number)}`);
     const data = await res.json();
     populateSections(data.sections || {});
   } catch(e) {

@@ -28,10 +28,12 @@ import asyncio
 import requests as _req
 from urllib.parse import urlparse
 
+
 from bs4 import BeautifulSoup
 from playwright.async_api import async_playwright
 
 load_dotenv()
+BASE_URL = os.getenv("BASE_URL", "")
 shopify_bp = Blueprint('shopify', __name__)
 app = Flask(__name__)
 CORS(
@@ -46,7 +48,8 @@ CORS(
 
 # ─── MySQL Configuration ──────────────────────────────────────────────────────
 _DB_HOST     = os.getenv("HOST", "localhost")
-_DB_USER     = os.getenv("USER", "root")
+_DB_USER     = os.getenv("DB_USER", "root")
+#print("Connecting to MySQL database at %s, user %s, database %s", _DB_HOST, _DB_USER, os.getenv("DATABASE", "content_gen"))
 _DB_PASSWORD = os.getenv("DATABASE_PASSWORD", "")
 _DB_NAME     = os.getenv("DATABASE", "content_gen")
 model = os.getenv("OPENAI_MODEL", "gpt-4o")
@@ -54,6 +57,7 @@ model = os.getenv("OPENAI_MODEL", "gpt-4o")
 app.config['SQLALCHEMY_DATABASE_URI'] = (
     f"mysql+pymysql://{_DB_USER}:{_DB_PASSWORD}@{_DB_HOST}/{_DB_NAME}?charset=utf8mb4"
 )
+#print(f"Connecting to MySQL database at {_DB_HOST}, user {_DB_USER}, database {_DB_NAME}")
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 app.config['SQLALCHEMY_ENGINE_OPTIONS'] = {
     'pool_recycle': 280,
@@ -613,7 +617,7 @@ class AppSetting(db.Model):
 @app.route('/shop-config')
 @reviewer_required
 def shop_config_page():
-    return render_template('shop_config.html')
+    return render_template('shop_config.html', BASE_URL=BASE_URL)
 
 
 @app.route('/api/shops', methods=['GET'])
@@ -1049,7 +1053,7 @@ def login_page():
             session['role'] = user['role']
             return redirect(request.form.get('next') or request.args.get('next') or '/')
         error = 'Invalid username or password.'
-    return render_template('login.html', error=error, next=request.args.get('next', '/'))
+    return render_template('login.html',BASE_URL=BASE_URL, error=error, next=request.args.get('next', '/'))
 
 
 @app.route('/logout')
@@ -1061,7 +1065,7 @@ def logout():
 @app.route('/')
 @login_required
 def index():
-    return render_template('index.html', sections=SECTION_LABELS)
+    return render_template('index.html',BASE_URL=BASE_URL, sections=SECTION_LABELS)
   
 
 

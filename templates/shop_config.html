@@ -511,6 +511,7 @@ textarea,input,button,select{font-family:inherit}
 <div class="toast-stack" id="toastStack"></div>
 
 <script>
+  const API_BASE_URL = "{{ BASE_URL }}";
 /* ══════════════════════════════════════════════════════════
    DEFAULT PROMPTS (keyed by section name suggestion)
 ══════════════════════════════════════════════════════════ */
@@ -636,7 +637,7 @@ function toggleTheme() {
 ══════════════════════════════════════════════════════════ */
 async function fetchShops() {
   try {
-    const res = await fetch('/api/shops');
+    const res = await fetch(`${API_BASE_URL}/api/shops`);
     if (!res.ok) throw new Error('Failed to load shops');
     const data = await res.json();
     shops = data.shops || [];
@@ -668,7 +669,7 @@ async function testConnection() {
     const resultEl = document.getElementById('testResult');
     resultEl.className = 'test-result';
     try {
-      const res = await fetch(`/api/shops/${editingId}/test-connection`, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({}) });
+      const res = await fetch(`${API_BASE_URL}/api/shops/${editingId}/test-connection`, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({}) });
       const data = await res.json();
       if (data.success) {
         resultEl.className = 'test-result visible ok';
@@ -700,7 +701,7 @@ async function testConnection() {
   resultEl.className = 'test-result';
 
   try {
-    const res = await fetch('/api/shops/test-connection', {
+    const res = await fetch(`${API_BASE_URL}/api/shops/test-connection`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ domain, access_token: token, api_version: version })
