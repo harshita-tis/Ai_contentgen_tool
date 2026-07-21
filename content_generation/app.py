@@ -2085,14 +2085,15 @@ def update_review_status():
 
 @app.route('/api/shopify-product', methods=['POST'])
 @login_required
-def fetch_shopify_product_endpoint():
+def api_shopify_product():
     body = request.json or {}
-    url  = (body.get('url') or '').strip()
-    if not url: return jsonify({'error': 'url is required'}), 400
+    url = (body.get('url') or '').strip()
     try:
         product = _fetch_shopify_product(url)
         return jsonify({'success': True, 'product': product})
-    except Exception as e: return jsonify({'error': str(e)}), 500
+    except Exception as e:
+        logger.exception(f"[api_shopify_product] failed for url={url}")
+        return jsonify({'success': False, 'error': str(e)}), 500
 
 @app.route('/api/shopify-products-batch', methods=['POST'])
 @login_required
