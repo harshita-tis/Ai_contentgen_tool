@@ -598,6 +598,7 @@ textarea,input,button,select{font-family:inherit}
 </div>
 
 <script>
+  const API_BASE_URL = "{{ BASE_URL }}";
 /* ── Theme ── */
 (function(){
   var root=document.documentElement,toggle=document.getElementById('themeToggle'),saved=localStorage.getItem('theme')||'dark';
@@ -612,7 +613,7 @@ var _shops = [];
 var _shopSections = [];
 
 (function initShopSelector(){
-  fetch('/api/shops').then(function(r){return r.json();}).then(function(d){
+  fetch(`${API_BASE_URL}/api/shops`).then(function(r){return r.json();}).then(function(d){
     _shops = d.shops || [];
     var sel = document.getElementById('shopSelectDropdown');
     sel.innerHTML = '<option value="">— Select a shop —</option>';
@@ -635,7 +636,7 @@ function onShopSelectChange(sel){
   var shop = _shops.find(function(s){return s.id === id;}) || null;
   updateShopBadge(shop);
   applyShopSections(shop);
-  if(id){ fetch('/api/shops/'+id+'/set-active',{method:'POST'}).catch(function(){}); }
+  if(id){ fetch(`${API_BASE_URL}/api/shops/${id}/set-active`,{method:'POST'}).catch(function(){}); }
 }
 
 function updateShopBadge(shop){
@@ -686,7 +687,7 @@ function applyShopSections(shop){
       if(ta && !ta._userEdited) ta.value = shopPrompt;
     } else {
       // Fetch server default
-      fetch('/api/default-prompt/'+s).then(function(r){return r.json();}).then(function(d){
+      fetch(`${API_BASE_URL}/api/default-prompt/${s}`).then(function(r){return r.json();}).then(function(d){
         _defaultPrompts[s] = d.prompt || '';
         var ta = document.getElementById('gpTA-'+s);
         if(ta && !ta._userEdited) ta.value = d.prompt || '';
@@ -1126,7 +1127,7 @@ function _extractAdminProductId(rawUrl){
 
 async function _fetchShopifyProduct(rawUrl){
   // Always prefer server-side route (handles both admin IDs and storefront URLs)
-  var srvResp=await fetch('/api/shopify-product',{
+  var srvResp=await fetch(`${API_BASE_URL}/api/shopify-product`,{
     method:'POST',
     headers:{'Content-Type':'application/json'},
     body:JSON.stringify({url:rawUrl})
@@ -1268,7 +1269,7 @@ async function generateAll(){
 
   try{
     // Step 1: launch the job server-side (returns immediately with job_id)
-    var res=await fetch('/api/generate-stream',{
+    var res=await fetch(`${API_BASE_URL}/api/generate-stream`,{
       method:'POST',
       headers:{'Content-Type':'application/json'},
       body:JSON.stringify(payload)
@@ -1844,7 +1845,7 @@ async function saveEdits(partId){
   });
 
   try{
-    var res=await fetch('/api/update-bulk',{method:'PUT',headers:{'Content-Type':'application/json'},
+    var res=await fetch(`${API_BASE_URL}/api/update-bulk`,{method:'PUT',headers:{'Content-Type':'application/json'},
       body:JSON.stringify({sections:sectionsPayload})});
     var data=await res.json();
     if(!res.ok||!data.success)throw new Error((data.errors||[]).join('; ')||'Save failed.');
@@ -1875,7 +1876,7 @@ async function stopGeneration(){
   var queueStatus=document.getElementById('queueStatus');
   if(stopBtn){stopBtn.disabled=true;stopBtn.innerHTML='<svg viewBox="0 0 24 24" fill="currentColor" width="13" height="13"><circle cx="12" cy="12" r="10" stroke="currentColor" stroke-width="2" fill="none" stroke-dasharray="31.4"><animateTransform attributeName="transform" type="rotate" from="0 12 12" to="360 12 12" dur=".8s" repeatCount="indefinite"/></circle></svg> Stopping…';}
   try{
-    var res=await fetch('/api/jobs/'+_activeJobId+'/cancel',{method:'POST'});
+    var res=await fetch(`${API_BASE_URL}/api/jobs/${_activeJobId}/cancel`,{method:'POST'});
     var data=await res.json();
     if(res.ok){
       if(queueStatus){queueStatus.textContent='⏹ Stopping — finishing current batch…';}
@@ -2010,7 +2011,7 @@ function _connectJobStream(jobId, parts, callbacks){
     }
 
     function fetchMissedEvents(){
-      return fetch('/api/jobs/'+jobId+'/events?after='+lastSeq)
+      return fetch(`${API_BASE_URL}/api/jobs/${jobId}/events?after=${lastSeq}`)
         .then(function(r){ return r.json(); })
         .then(function(d){
           (d.events || []).forEach(function(ev){
@@ -2039,7 +2040,7 @@ function _connectJobStream(jobId, parts, callbacks){
     var pollTimer = setInterval(function(){
       fetchMissedEvents().then(function(){
         if(finished) return;
-        return fetch('/api/jobs/'+jobId+'/status')
+        return fetch(`${API_BASE_URL}/api/jobs/${jobId}/status`)
           .then(function(r){ return r.json(); })
           .then(finalizeIfDone);
       });
@@ -2066,7 +2067,7 @@ function _connectJobStream(jobId, parts, callbacks){
     });
 
     es.onerror = function(){
-      fetch('/api/jobs/'+jobId+'/status')
+      fetch(`${API_BASE_URL}/api/jobs/${jobId}/status`)
         .then(function(r){ return r.json(); })
         .then(finalizeIfDone)
         .catch(function(){});
@@ -2083,7 +2084,7 @@ function _connectJobStream(jobId, parts, callbacks){
   var savedParts = saved.parts || [];
 
   // Poll status first to decide what to show
-  fetch('/api/jobs/'+jobId+'/status')
+  fetch(`${API_BASE_URL}/api/jobs/${jobId}/status`)
     .then(function(r){ return r.json(); })
     .then(function(status){
       if(!status || status.error){ _clearActiveJob(); return; }

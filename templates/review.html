@@ -2314,7 +2314,7 @@
         document.getElementById("footerSavedNote").style.display = "none";
 
         fetch(
-          "${API_BASE_URL}/api/product-sections?product_title=" +
+          `${API_BASE_URL}/api/product-sections?product_title=` +
             encodeURIComponent((p.product_title || "").trim()) +
             "&part_number=" +
             encodeURIComponent((p.part_number || "").trim()) +

@@ -48,7 +48,7 @@ CORS(
 
 # ─── MySQL Configuration ──────────────────────────────────────────────────────
 _DB_HOST     = os.getenv("HOST", "localhost")
-_DB_USER     = os.getenv("DB_USER", "root")
+_DB_USER     = os.getenv("USER", "root")
 #print("Connecting to MySQL database at %s, user %s, database %s", _DB_HOST, _DB_USER, os.getenv("DATABASE", "content_gen"))
 _DB_PASSWORD = os.getenv("DATABASE_PASSWORD", "")
 _DB_NAME     = os.getenv("DATABASE", "content_gen")
