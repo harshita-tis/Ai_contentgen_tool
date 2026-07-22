@@ -1350,7 +1350,7 @@
         <span class="sidebar-logo-text">ContentAI</span>
       </div>
       <nav class="sidebar-nav">
-        <a href="/" class="nav-item">
+        <a href="{{ BASE_URL }}/" class="nav-item">
           <svg
             viewBox="0 0 24 24"
             fill="none"
@@ -1366,7 +1366,7 @@
           <span class="nav-label">Generator</span>
           <span class="tooltip">Generator</span>
         </a>
-        <a href="/image-search" class="nav-item">
+        <a href="{{ BASE_URL }}/image-search" class="nav-item">
           <svg
             viewBox="0 0 24 24"
             fill="none"
@@ -1381,7 +1381,7 @@
           <span class="nav-label">Image Search</span>
           <span class="tooltip">Image Search</span>
         </a>
-        <a href="/history" class="nav-item">
+        <a href="{{ BASE_URL }}/history" class="nav-item">
           <svg
             viewBox="0 0 24 24"
             fill="none"
@@ -1396,7 +1396,7 @@
           <span class="nav-label">History</span>
           <span class="tooltip">History</span>
         </a>
-        <a href="/history-image-search " class="nav-item">
+        <a href="{{ BASE_URL }}/history-image-search " class="nav-item">
           <svg
             viewBox="0 0 24 24"
             fill="none"
@@ -1411,7 +1411,7 @@
           <span class="nav-label">History Image</span>
           <span class="tooltip">History image</span>
         </a>
-        <a href="/review" class="nav-item active" id="navReview">
+        <a href="{{ BASE_URL }}/review" class="nav-item active" id="navReview">
           <svg
             viewBox="0 0 24 24"
             fill="none"
@@ -1428,7 +1428,7 @@
           <span class="nav-label">Review</span>
           <span class="tooltip">Review</span>
         </a>
-        <a href="/review-image-search " class="nav-item">
+        <a href="{{ BASE_URL }}/review-image-search " class="nav-item">
           <svg
             viewBox="0 0 24 24"
             fill="none"
@@ -1443,7 +1443,7 @@
           <span class="nav-label">Review Images</span>
           <span class="tooltip">Review images</span>
         </a>
-        <a href="/shop-config" class="nav-item">
+        <a href="{{ BASE_URL }}/shop-config" class="nav-item">
           <svg
             viewBox="0 0 24 24"
             fill="none"
@@ -1538,13 +1538,13 @@
           </button>
         </div>
         <div class="shop-filter-row">
-          <span class="shop-filter-label">Shop</span>
+          <span class="shop-filter-label">Publish</span>
           <select
             class="shop-filter-select"
-            id="shopFilterSelect"
-            onchange="onShopFilter()"
+            id="publishShopSelect"
+            onchange="onPublishShopChange(this)"
           >
-            <option value="all">All Shops</option>
+            <option value="">— Select a shop —</option>
           </select>
         </div>
         <div class="panel-scroll" id="batchList">
@@ -1928,7 +1928,8 @@
       var _batchesPerPage = 10; /* how many complete batches per page */
       var _currentFilter = "all";
       var _searchQuery = "";
-      var _currentShopFilter = "all";
+      var _shops = [];
+      var _selectedShopId = null;
       var _currentProduct = null;
       var _sectionRecordIds = {};
       var _editStates = {};
@@ -1937,9 +1938,13 @@
       var _openBatches = {};
 
       /* ── Init: fetch ALL products in one shot so no batch is ever split ── */
-      loadActiveSections().then(function () {
-        loadAllProducts();
-      });
+      initPublishShopSelector()
+        .then(function () {
+          return loadActiveSections();
+        })
+        .then(function () {
+          loadAllProducts();
+        });
 
       function loadAllProducts() {
         document.getElementById("batchList").innerHTML =
@@ -1951,7 +1956,6 @@
           })
           .then(function (d) {
             _allProducts = d.records || [];
-            populateShopDropdown();
             applyFilter();
           })
           .catch(function () {
@@ -2006,9 +2010,64 @@
         applyFilter();
       }
 
-      function onShopFilter() {
-        _currentShopFilter = document.getElementById("shopFilterSelect").value;
-        applyFilter();
+      /* ── Publish shop selector ──
+       * Renders the list of configured shops (same list/source as index.html's
+       * shop selector) and keeps the "active shop" in sync across both pages.
+       * The active shop is stored per-session on the server, so:
+       *  - on load here we default to whichever shop is currently active
+       *    (same default index.html would show)
+       *  - selecting a different shop here calls the same /set-active endpoint
+       *    index.html uses, so index.html's default updates too
+       */
+      function initPublishShopSelector() {
+        return fetch(`${API_BASE_URL}/api/shops`)
+          .then(function (r) {
+            return r.json();
+          })
+          .then(function (d) {
+            _shops = d.shops || [];
+            var sel = document.getElementById("publishShopSelect");
+            sel.innerHTML = '<option value="">— Select a shop —</option>';
+            _shops.forEach(function (shop) {
+              var opt = document.createElement("option");
+              opt.value = shop.id;
+              opt.textContent = shop.name + " (" + shop.domain + ")";
+              if (shop.is_active) opt.selected = true;
+              sel.appendChild(opt);
+            });
+            var activeShop = _shops.find(function (s) {
+              return s.is_active;
+            });
+            _selectedShopId = activeShop ? activeShop.id : null;
+          })
+          .catch(function () {});
+      }
+
+      function onPublishShopChange(sel) {
+        var id = sel.value ? parseInt(sel.value, 10) : null;
+        _selectedShopId = id;
+        if (!id) return;
+        fetch(`${API_BASE_URL}/api/shops/${id}/set-active`, {
+          method: "POST",
+        })
+          .then(function () {
+            var shop = _shops.find(function (s) {
+              return s.id === id;
+            });
+            showToast(
+              "Publish shop set to " + (shop ? shop.name : id),
+              "success",
+            );
+            /* Section labels/templates can differ per shop — refresh them */
+            return loadActiveSections();
+          })
+          .then(function () {
+            applyFilter();
+          })
+
+          .catch(function () {
+            showToast("Failed to switch active shop", "error");
+          });
       }
 
       function _getProductShopDomain(p) {
@@ -2020,29 +2079,16 @@
         } catch (e) {}
         return "";
       }
-
-      function populateShopDropdown() {
-        var select = document.getElementById("shopFilterSelect");
-        var prev = select.value;
-        var domains = {};
-        _allProducts.forEach(function (p) {
-          var d = _getProductShopDomain(p);
-          if (d) domains[d] = true;
+      function _getSelectedShopDomains() {
+        var shop = _shops.find(function (s) {
+          return s.id === _selectedShopId;
         });
-        var sorted = Object.keys(domains).sort();
-        select.innerHTML = '<option value="all">All Shops</option>';
-        sorted.forEach(function (d) {
-          var opt = document.createElement("option");
-          opt.value = d;
-          opt.textContent = d;
-          select.appendChild(opt);
-        });
-        if (prev && prev !== "all" && domains[prev]) {
-          select.value = prev;
-        } else {
-          select.value = "all";
-          _currentShopFilter = "all";
-        }
+        if (!shop) return null;
+        return [shop.domain, shop.website_domain]
+          .filter(Boolean)
+          .map(function (d) {
+            return d.toLowerCase();
+          });
       }
 
       function applyFilter() {
@@ -2053,9 +2099,10 @@
             !_searchQuery ||
             (p.product_title || "").toLowerCase().includes(_searchQuery) ||
             (p.part_number || "").toLowerCase().includes(_searchQuery);
+          var shopDomains = _getSelectedShopDomains();
           var matchShop =
-            _currentShopFilter === "all" ||
-            _getProductShopDomain(p) === _currentShopFilter;
+            !shopDomains ||
+            shopDomains.indexOf(_getProductShopDomain(p).toLowerCase()) !== -1;
           return matchFilter && matchSearch && matchShop;
         });
         /* Re-build all batches sorted newest-first; reset to page 1 */
@@ -2737,7 +2784,7 @@
         saveBtn.disabled = true;
         saveBtn.textContent = "⏳…";
         try {
-          var res = await fetch("${API_BASE_URL}/api/update/" + rid, {
+          var res = await fetch(`${API_BASE_URL}/api/update/${rid}`, {
             method: "PUT",
             headers: { "Content-Type": "application/json" },
             body: JSON.stringify({
