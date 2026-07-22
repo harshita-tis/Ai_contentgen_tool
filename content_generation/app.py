@@ -23,6 +23,7 @@ from datetime import datetime, timezone
 import openai, requests, os, json, uuid, threading, re, logging, time, hashlib
 from concurrent.futures import ThreadPoolExecutor, as_completed
 from html import escape as html_escape
+from shared import BASE_URL
 
 logger = logging.getLogger(__name__)
 
@@ -1083,13 +1084,13 @@ def _generate_section_batch(
 @app.route('/history')
 @login_required
 def history_page():
-    return render_template('history.html')
+    return render_template('history.html',BASE_URL=BASE_URL)
 
 
 @app.route('/review')
 @reviewer_required
 def review_page():
-    return render_template('review.html')
+    return render_template('review.html',BASE_URL=BASE_URL)
 
 
 @app.route('/api/default-prompt/<section>')

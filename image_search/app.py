@@ -20,6 +20,8 @@ from urllib.parse import urlparse
 from bs4 import BeautifulSoup
 from playwright.async_api import async_playwright
 import openai
+from flask import render_template
+from shared import BASE_URL
 
 logger = logging.getLogger(__name__)
 
@@ -1027,7 +1029,7 @@ def image_search_history():
 @app.route('/image-search')
 @login_required
 def image_search_page():
-    return render_template('image_search.html')
+    return render_template('image_search.html',BASE_URL=BASE_URL)
 
 
 """
@@ -1042,7 +1044,7 @@ Also add the new route for review_image_search.html page.
 @app.route('/review-image-search')
 @login_required
 def review_image_search_page():
-    return render_template('review_image_search.html')
+    return render_template('review_image_search.html',BASE_URL=BASE_URL)
 
 
 @app.route('/api/image-search/batches', methods=['GET'])
@@ -1209,7 +1211,7 @@ def image_search_generation_detail(generation_id):
 @app.route('/history-image-search')
 @login_required
 def history_image_search_page():
-    return render_template('history_image_search.html')
+    return render_template('history_image_search.html',BASE_URL=BASE_URL)
 
 
 @app.route('/api/image-search/publish-to-shops', methods=['POST'])
