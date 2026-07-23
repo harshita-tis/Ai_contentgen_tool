@@ -50,7 +50,7 @@ CORS(
 _DB_HOST     = os.getenv("HOST", "localhost")
 _DB_USER     = os.getenv("USER", "root")
 #print("Connecting to MySQL database at %s, user %s, database %s", _DB_HOST, _DB_USER, os.getenv("DATABASE", "content_gen"))
-_DB_PASSWORD = os.getenv("DATABASE_PASSWORD", "")
+_DB_PASSWORD = os.getenv("PASSWORD", "")
 _DB_NAME     = os.getenv("DATABASE", "content_gen")
 model = os.getenv("OPENAI_MODEL", "gpt-4o")
 
@@ -84,13 +84,13 @@ def login_required(f):
     @wraps(f)
     def decorated(*args, **kwargs):
         if 'username' not in session:
-            if request.path.startswith('/api/'):
+            if request.path.startswith('/contentgen/api/'):
                 return jsonify({'error': 'Authentication required'}), 401
-            return redirect(url_for(
-    'login_page',
-    next='/'
-))
+
+            return redirect(url_for('login_page', next='/contentgen/'))
+
         return f(*args, **kwargs)
+
     return decorated
 
 
@@ -98,20 +98,21 @@ def reviewer_required(f):
     @wraps(f)
     def decorated(*args, **kwargs):
         if 'username' not in session:
-            if request.path.startswith('/api/'):
+            if request.path.startswith('/contentgen/api/'):
                 return jsonify({'error': 'Authentication required'}), 401
-            return redirect(url_for(
-    'login_page',
-    next='/'
-))
-        if session.get('role') != 'reviewer':
-            if request.path.startswith('/api/'):
-                return jsonify({'error': 'Reviewer access required'}), 403
-            flash('Access denied: Reviewer role required.', 'error')
-            return redirect('/')
-        return f(*args, **kwargs)
-    return decorated
 
+            return redirect(url_for('login_page', next='/contentgen/'))
+
+        if session.get('role') != 'reviewer':
+            if request.path.startswith('/contentgen/api/'):
+                return jsonify({'error': 'Reviewer access required'}), 403
+
+            flash('Access denied: Reviewer role required.', 'error')
+            return redirect('https://d5715.www65-181-111-45.a2hosted.com/contentgen/')
+
+        return f(*args, **kwargs)
+
+    return decorated
 
 def _get_active_shop() -> 'ShopConfig | None':
     """
@@ -139,16 +140,20 @@ def _get_active_shop() -> 'ShopConfig | None':
             if shop_id:
                 shop = ShopConfig.query.get(shop_id)
                 if shop:
+                    logger.info(f"[_get_active_shop] resolved from session: shop_id={shop.id} domain={shop.domain}")
                     return shop
                 # Session pointed at a shop that's been deleted — clear it and fall through.
+                logger.warning(f"[_get_active_shop] session active_shop_id={shop_id} no longer exists — clearing and falling back")
                 session.pop('active_shop_id', None)
 
         shop = ShopConfig.query.filter_by(is_active=True).first() \
             or ShopConfig.query.order_by(ShopConfig.created_at.asc()).first()
         if shop and has_request_context():
             session['active_shop_id'] = shop.id
+        logger.info(f"[_get_active_shop] resolved via fallback (is_active/first-created): shop_id={shop.id if shop else None} domain={shop.domain if shop else None}")
         return shop
-    except Exception:
+    except Exception as e:
+        logger.error(f"[_get_active_shop] failed to resolve active shop: {e}")
         return None
 
 
@@ -914,22 +919,35 @@ def _shopify_graphql_with_creds(query: str, variables: dict, domain: str, token:
     endpoint = f"{_shopify_base_url(domain)}/admin/api/{api_version}/graphql.json"
     headers  = {'Content-Type': 'application/json', 'X-Shopify-Access-Token': token}
     masked_token = (token[:4] + '...' + token[-4:]) if token and len(token) > 8 else '(empty/short)'
-    logger.info(f"[shopify_graphql] endpoint={endpoint} token={masked_token} vars={variables}")
+    logger.info(f"[shopify_graphql] REQUEST domain={domain} endpoint={endpoint} token={masked_token} api_version={api_version} vars={variables}")
 
     try:
         resp = requests.post(endpoint, json={'query': query, 'variables': variables or {}}, headers=headers, timeout=45)
     except requests.exceptions.RequestException as e:
-        logger.error(f"[shopify_graphql] request failed: {e}")
+        logger.error(f"[shopify_graphql] domain={domain} REQUEST FAILED (network/timeout): {e}")
         raise RuntimeError(f"Shopify request failed: {e}")
 
-    logger.info(f"[shopify_graphql] status={resp.status_code}")
+    logger.info(f"[shopify_graphql] domain={domain} status={resp.status_code}")
     if not resp.ok:
-        logger.error(f"[shopify_graphql] HTTP {resp.status_code} body={resp.text[:1000]}")
+        logger.error(f"[shopify_graphql] domain={domain} HTTP {resp.status_code} body={resp.text[:2000]}")
         raise RuntimeError(f'Shopify API HTTP {resp.status_code}')
 
     data = resp.json()
+    logger.info(f"[shopify_graphql] domain={domain} RAW RESPONSE={json.dumps(data)[:3000]}")
+
+    # Top-level GraphQL errors (bad query, auth/scope problems, throttling, etc.)
     if data.get('errors'):
-        logger.error(f"[shopify_graphql] GraphQL errors={data['errors']}")
+        logger.error(f"[shopify_graphql] domain={domain} TOP-LEVEL GraphQL errors={data['errors']}")
+
+    # Mutation-level userErrors (e.g. productUpdate / metafieldsSet) — these come
+    # back with HTTP 200 and no top-level 'errors', so they were previously
+    # invisible unless a caller happened to inspect them manually. Surface them
+    # here so every publish attempt logs the real reason for a failure.
+    payload = data.get('data') or {}
+    for op_name, op_result in payload.items():
+        if isinstance(op_result, dict) and op_result.get('userErrors'):
+            logger.error(f"[shopify_graphql] domain={domain} USER ERRORS in '{op_name}': {op_result['userErrors']}")
+
     return data
 
 def _fetch_by_product_id(product_id: str, _domain: str = '', _token: str = '', _api_version: str = '') -> dict:
