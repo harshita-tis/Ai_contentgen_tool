@@ -1882,6 +1882,53 @@ def update_content(record_id):
     if html_text:  record.html_text  = html_text
     db.session.commit()
     return jsonify({'success': True, 'id': record.id, 'plain_text': record.plain_text, 'html_text': record.html_text, 'updated_at': _utc_now().strftime('%Y-%m-%d %H:%M:%S')})
+@app.route('/api/update-title', methods=['PUT'])
+@reviewer_required
+def update_product_title():
+    """
+    Renames a product's title everywhere it's used as an identity key:
+    ProductHistory, GeneratedContent, and ReviewStatus rows are all keyed
+    by (product_title, part_number), so all three must be updated together
+    or lookups (and the review list) will break.
+    """
+    data          = request.json or {}
+    old_title     = (data.get('product_title') or '').strip()
+    part_number   = (data.get('part_number') or '').strip()
+    new_title     = (data.get('new_title') or '').strip()
+
+    if not old_title or not part_number:
+        return jsonify({'error': 'product_title and part_number are required'}), 400
+    if not new_title:
+        return jsonify({'error': 'new_title cannot be empty'}), 400
+    if new_title == old_title:
+        return jsonify({'success': True, 'product_title': new_title, 'part_number': part_number, 'unchanged': True})
+
+    # Guard against colliding with a different product that already has this title/part_number
+    conflict = ProductHistory.query.filter_by(product_title=new_title, part_number=part_number).first()
+    if conflict:
+        return jsonify({'error': f'Another product already exists with the title "{new_title}" and part number "{part_number}".'}), 409
+
+    try:
+        ProductHistory.query.filter_by(
+            product_title=old_title, part_number=part_number
+        ).update({'product_title': new_title}, synchronize_session=False)
+
+        GeneratedContent.query.filter_by(
+            product_title=old_title, part_number=part_number
+        ).update({'product_title': new_title}, synchronize_session=False)
+
+        rv = ReviewStatus.query.filter_by(product_title=old_title, part_number=part_number).first()
+        if rv:
+            rv.product_title = new_title
+            rv.updated_at = _utc_now()
+
+        db.session.commit()
+    except Exception as e:
+        db.session.rollback()
+        logger.exception('[update_product_title] failed for old_title=%r part_number=%s', old_title, part_number)
+        return jsonify({'success': False, 'error': str(e)}), 500
+
+    return jsonify({'success': True, 'product_title': new_title, 'part_number': part_number})
 
 
 @app.route('/api/update-bulk', methods=['PUT'])
