@@ -51,7 +51,11 @@ _DB_HOST     = os.getenv("HOST", "localhost")
 _DB_USER     = os.getenv("USER", "root")
 #print("Connecting to MySQL database at %s, user %s, database %s", _DB_HOST, _DB_USER, os.getenv("DATABASE", "content_gen"))
 _DB_PASSWORD = os.getenv("PASSWORD", "")
+<<<<<<< HEAD
 _DB_NAME     = os.getenv("DATABASE_PASSWORD", "content_gen")
+=======
+_DB_NAME     = os.getenv("DATABASE", "content_gen")
+>>>>>>> e1e11cfc3c0a3b222a85f77c49b2d49a277325d1
 model = os.getenv("OPENAI_MODEL", "gpt-4o")
 
 app.config['SQLALCHEMY_DATABASE_URI'] = (
@@ -84,10 +88,14 @@ def login_required(f):
     @wraps(f)
     def decorated(*args, **kwargs):
         if 'username' not in session:
-            if request.path.startswith('/api/'):
+            if request.path.startswith('/contentgen/api/'):
                 return jsonify({'error': 'Authentication required'}), 401
 
+<<<<<<< HEAD
             return redirect(url_for('login_page', next='/'))
+=======
+            return redirect(url_for('login_page', next='/contentgen/'))
+>>>>>>> e1e11cfc3c0a3b222a85f77c49b2d49a277325d1
 
         return f(*args, **kwargs)
 
@@ -98,17 +106,25 @@ def reviewer_required(f):
     @wraps(f)
     def decorated(*args, **kwargs):
         if 'username' not in session:
-            if request.path.startswith('/api/'):
+            if request.path.startswith('/contentgen/api/'):
                 return jsonify({'error': 'Authentication required'}), 401
 
+<<<<<<< HEAD
             return redirect(url_for('login_page', next='/'))
+=======
+            return redirect(url_for('login_page', next='/contentgen/'))
+>>>>>>> e1e11cfc3c0a3b222a85f77c49b2d49a277325d1
 
         if session.get('role') != 'reviewer':
-            if request.path.startswith('/api/'):
+            if request.path.startswith('/contentgen/api/'):
                 return jsonify({'error': 'Reviewer access required'}), 403
 
             flash('Access denied: Reviewer role required.', 'error')
+<<<<<<< HEAD
             return redirect('/')
+=======
+            return redirect('https://d5715.www65-181-111-45.a2hosted.com/contentgen/')
+>>>>>>> e1e11cfc3c0a3b222a85f77c49b2d49a277325d1
 
         return f(*args, **kwargs)
 
