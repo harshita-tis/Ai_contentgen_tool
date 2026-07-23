@@ -1910,6 +1910,8 @@ def update_content_bulk():
 def review_products():
     page     = request.args.get('page', 1, type=int)
     per_page = request.args.get('per_page', 30, type=int)
+    shop_name= session.get("active_shop_id")
+    logger.info(f"shop_id-:{shop_name}")
 
     from sqlalchemy import func
 
