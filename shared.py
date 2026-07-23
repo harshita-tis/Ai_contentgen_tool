@@ -50,7 +50,7 @@ CORS(
 _DB_HOST     = os.getenv("HOST", "localhost")
 _DB_USER     = os.getenv("USER", "root")
 #print("Connecting to MySQL database at %s, user %s, database %s", _DB_HOST, _DB_USER, os.getenv("DATABASE", "content_gen"))
-_DB_PASSWORD = os.getenv("PASSWORD", "")
+_DB_PASSWORD = os.getenv("DATABASE_PASSWORD", "")
 _DB_NAME     = os.getenv("DATABASE", "content_gen")
 model = os.getenv("OPENAI_MODEL", "gpt-4o")
 
@@ -84,10 +84,10 @@ def login_required(f):
     @wraps(f)
     def decorated(*args, **kwargs):
         if 'username' not in session:
-            if request.path.startswith('/contentgen/api/'):
+            if request.path.startswith('/api/'):
                 return jsonify({'error': 'Authentication required'}), 401
 
-            return redirect(url_for('login_page', next='/contentgen/'))
+            return redirect(url_for('login_page', next='/'))
 
         return f(*args, **kwargs)
 
@@ -98,17 +98,17 @@ def reviewer_required(f):
     @wraps(f)
     def decorated(*args, **kwargs):
         if 'username' not in session:
-            if request.path.startswith('/contentgen/api/'):
+            if request.path.startswith('/api/'):
                 return jsonify({'error': 'Authentication required'}), 401
 
-            return redirect(url_for('login_page', next='/contentgen/'))
+            return redirect(url_for('login_page', next='/'))
 
         if session.get('role') != 'reviewer':
-            if request.path.startswith('/contentgen/api/'):
+            if request.path.startswith('/api/'):
                 return jsonify({'error': 'Reviewer access required'}), 403
 
             flash('Access denied: Reviewer role required.', 'error')
-            return redirect('https://d5715.www65-181-111-45.a2hosted.com/contentgen/')
+            return redirect('/')
 
         return f(*args, **kwargs)
 
