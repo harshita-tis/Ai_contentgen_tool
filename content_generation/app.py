@@ -138,21 +138,94 @@ def _shopify_product_gid_from_sku(part_number: str) -> str | None:
     return edges[0]['node'].get('id')
 
 
-def _latest_shopify_url_for_product(product_title: str, part_number: str) -> str:
+def _batch_id_for_shopify_url(product_title: str, part_number: str, shopify_url: str) -> str:
+    """
+    Resolve which batch's data corresponds to a specific shopify_url, so publishing can pull
+    the GeneratedContent that was actually generated for THIS listing — instead of whichever
+    batch for this (title, part_number) happens to have the newest created_at. This matters
+    whenever the same product_title + part_number was generated more than once for different
+    Shopify listings (e.g. a "GRP" listing and an "appliance part" listing).
+    """
+    if not shopify_url:
+        return ''
     row = (ProductHistory.query
+           .filter_by(product_title=product_title, part_number=part_number, shopify_url=shopify_url)
+           .order_by(ProductHistory.created_at.desc())
+           .first())
+    if row:
+        logger.info(
+            "[PUBLISH][_batch_id_for_shopify_url] title=%r part_number=%r shopify_url=%r -> batch_id=%s (product_history.id=%s)",
+            product_title, part_number, shopify_url, row.batch_id, row.id,
+        )
+        return row.batch_id or ''
+    logger.warning(
+        "[PUBLISH][_batch_id_for_shopify_url] NO ProductHistory row matches title=%r part_number=%r shopify_url=%r "
+        "— cannot scope content to a specific batch, will fall back to globally-latest content (may be wrong listing).",
+        product_title, part_number, shopify_url,
+    )
+    return ''
+
+
+def _latest_shopify_url_for_product(product_title: str, part_number: str) -> str:
+    candidates = (ProductHistory.query
            .filter_by(product_title=product_title, part_number=part_number)
            .filter(ProductHistory.shopify_url.isnot(None))
            .filter(ProductHistory.shopify_url != '')
            .order_by(ProductHistory.created_at.desc())
-           .first())
+           .all())
+    logger.info(
+        "[PUBLISH][_latest_shopify_url_for_product] title=%r part_number=%r candidates=%s",
+        product_title, part_number,
+        [{'id': c.id, 'batch_id': c.batch_id, 'shopify_url': c.shopify_url, 'created_at': str(c.created_at)} for c in candidates],
+    )
+    row = candidates[0] if candidates else None
+    if row:
+        logger.info(
+            "[PUBLISH][_latest_shopify_url_for_product] SELECTED id=%s batch_id=%s shopify_url=%r (%d other candidate(s) ignored)",
+            row.id, row.batch_id, row.shopify_url, len(candidates) - 1,
+        )
     return (row.shopify_url or '').strip() if row else ''
 
 
-def _latest_generated_record(product_title: str, part_number: str, section: str):
-    return (GeneratedContent.query
-            .filter_by(product_title=product_title, part_number=part_number, section=section)
-            .order_by(GeneratedContent.created_at.desc())
-            .first())
+def _latest_generated_record(product_title: str, part_number: str, section: str, batch_id: str = ''):
+    query = GeneratedContent.query.filter_by(product_title=product_title, part_number=part_number, section=section)
+    if batch_id:
+        query = query.filter_by(batch_id=batch_id)
+
+    candidates = query.order_by(GeneratedContent.created_at.desc()).all()
+
+    if not candidates and batch_id:
+        # Nothing generated for this section under the resolved batch — do NOT silently fall back
+        # to a different batch's content, that's the exact bug we're fixing. Just report it missing.
+        logger.warning(
+            "[PUBLISH][_latest_generated_record] batch_id=%s has NO record for title=%r part_number=%r section=%r "
+            "(section will be left blank for this publish rather than pulling from a different batch)",
+            batch_id, product_title, part_number, section,
+        )
+        return None
+
+    if len(candidates) > 1 and not batch_id:
+        # More than one GeneratedContent row exists for this (title, part_number, section) and we
+        # have no batch_id to disambiguate — i.e. this product was generated more than once
+        # (different batch/listing), and we're about to pick only the newest one.
+        logger.warning(
+            "[PUBLISH][_latest_generated_record] MULTIPLE candidates (no batch_id given) for title=%r part_number=%r section=%r -> %s",
+            product_title, part_number, section,
+            [{'id': c.id, 'batch_id': c.batch_id, 'created_at': str(c.created_at)} for c in candidates],
+        )
+
+    record = candidates[0] if candidates else None
+    if record:
+        logger.info(
+            "[PUBLISH][_latest_generated_record] SELECTED id=%s batch_id=%s title=%r part_number=%r section=%r created_at=%s scoped=%s",
+            record.id, record.batch_id, product_title, part_number, section, record.created_at, bool(batch_id),
+        )
+    else:
+        logger.info(
+            "[PUBLISH][_latest_generated_record] NO RECORD FOUND for title=%r part_number=%r section=%r batch_id=%r",
+            product_title, part_number, section, batch_id,
+        )
+    return record
 
 
 def _record_html_for_shopify(rec) -> str:
@@ -192,27 +265,44 @@ def _get_metafield_cfg_by_key() -> dict:
 
 
 def publish_generated_content_to_shopify(product_title: str, part_number: str, shopify_url: str = '') -> dict:
+    logger.info(
+        "[PUBLISH] START title=%r part_number=%r shopify_url=%r",
+        product_title, part_number, shopify_url,
+    )
     gid = _shopify_product_gid_from_product_url(shopify_url) if shopify_url else None
     if not gid:
         # Fall back to SKU-based lookup using the active shop
+        logger.info("[PUBLISH] No gid from shopify_url, falling back to SKU lookup for part_number=%r", part_number)
         gid = _shopify_product_gid_from_sku(part_number)
     if not gid:
         raise ValueError(f'Could not resolve a Shopify product for part number "{part_number}". Check that the SKU exists in your Shopify store.')
+    logger.info("[PUBLISH] Resolved target product gid=%s for shopify_url=%r", gid, shopify_url)
 
-    body_html    = _record_html_for_shopify(_latest_generated_record(product_title, part_number, 'product_description'))
-    mf_specs     = _record_html_for_shopify(_latest_generated_record(product_title, part_number, 'technical_specifications'))
-    mf_bullets   = _record_html_for_shopify(_latest_generated_record(product_title, part_number, 'short_description'))
-    mf_causes    = _record_html_for_shopify(_latest_generated_record(product_title, part_number, 'common_problems'))
-    mf_install   = _record_html_for_shopify(_latest_generated_record(product_title, part_number, 'installation_guide'))
+    # Resolve which batch's content actually belongs to this shopify_url, so we don't pull
+    # content generated for a different listing of the same (title, part_number).
+    target_batch_id = _batch_id_for_shopify_url(product_title, part_number, shopify_url)
+
+    body_html    = _record_html_for_shopify(_latest_generated_record(product_title, part_number, 'product_description', target_batch_id))
+    mf_specs     = _record_html_for_shopify(_latest_generated_record(product_title, part_number, 'technical_specifications', target_batch_id))
+    mf_bullets   = _record_html_for_shopify(_latest_generated_record(product_title, part_number, 'short_description', target_batch_id))
+    mf_causes    = _record_html_for_shopify(_latest_generated_record(product_title, part_number, 'common_problems', target_batch_id))
+    mf_install   = _record_html_for_shopify(_latest_generated_record(product_title, part_number, 'installation_guide', target_batch_id))
 
     # Fetch SEO plain text (not HTML) for meta title and meta description
-    meta_title_rec = _latest_generated_record(product_title, part_number, 'meta_title')
-    meta_desc_rec  = _latest_generated_record(product_title, part_number, 'meta_description')
+    meta_title_rec = _latest_generated_record(product_title, part_number, 'meta_title', target_batch_id)
+    meta_desc_rec  = _latest_generated_record(product_title, part_number, 'meta_description', target_batch_id)
     meta_title_val = (meta_title_rec.plain_text or '').strip() if meta_title_rec else ''
     meta_desc_val  = (meta_desc_rec.plain_text  or '').strip() if meta_desc_rec  else ''
 
     if not any([body_html, mf_specs, mf_bullets, mf_causes, mf_install, meta_title_val, meta_desc_val]):
         raise ValueError('No generated content found for this product — nothing to publish.')
+
+    logger.info(
+        "[PUBLISH] About to write to gid=%s | body_html_len=%d meta_title=%r meta_desc_len=%d "
+        "| specs_len=%d bullets_len=%d causes_len=%d install_len=%d",
+        gid, len(body_html), meta_title_val, len(meta_desc_val),
+        len(mf_specs), len(mf_bullets), len(mf_causes), len(mf_install),
+    )
 
     # Always update title; include descriptionHtml only if generated
     # Include SEO fields if meta title or meta description were generated
@@ -1171,8 +1261,13 @@ def generate_content():
         total_in  = usage.prompt_tokens
         total_out = usage.completion_tokens
 
+        active_shop = _get_active_shop()
+        gen_shop_id = active_shop.id if active_shop else None
+
+        gen_batch_id = str(uuid.uuid4())
         record = GeneratedContent(
-            batch_id=str(uuid.uuid4()),
+            shop_id=gen_shop_id,
+            batch_id=gen_batch_id,
             product_title=product_title, part_number=part_number,
             part_type=part_type, brand=brand, appliance_type=appliance_type,
             section=section, prompt_type=prompt_type, prompt_used=final_prompt,
@@ -1181,6 +1276,29 @@ def generate_content():
             total_tokens=total_in + total_out, model_used=model
         )
         db.session.add(record)
+
+        cost = (total_in * COST_PER_INPUT_TOKEN) + (total_out * COST_PER_OUTPUT_TOKEN)
+        ph_row = ProductHistory.query.filter_by(product_title=product_title, part_number=part_number).order_by(ProductHistory.created_at.desc()).first()
+        if ph_row:
+            if not ph_row.shop_id and gen_shop_id:
+                ph_row.shop_id = gen_shop_id
+            ph_row.total_input_tokens = (ph_row.total_input_tokens or 0) + total_in
+            ph_row.total_output_tokens = (ph_row.total_output_tokens or 0) + total_out
+            ph_row.total_tokens = (ph_row.total_tokens or 0) + (total_in + total_out)
+            ph_row.cost_usd = (ph_row.cost_usd or 0.0) + cost
+            ph_row.sections_generated = (ph_row.sections_generated or 0) + 1
+        else:
+            ph_row = ProductHistory(
+                shop_id=gen_shop_id,
+                batch_id=gen_batch_id,
+                product_title=product_title, part_number=part_number,
+                part_type=part_type, brand=brand, appliance_type=appliance_type,
+                source='manual',
+                total_input_tokens=total_in, total_output_tokens=total_out,
+                total_tokens=total_in + total_out, cost_usd=cost,
+                sections_generated=1, model_used=model
+            )
+            db.session.add(ph_row)
         db.session.commit()
 
         return jsonify({
@@ -1290,7 +1408,9 @@ def _run_generation_job(job_id: str, batch_id: str, products: list, active_secti
         done_count = 0
 
         with app.app_context():
+            _job_obj = GenerationJob.query.filter_by(job_id=job_id).first()
             _shop = _get_active_shop()
+            job_shop_id       = payload.get('shop_id') or (_job_obj.shop_id if _job_obj else None) or (_shop.id if _shop else None)
             _shop_domain      = (_shop.domain.strip()       if _shop else '')
             _shop_token       = (_shop.access_token.strip() if _shop else '')
             _shop_api_version = ((_shop.api_version or '2024-01').strip() if _shop else '2024-01')
@@ -1476,6 +1596,7 @@ def _run_generation_job(job_id: str, batch_id: str, products: list, active_secti
                                 }
                             else:
                                 record = GeneratedContent(
+                                    shop_id=job_shop_id,
                                     batch_id=batch_id,
                                     product_title=product_title, part_number=part_number,
                                     part_type=part_type, brand=brand, appliance_type=appliance_type,
@@ -1498,6 +1619,7 @@ def _run_generation_job(job_id: str, batch_id: str, products: list, active_secti
                                 }
 
                         history_row = ProductHistory(
+                            shop_id=job_shop_id,
                             batch_id=batch_id,
                             product_title=product_title, part_number=part_number,
                             part_type=part_type, brand=brand, appliance_type=appliance_type,
@@ -1549,6 +1671,7 @@ def _run_generation_job(job_id: str, batch_id: str, products: list, active_secti
             grand_total = grand_total_in + grand_total_out
             grand_cost  = grand_total_in * COST_PER_INPUT_TOKEN + grand_total_out * COST_PER_OUTPUT_TOKEN
             batch_row   = BatchHistory(
+                shop_id=job_shop_id,
                 batch_id=batch_id,
                 source=products[0].get('source', 'manual') if products else 'manual',
                 product_count=len(products),
@@ -1647,11 +1770,14 @@ def generate_stream():
     # This is the same reason JobEvent/GenerationJob already read back from
     # the DB rather than from in-memory state — the job is designed to be
     # resumable/executable from any process.
+    active_shop = _get_active_shop()
+    stream_shop_id = (data.get('shop_id') or session.get('active_shop_id') or (active_shop.id if active_shop else None))
     with app.app_context():
         job = GenerationJob(
-            job_id=job_id, batch_id=batch_id,
+            job_id=job_id, shop_id=stream_shop_id, batch_id=batch_id,
             status='pending', total_products=len(products),
             payload=json.dumps({
+                'shop_id': stream_shop_id,
                 'products': products,
                 'active_sections': active_sections,
                 'section_prompts': section_prompts,
@@ -1840,7 +1966,10 @@ def get_product_sections():
 def get_history():
     page     = request.args.get('page', 1, type=int)
     per_page = 20
-    records  = GeneratedContent.query.order_by(GeneratedContent.created_at.desc()).paginate(page=page, per_page=per_page, error_out=False)
+    shop_id  = request.args.get('shop_id', type=int) or session.get('active_shop_id')
+    q = GeneratedContent.query
+    if shop_id: q = q.filter_by(shop_id=shop_id)
+    records  = q.order_by(GeneratedContent.created_at.desc()).paginate(page=page, per_page=per_page, error_out=False)
     return jsonify({'records': [r.to_dict() for r in records.items], 'total': records.total, 'pages': records.pages, 'current_page': page})
 
 
@@ -1849,7 +1978,10 @@ def get_history():
 def get_product_history():
     page     = request.args.get('page', 1, type=int)
     per_page = 20
-    records  = ProductHistory.query.order_by(ProductHistory.created_at.desc()).paginate(page=page, per_page=per_page, error_out=False)
+    shop_id  = request.args.get('shop_id', type=int) or session.get('active_shop_id')
+    q = ProductHistory.query
+    if shop_id: q = q.filter_by(shop_id=shop_id)
+    records  = q.order_by(ProductHistory.created_at.desc()).paginate(page=page, per_page=per_page, error_out=False)
     return jsonify({'records': [r.to_dict() for r in records.items], 'total': records.total, 'pages': records.pages, 'current_page': page})
 
 
@@ -1858,15 +1990,38 @@ def get_product_history():
 def get_batch_history():
     page     = request.args.get('page', 1, type=int)
     per_page = 20
-    records  = BatchHistory.query.order_by(BatchHistory.created_at.desc()).paginate(page=page, per_page=per_page, error_out=False)
+    shop_id  = request.args.get('shop_id', type=int) or session.get('active_shop_id')
+    q = BatchHistory.query
+    if shop_id: q = q.filter_by(shop_id=shop_id)
+    records  = q.order_by(BatchHistory.created_at.desc()).paginate(page=page, per_page=per_page, error_out=False)
     return jsonify({'records': [r.to_dict() for r in records.items], 'total': records.total, 'pages': records.pages, 'current_page': page})
 
 
 @app.route('/api/batch-products/<batch_id>')
 @login_required
 def get_batch_products(batch_id):
-    records = ProductHistory.query.filter_by(batch_id=batch_id).order_by(ProductHistory.id).all()
-    return jsonify({'products': [r.to_dict() for r in records]})
+    from sqlalchemy import or_
+    shop_id = request.args.get('shop_id', type=int) or session.get('active_shop_id')
+    q = ProductHistory.query.filter_by(batch_id=batch_id)
+    if shop_id:
+        active_shop = ShopConfig.query.get(shop_id)
+        if active_shop and active_shop.domain:
+            d = active_shop.domain.strip().lower()
+            q = q.filter(or_(ProductHistory.shop_id == shop_id, ProductHistory.shopify_url.ilike(f'%{d}%')))
+        else:
+            q = q.filter(ProductHistory.shop_id == shop_id)
+    
+    rows = q.order_by(ProductHistory.created_at.desc(), ProductHistory.id.desc()).all()
+
+    seen = set()
+    unique_records = []
+    for r in rows:
+        key = (r.product_title.strip().lower(), r.part_number.strip().lower())
+        if key not in seen:
+            seen.add(key)
+            unique_records.append(r)
+
+    return jsonify({'products': [r.to_dict() for r in unique_records]})
 
 
 @app.route('/api/update/<int:record_id>', methods=['PUT'])
@@ -1882,6 +2037,7 @@ def update_content(record_id):
     if html_text:  record.html_text  = html_text
     db.session.commit()
     return jsonify({'success': True, 'id': record.id, 'plain_text': record.plain_text, 'html_text': record.html_text, 'updated_at': _utc_now().strftime('%Y-%m-%d %H:%M:%S')})
+
 @app.route('/api/update-title', methods=['PUT'])
 @reviewer_required
 def update_product_title():
@@ -1930,7 +2086,7 @@ def update_product_title():
 
     return jsonify({'success': True, 'product_title': new_title, 'part_number': part_number})
 
-
+    
 @app.route('/api/update-bulk', methods=['PUT'])
 @login_required
 def update_content_bulk():
@@ -1952,98 +2108,217 @@ def update_content_bulk():
     return jsonify({'success': True, 'updated': updated, 'errors': errors, 'updated_at': _utc_now().strftime('%Y-%m-%d %H:%M:%S')})
 
 
+@app.route('/api/review/batches')
+@reviewer_required
+def review_batches():
+    """
+    Batch-grouped replacement for /api/review/products + client-side grouping.
+
+    Returns real batches (batch_id -> its own products), filtered in SQL and
+    paginated by BATCH (not by raw ProductHistory row), so the count/items the
+    frontend renders always matches what's actually in product_history /
+    batch_history — no client-side reconstruction, no per_page=9999 dump.
+    """
+    from sqlalchemy import func, or_, and_
+
+    page     = request.args.get('page', 1, type=int)
+    per_page = request.args.get('per_page', 10, type=int)   # BATCHES per page
+    status   = (request.args.get('status') or 'all').strip().lower()
+    search   = (request.args.get('search') or '').strip().lower()
+    shop_id  = request.args.get('shop_id', type=int) or session.get('active_shop_id')
+    shop_domains = [d.strip().lower() for d in (request.args.get('shop_domains') or '').split(',') if d.strip()]
+
+    review_join_cond = and_(
+        ReviewStatus.product_title == ProductHistory.product_title,
+        ReviewStatus.part_number == ProductHistory.part_number,
+    )
+
+    def _apply_filters(q):
+        if status in ('pending', 'reviewed', 'published'):
+            if status == 'pending':
+                q = q.filter(or_(ReviewStatus.status == 'pending', ReviewStatus.status.is_(None)))
+            else:
+                q = q.filter(ReviewStatus.status == status)
+        if search:
+            like = f'%{search}%'
+            q = q.filter(or_(
+                func.lower(ProductHistory.product_title).like(like),
+                func.lower(ProductHistory.part_number).like(like),
+            ))
+        if shop_id:
+            if shop_domains:
+                q = q.filter(or_(ProductHistory.shop_id == shop_id, *[ProductHistory.shopify_url.ilike(f'%{d}%') for d in shop_domains]))
+            else:
+                q = q.filter(ProductHistory.shop_id == shop_id)
+        elif shop_domains:
+            q = q.filter(or_(*[ProductHistory.shopify_url.ilike(f'%{d}%') for d in shop_domains]))
+        return q
+
+    # Step 1: cheap aggregate — one row per batch, not per product — so
+    # pagination and item counts are computed without pulling product rows.
+    agg_q = (
+        db.session.query(
+            ProductHistory.batch_id,
+            func.count(ProductHistory.id).label('item_count'),
+            func.max(ProductHistory.created_at).label('latest_created_at'),
+        )
+        .outerjoin(ReviewStatus, review_join_cond)
+        .filter(ProductHistory.batch_id.isnot(None), ProductHistory.batch_id != '')
+    )
+    agg_q = _apply_filters(agg_q).group_by(ProductHistory.batch_id)
+
+    all_batch_summaries = agg_q.order_by(func.max(ProductHistory.created_at).desc()).all()
+    total_batches = len(all_batch_summaries)
+    pages = max(1, (total_batches + per_page - 1) // per_page)
+    page = max(1, min(page, pages))
+
+    start = (page - 1) * per_page
+    page_summaries = all_batch_summaries[start:start + per_page]
+    page_batch_ids = [s.batch_id for s in page_summaries]
+
+    # Step 2: fetch the actual product rows, but ONLY for the batches on this page.
+    products_by_batch = {bid: [] for bid in page_batch_ids}
+    if page_batch_ids:
+        detail_q = (
+            db.session.query(ProductHistory, ReviewStatus)
+            .outerjoin(ReviewStatus, review_join_cond)
+            .filter(ProductHistory.batch_id.in_(page_batch_ids))
+        )
+        detail_q = _apply_filters(detail_q).order_by(ProductHistory.batch_id, ProductHistory.id)
+
+        seen_by_batch = {bid: set() for bid in page_batch_ids}
+        for row, rv in detail_q.all():
+            bid = row.batch_id
+            prod_key = (row.product_title.strip().lower(), row.part_number.strip().lower())
+            if prod_key in seen_by_batch[bid]:
+                continue
+            seen_by_batch[bid].add(prod_key)
+
+            products_by_batch[bid].append({
+                "product_title": row.product_title,
+                "part_number": row.part_number,
+                "brand": row.brand,
+                "appliance_type": row.appliance_type,
+                "part_type": row.part_type,
+                "latest_created_at": row.created_at.strftime("%Y-%m-%d %H:%M:%S") if row.created_at else None,
+                "batch_id": row.batch_id or "",
+                "shopify_url": (row.shopify_url or "").strip(),
+                "review_status": rv.status if rv else "pending",
+                "reviewer": rv.reviewer if rv else None,
+                "reviewed_at": rv.reviewed_at.strftime("%Y-%m-%d %H:%M:%S") if rv and rv.reviewed_at else None,
+                "published_at": rv.published_at.strftime("%Y-%m-%d %H:%M:%S") if rv and rv.published_at else None,
+            })
+
+    bh_map = {}
+    job_map = {}
+    if page_batch_ids:
+        job_map = {job.batch_id: job for job in GenerationJob.query.filter(GenerationJob.batch_id.in_(page_batch_ids)).all()}
+        bh_map = {bh.batch_id: bh for bh in BatchHistory.query.filter(BatchHistory.batch_id.in_(page_batch_ids)).all()}
+
+    batches_out = []
+    for s in page_summaries:
+        job = job_map.get(s.batch_id)
+        bh = bh_map.get(s.batch_id)
+        prod_count = (job.total_products if (job and job.total_products) else (bh.product_count if (bh and bh.product_count) else s.item_count))
+        batches_out.append({
+            "batch_id": s.batch_id,
+            "source": (bh.source if bh else None) or "manual",
+            "product_count": prod_count,                                   # product count from GenerationJob
+            "item_count": s.item_count,                                   # count AFTER current filters
+            "latest_created_at": s.latest_created_at.strftime("%Y-%m-%d %H:%M:%S") if s.latest_created_at else None,
+            "products": products_by_batch.get(s.batch_id, []),
+        })
+
+    return jsonify({
+        "batches": batches_out,
+        "total": total_batches,
+        "pages": pages,
+        "current_page": page,
+    })
+
+
 @app.route('/api/review/products')
 @reviewer_required
 def review_products():
-    page     = request.args.get('page', 1, type=int)
+    page = request.args.get('page', 1, type=int)
     per_page = request.args.get('per_page', 30, type=int)
-    shop_name= session.get("active_shop_id")
-    logger.info(f"shop_id-:{shop_name}")
+    shop_id = request.args.get('shop_id', type=int) or session.get("active_shop_id")
+    logger.info(f"shop_id: {shop_id}")
 
-    from sqlalchemy import func
+    # Base query
+    query = ProductHistory.query
+    if shop_id:
+        active_shop = ShopConfig.query.get(shop_id)
+        if active_shop and active_shop.domain:
+            d = active_shop.domain.strip().lower()
+            query = query.filter(or_(ProductHistory.shop_id == shop_id, ProductHistory.shopify_url.ilike(f'%{d}%')))
+        else:
+            query = query.filter(ProductHistory.shop_id == shop_id)
 
-    # Subquery: per (product_title, part_number) get the latest created_at
-    # and the batch_id that corresponds to that latest record
-    latest_subq = (
-        db.session.query(
-            ProductHistory.product_title,
-            ProductHistory.part_number,
-            ProductHistory.brand,
-            ProductHistory.appliance_type,
-            ProductHistory.part_type,
-            func.max(ProductHistory.created_at).label('latest_created_at'),
-        )
-        .group_by(
-            ProductHistory.product_title,
-            ProductHistory.part_number,
-        )
-        .subquery()
-    )
+    total_count = query.count()
 
-    # Join back to ProductHistory to fetch batch_id and source for the latest record
-    ph_alias = db.aliased(ProductHistory)
-    batch_subq = (
-        db.session.query(
-            latest_subq.c.product_title,
-            latest_subq.c.part_number,
-            latest_subq.c.brand,
-            latest_subq.c.appliance_type,
-            latest_subq.c.part_type,
-            latest_subq.c.latest_created_at,
-            ph_alias.batch_id,
-            ph_alias.source,
-            ph_alias.shopify_url,
-        )
-        .join(
-            ph_alias,
-            (ph_alias.product_title == latest_subq.c.product_title)
-            & (ph_alias.part_number  == latest_subq.c.part_number)
-            & (ph_alias.created_at   == latest_subq.c.latest_created_at),
-        )
-        .subquery()
-    )
-
-    total_count = db.session.query(func.count()).select_from(batch_subq).scalar()
     rows = (
-        db.session.query(batch_subq)
-        .order_by(batch_subq.c.latest_created_at.desc())
+        query.order_by(ProductHistory.created_at.desc())
         .offset((page - 1) * per_page)
         .limit(per_page)
         .all()
     )
 
-    records = []
-    for row in rows:
-        rv = ReviewStatus.query.filter_by(
-            product_title=row.product_title,
-            part_number=row.part_number,
-        ).first()
+    # ── Bulk-load ReviewStatus + BatchHistory instead of querying per row ──
+    # (previously: 2 queries per row = up to ~2*per_page extra round-trips)
+    pt_pn_pairs = {(r.product_title, r.part_number) for r in rows}
+    review_by_key = {}
+    if pt_pn_pairs:
+        titles = {t for t, _ in pt_pn_pairs}
+        rv_rows = ReviewStatus.query.filter(ReviewStatus.product_title.in_(titles)).all()
+        for rv in rv_rows:
+            key = (rv.product_title, rv.part_number)
+            if key in pt_pn_pairs:
+                review_by_key[key] = rv
 
-        # Resolve batch source: prefer BatchHistory table, fall back to ProductHistory.source
-        batch_source = row.source or 'Manual'
+    batch_ids = {r.batch_id for r in rows if r.batch_id}
+    batch_source_by_id = {}
+    if batch_ids:
+        bh_rows = BatchHistory.query.filter(BatchHistory.batch_id.in_(batch_ids)).all()
+        batch_source_by_id = {bh.batch_id: bh.source for bh in bh_rows if bh.source}
+
+    records = []
+
+    for row in rows:
+        rv = review_by_key.get((row.product_title, row.part_number))
+
+        # Resolve batch source
+        batch_source = row.source or "Manual"
+
         if row.batch_id:
-            bh = BatchHistory.query.filter_by(batch_id=row.batch_id).first()
-            if bh and bh.source:
-                batch_source = bh.source
+            src = batch_source_by_id.get(row.batch_id)
+            if src:
+                batch_source = src
 
         records.append({
-            'product_title':     row.product_title,
-            'part_number':       row.part_number,
-            'brand':             row.brand,
-            'appliance_type':    row.appliance_type,
-            'part_type':         row.part_type,
-            'latest_created_at': row.latest_created_at.strftime('%Y-%m-%d %H:%M:%S') if row.latest_created_at else None,
-            'batch_id':          row.batch_id or '',
-            'batch_source':      batch_source,
-            'shopify_url':       (row.shopify_url or '').strip() or _latest_shopify_url_for_product(row.product_title, row.part_number),
-            'review_status':     rv.status if rv else 'pending',
-            'reviewer':          rv.reviewer if rv else None,
-            'reviewed_at':       rv.reviewed_at.strftime('%Y-%m-%d %H:%M:%S') if rv and rv.reviewed_at else None,
-            'published_at':      rv.published_at.strftime('%Y-%m-%d %H:%M:%S') if rv and rv.published_at else None,
+            "product_title": row.product_title,
+            "part_number": row.part_number,
+            "brand": row.brand,
+            "appliance_type": row.appliance_type,
+            "part_type": row.part_type,
+            "latest_created_at": row.created_at.strftime("%Y-%m-%d %H:%M:%S") if row.created_at else None,
+            "batch_id": row.batch_id or "",
+            "batch_source": batch_source,
+            "shopify_url": (row.shopify_url or "").strip(),
+            "review_status": rv.status if rv else "pending",
+            "reviewer": rv.reviewer if rv else None,
+            "reviewed_at": rv.reviewed_at.strftime("%Y-%m-%d %H:%M:%S") if rv and rv.reviewed_at else None,
+            "published_at": rv.published_at.strftime("%Y-%m-%d %H:%M:%S") if rv and rv.published_at else None,
         })
 
     pages = (total_count + per_page - 1) // per_page
-    return jsonify({'records': records, 'total': total_count, 'pages': pages, 'current_page': page})
+
+    return jsonify({
+        "records": records,
+        "total": total_count,
+        "pages": pages,
+        "current_page": page,
+    })
 
 
 def _publish_single_reviewed_product(product_title: str, part_number: str, reviewer: str, shopify_url_override: str = ''):
@@ -2175,3 +2450,105 @@ def get_product_image():
         image_url = fetch_shopify_image_by_sku(part_number)
         return jsonify({'success': True, 'part_number': part_number, 'image_url': image_url})
     except Exception as e: return jsonify({'error': str(e)}), 500
+
+
+@app.route('/api/admin/backfill-shop-ids', methods=['POST'])
+@login_required
+def backfill_shop_ids():
+    """
+    Backfills null shop_id columns across ProductHistory, GeneratedContent,
+    BatchHistory, ReviewStatus, and GenerationJob using shopify_url matching
+    or active shop fallback.
+    """
+    shops = ShopConfig.query.all()
+    if not shops:
+        return jsonify({'error': 'No shop configurations found'}), 400
+
+    shop_map = {}
+    for s in shops:
+        if s.domain:
+            shop_map[s.domain.strip().lower()] = s.id
+        if s.website_domain:
+            shop_map[s.website_domain.strip().lower()] = s.id
+
+    default_shop_id = shops[0].id if len(shops) == 1 else None
+    active_shop = _get_active_shop()
+    if active_shop:
+        default_shop_id = active_shop.id
+
+    updated_ph = 0
+    updated_gc = 0
+    updated_bh = 0
+    updated_rv = 0
+    updated_gj = 0
+
+    # 1. ProductHistory
+    ph_nulls = ProductHistory.query.filter(ProductHistory.shop_id.is_(None)).all()
+    for ph in ph_nulls:
+        matched_id = None
+        if ph.shopify_url:
+            url_lower = ph.shopify_url.lower()
+            for dom, sid in shop_map.items():
+                if dom in url_lower:
+                    matched_id = sid
+                    break
+        if not matched_id and default_shop_id:
+            matched_id = default_shop_id
+        if matched_id:
+            ph.shop_id = matched_id
+            updated_ph += 1
+
+    # 2. GeneratedContent
+    gc_nulls = GeneratedContent.query.filter(GeneratedContent.shop_id.is_(None)).all()
+    if gc_nulls:
+        ph_shop_by_batch = {ph.batch_id: ph.shop_id for ph in ProductHistory.query.filter(ProductHistory.shop_id.isnot(None)).all() if ph.batch_id}
+        ph_shop_by_prod = {(ph.product_title, ph.part_number): ph.shop_id for ph in ProductHistory.query.filter(ProductHistory.shop_id.isnot(None)).all()}
+
+        for gc in gc_nulls:
+            sid = ph_shop_by_batch.get(gc.batch_id) or ph_shop_by_prod.get((gc.product_title, gc.part_number)) or default_shop_id
+            if sid:
+                gc.shop_id = sid
+                updated_gc += 1
+
+    # 3. BatchHistory
+    bh_nulls = BatchHistory.query.filter(BatchHistory.shop_id.is_(None)).all()
+    if bh_nulls:
+        ph_shop_by_batch = {ph.batch_id: ph.shop_id for ph in ProductHistory.query.filter(ProductHistory.shop_id.isnot(None)).all() if ph.batch_id}
+        for bh in bh_nulls:
+            sid = ph_shop_by_batch.get(bh.batch_id) or default_shop_id
+            if sid:
+                bh.shop_id = sid
+                updated_bh += 1
+
+    # 4. ReviewStatus
+    rv_nulls = ReviewStatus.query.filter(ReviewStatus.shop_id.is_(None)).all()
+    if rv_nulls:
+        ph_shop_by_prod = {(ph.product_title, ph.part_number): ph.shop_id for ph in ProductHistory.query.filter(ProductHistory.shop_id.isnot(None)).all()}
+        for rv in rv_nulls:
+            sid = ph_shop_by_prod.get((rv.product_title, rv.part_number)) or default_shop_id
+            if sid:
+                rv.shop_id = sid
+                updated_rv += 1
+
+    # 5. GenerationJob
+    gj_nulls = GenerationJob.query.filter(GenerationJob.shop_id.is_(None)).all()
+    if gj_nulls:
+        ph_shop_by_batch = {ph.batch_id: ph.shop_id for ph in ProductHistory.query.filter(ProductHistory.shop_id.isnot(None)).all() if ph.batch_id}
+        for gj in gj_nulls:
+            sid = ph_shop_by_batch.get(gj.batch_id) or default_shop_id
+            if sid:
+                gj.shop_id = sid
+                updated_gj += 1
+
+    db.session.commit()
+
+    return jsonify({
+        'success': True,
+        'updated': {
+            'product_history': updated_ph,
+            'generated_content': updated_gc,
+            'batch_history': updated_bh,
+            'review_status': updated_rv,
+            'generation_job': updated_gj,
+        }
+    })

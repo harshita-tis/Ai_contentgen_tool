@@ -664,12 +664,15 @@ let SECTION_LABELS = {
  * Fetch the active shop from /api/shops and rebuild SECTION_ORDER + SECTION_LABELS.
  * Falls back to the 5 hardcoded defaults when no shop or no sections configured.
  */
+let currentShopId = null;
+
 async function loadActiveSections(){
   try {
     const res = await fetch(`${API_BASE_URL}/api/shops`);
     const d = await res.json();
     const shops = d.shops || [];
     const activeShop = shops.find(s => s.is_active) || shops[0] || null;
+    currentShopId = activeShop ? activeShop.id : null;
     const shopSections = (activeShop && activeShop.sections && activeShop.sections.length)
       ? activeShop.sections : null;
     const defs = shopSections || _DEFAULT_SECTION_DEFS;
@@ -685,7 +688,8 @@ async function loadActiveSections(){
 async function loadHistory(page = 1) {
   currentPage = page;
   try {
-    const res = await fetch(`${API_BASE_URL}/api/batch-history?page=${page}`);
+    const shopParam = currentShopId ? `&shop_id=${currentShopId}` : '';
+    const res = await fetch(`${API_BASE_URL}/api/batch-history?page=${page}${shopParam}`);
     const data = await res.json();
     allRecords = data.records;
     renderTable(allRecords);
@@ -740,7 +744,8 @@ async function toggleBatch(batchId, idx, btn) {
   if (!isOpen && !expandedRows[batchId]) {
     // Load products for this batch
     try {
-      const res = await fetch(`${API_BASE_URL}/api/batch-products/${encodeURIComponent(batchId)}`);
+      const shopParam = currentShopId ? `?shop_id=${currentShopId}` : '';
+      const res = await fetch(`${API_BASE_URL}/api/batch-products/${encodeURIComponent(batchId)}${shopParam}`);
       const data = await res.json();
       expandedRows[batchId] = data.products || [];
       renderSubTable(batchId, expandedRows[batchId]);

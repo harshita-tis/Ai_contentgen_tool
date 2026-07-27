@@ -50,14 +50,9 @@ CORS(
 _DB_HOST     = os.getenv("HOST", "localhost")
 _DB_USER     = os.getenv("USER", "root")
 #print("Connecting to MySQL database at %s, user %s, database %s", _DB_HOST, _DB_USER, os.getenv("DATABASE", "content_gen"))
-_DB_PASSWORD = os.getenv("PASSWORD", "")
-<<<<<<< HEAD
-_DB_NAME     = os.getenv("DATABASE_PASSWORD", "content_gen")
-=======
+_DB_PASSWORD = os.getenv("DATABASE_PASSWORD", "")
 _DB_NAME     = os.getenv("DATABASE", "content_gen")
->>>>>>> e1e11cfc3c0a3b222a85f77c49b2d49a277325d1
 model = os.getenv("OPENAI_MODEL", "gpt-4o")
-
 app.config['SQLALCHEMY_DATABASE_URI'] = (
     f"mysql+pymysql://{_DB_USER}:{_DB_PASSWORD}@{_DB_HOST}/{_DB_NAME}?charset=utf8mb4"
 )
@@ -88,14 +83,10 @@ def login_required(f):
     @wraps(f)
     def decorated(*args, **kwargs):
         if 'username' not in session:
-            if request.path.startswith('/contentgen/api/'):
+            if request.path.startswith('/api/'):
                 return jsonify({'error': 'Authentication required'}), 401
 
-<<<<<<< HEAD
             return redirect(url_for('login_page', next='/'))
-=======
-            return redirect(url_for('login_page', next='/contentgen/'))
->>>>>>> e1e11cfc3c0a3b222a85f77c49b2d49a277325d1
 
         return f(*args, **kwargs)
 
@@ -106,25 +97,17 @@ def reviewer_required(f):
     @wraps(f)
     def decorated(*args, **kwargs):
         if 'username' not in session:
-            if request.path.startswith('/contentgen/api/'):
+            if request.path.startswith('/api/'):
                 return jsonify({'error': 'Authentication required'}), 401
 
-<<<<<<< HEAD
             return redirect(url_for('login_page', next='/'))
-=======
-            return redirect(url_for('login_page', next='/contentgen/'))
->>>>>>> e1e11cfc3c0a3b222a85f77c49b2d49a277325d1
 
         if session.get('role') != 'reviewer':
-            if request.path.startswith('/contentgen/api/'):
+            if request.path.startswith('/api/'):
                 return jsonify({'error': 'Reviewer access required'}), 403
 
             flash('Access denied: Reviewer role required.', 'error')
-<<<<<<< HEAD
             return redirect('/')
-=======
-            return redirect('https://d5715.www65-181-111-45.a2hosted.com/contentgen/')
->>>>>>> e1e11cfc3c0a3b222a85f77c49b2d49a277325d1
 
         return f(*args, **kwargs)
 
@@ -386,6 +369,7 @@ SECTIONS = list(DEFAULT_PROMPTS.keys())
 
 class GeneratedContent(db.Model):
     id = db.Column(db.Integer, primary_key=True)
+    shop_id = db.Column(db.Integer, db.ForeignKey('shop_config.id'), nullable=True, index=True)
     batch_id = db.Column(db.String(36), index=True)
     product_title = db.Column(db.String(255), nullable=False)
     part_number = db.Column(db.String(100), nullable=False)
@@ -407,6 +391,7 @@ class GeneratedContent(db.Model):
     def to_dict(self):
         return {
             'id': self.id,
+            'shop_id': self.shop_id,
             'batch_id': self.batch_id,
             'product_title': self.product_title,
             'part_number': self.part_number,
@@ -431,6 +416,7 @@ class GeneratedContent(db.Model):
 class ProductHistory(db.Model):
     __tablename__ = 'product_history'
     id = db.Column(db.Integer, primary_key=True)
+    shop_id = db.Column(db.Integer, db.ForeignKey('shop_config.id'), nullable=True, index=True)
     batch_id = db.Column(db.String(36), index=True)
     product_title = db.Column(db.String(255), nullable=False)
     part_number = db.Column(db.String(100), nullable=False)
@@ -451,6 +437,7 @@ class ProductHistory(db.Model):
     def to_dict(self):
         return {
             'id': self.id,
+            'shop_id': self.shop_id,
             'batch_id': self.batch_id,
             'product_title': self.product_title,
             'part_number': self.part_number,
@@ -473,6 +460,7 @@ class ProductHistory(db.Model):
 class BatchHistory(db.Model):
     __tablename__ = 'batch_history'
     id = db.Column(db.Integer, primary_key=True)
+    shop_id = db.Column(db.Integer, db.ForeignKey('shop_config.id'), nullable=True, index=True)
     batch_id = db.Column(db.String(36), unique=True, nullable=False, index=True)
     source = db.Column(db.String(20), default='manual')
     product_count = db.Column(db.Integer, default=0)
@@ -486,6 +474,7 @@ class BatchHistory(db.Model):
     def to_dict(self):
         return {
             'id': self.id,
+            'shop_id': self.shop_id,
             'batch_id': self.batch_id,
             'source': self.source,
             'product_count': self.product_count,
@@ -501,6 +490,7 @@ class BatchHistory(db.Model):
 class ReviewStatus(db.Model):
     __tablename__ = 'review_status'
     id = db.Column(db.Integer, primary_key=True)
+    shop_id = db.Column(db.Integer, db.ForeignKey('shop_config.id'), nullable=True, index=True)
     product_title = db.Column(db.String(255), nullable=False)
     part_number = db.Column(db.String(100), nullable=False)
     status = db.Column(db.String(20), default='pending')
@@ -514,6 +504,7 @@ class ReviewStatus(db.Model):
     def to_dict(self):
         return {
             'id': self.id,
+            'shop_id': self.shop_id,
             'product_title': self.product_title,
             'part_number': self.part_number,
             'status': self.status,
@@ -533,6 +524,7 @@ class GenerationJob(db.Model):
     """
     __tablename__ = 'generation_job'
     id         = db.Column(db.Integer, primary_key=True)
+    shop_id    = db.Column(db.Integer, db.ForeignKey('shop_config.id'), nullable=True, index=True)
     job_id     = db.Column(db.String(36), unique=True, nullable=False, index=True)
     batch_id   = db.Column(db.String(36), nullable=False, index=True)
     status     = db.Column(db.String(20), default='pending')   # pending|running|done|error|cancelled
@@ -551,6 +543,7 @@ class GenerationJob(db.Model):
     def to_dict(self):
         return {
             'job_id': self.job_id,
+            'shop_id': self.shop_id,
             'batch_id': self.batch_id,
             'status': self.status,
             'total_products': self.total_products,
@@ -1171,15 +1164,25 @@ def run_migrations():
             for col, col_type in gc_new_cols.items():
                 if col not in existing_cols:
                     conn.execute(text(f'ALTER TABLE generated_content ADD COLUMN {col} {col_type}'))
+            if 'shop_id' not in existing_cols:
+                conn.execute(text('ALTER TABLE generated_content ADD COLUMN shop_id INTEGER NULL'))
 
-            if 'product_history' in inspector.get_table_names():
+            tables_needing_shop_id = ['product_history', 'batch_history', 'review_status', 'generation_job']
+            table_names = inspector.get_table_names()
+            for tname in tables_needing_shop_id:
+                if tname in table_names:
+                    cols = {c['name'] for c in inspector.get_columns(tname)}
+                    if 'shop_id' not in cols:
+                        conn.execute(text(f'ALTER TABLE {tname} ADD COLUMN shop_id INTEGER NULL'))
+
+            if 'product_history' in table_names:
                 ph_cols = {c['name'] for c in inspector.get_columns('product_history')}
                 ph_new_cols = {'batch_id': 'VARCHAR(36)', 'product_image_url': 'VARCHAR(1024)', 'shopify_url': 'VARCHAR(1024)'}
                 for col, col_type in ph_new_cols.items():
                     if col not in ph_cols:
                         conn.execute(text(f'ALTER TABLE product_history ADD COLUMN {col} {col_type}'))
 
-            if 'shop_config' in inspector.get_table_names():
+            if 'shop_config' in table_names:
                 sc_cols = {c['name'] for c in inspector.get_columns('shop_config')}
                 if 'sections' not in sc_cols:
                     conn.execute(text("ALTER TABLE shop_config ADD COLUMN sections TEXT DEFAULT '[]'"))
@@ -1187,24 +1190,33 @@ def run_migrations():
                     conn.execute(text('ALTER TABLE shop_config ADD COLUMN website_domain VARCHAR(255) NULL'))
 
             # Add batch_id to image_search_generation (new column for batch grouping)
-            if 'image_search_generation' in inspector.get_table_names():
+            if 'image_search_generation' in table_names:
                 isg_cols = {c['name'] for c in inspector.get_columns('image_search_generation')}
                 if 'batch_id' not in isg_cols:
                     conn.execute(text('ALTER TABLE image_search_generation ADD COLUMN batch_id VARCHAR(36) NULL'))
-                    conn.execute(text('ALTER TABLE image_search_generation ADD INDEX ix_image_search_generation_batch_id (batch_id)'))
+                    try:
+                        conn.execute(text('ALTER TABLE image_search_generation ADD INDEX ix_image_search_generation_batch_id (batch_id)'))
+                    except Exception:
+                        pass
                 if 'source' not in isg_cols:
                     conn.execute(text("ALTER TABLE image_search_generation ADD COLUMN source VARCHAR(20) DEFAULT 'manual'"))
                 if 'review_status' not in isg_cols:
                     conn.execute(text("ALTER TABLE image_search_generation ADD COLUMN review_status VARCHAR(20) DEFAULT 'pending'"))
-                    conn.execute(text('ALTER TABLE image_search_generation ADD INDEX ix_image_search_generation_review_status (review_status)'))
+                    try:
+                        conn.execute(text('ALTER TABLE image_search_generation ADD INDEX ix_image_search_generation_review_status (review_status)'))
+                    except Exception:
+                        pass
 
             # Widen job_event.payload from TEXT (64 KB) to MEDIUMTEXT (16 MB)
             # product_done payloads with full HTML can easily exceed 64 KB.
-            if 'job_event' in inspector.get_table_names():
+            if 'job_event' in table_names:
                 col_info = {c['name']: c for c in inspector.get_columns('job_event')}
                 if 'payload' in col_info:
                     col_type_str = str(col_info['payload']['type']).upper()
                     if 'MEDIUMTEXT' not in col_type_str and 'LONGTEXT' not in col_type_str:
-                        conn.execute(text('ALTER TABLE job_event MODIFY COLUMN payload MEDIUMTEXT NOT NULL'))
+                        try:
+                            conn.execute(text('ALTER TABLE job_event MODIFY COLUMN payload MEDIUMTEXT NOT NULL'))
+                        except Exception:
+                            pass
 
             conn.commit()
