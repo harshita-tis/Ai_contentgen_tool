@@ -20,7 +20,6 @@ from urllib.parse import urlparse
 from bs4 import BeautifulSoup
 from playwright.async_api import async_playwright
 import openai
-from flask import render_template
 from shared import BASE_URL
 
 logger = logging.getLogger(__name__)
@@ -1096,8 +1095,15 @@ def image_search_batches():
         items          = []
         any_pending    = False
         for g in rows:
-            image_urls    = json.loads(g.image_urls    or '[]')
-            selected_urls = json.loads(g.selected_urls or '[]')
+            # image_urls    = json.loads(g.image_urls    or '[]')
+            # selected_urls = json.loads(g.selected_urls or '[]')
+            image_urls        = json.loads(g.image_urls    or '[]')
+            selected_urls_raw = json.loads(g.selected_urls or '[]')
+            selected_urls = [
+                (u if isinstance(u, str) else u.get('url', ''))
+                for u in selected_urls_raw
+            ]
+            selected_urls = [u for u in selected_urls if u]
             img_cnt = len(image_urls)
             sel_cnt = len(selected_urls)
             total_images   += img_cnt
@@ -1118,6 +1124,8 @@ def image_search_batches():
                 'query_used':     g.query_used      or '',
                 'image_count':    img_cnt,
                 'selected_count': sel_cnt,
+
+                'selected_urls': selected_urls,
                 'review_status':  r_status,
                 'input_tokens':   g.input_tokens    or 0,
                 'output_tokens':  g.output_tokens   or 0,
@@ -1213,6 +1221,31 @@ def image_search_generation_detail(generation_id):
 def history_image_search_page():
     return render_template('history_image_search.html',BASE_URL=BASE_URL)
 
+def _delete_existing_shopify_images(shop_domain, token, api_version, numeric_id):
+    """Deletes every existing image on a Shopify product. Used for 'replace' mode
+    since Shopify's REST API has no bulk replace endpoint."""
+    headers = {'Content-Type': 'application/json', 'X-Shopify-Access-Token': token}
+    list_endpoint = f"{_shopify_base_url(shop_domain)}/admin/api/{api_version}/products/{numeric_id}/images.json"
+    try:
+        r = requests.get(list_endpoint, headers=headers, timeout=15)
+        if not r.ok:
+            logger.warning(f'replace-mode: could not list images for product {numeric_id}: HTTP {r.status_code}')
+            return
+        existing_images = r.json().get('images', [])
+    except Exception as e:
+        logger.warning(f'replace-mode: failed to list images for product {numeric_id}: {e}')
+        return
+
+    for img in existing_images:
+        img_id = img.get('id')
+        if not img_id:
+            continue
+        del_endpoint = f"{_shopify_base_url(shop_domain)}/admin/api/{api_version}/products/{numeric_id}/images/{img_id}.json"
+        try:
+            requests.delete(del_endpoint, headers=headers, timeout=15)
+        except Exception as e:
+            logger.warning(f'replace-mode: failed to delete image {img_id} on product {numeric_id}: {e}')
+
 
 @app.route('/api/image-search/publish-to-shops', methods=['POST'])
 @login_required
@@ -1233,6 +1266,9 @@ def publish_image_to_shops():
     generation_id = (body.get('generation_id') or '').strip()
     image_urls    = body.get('image_urls') or []
     shop_ids      = body.get('shop_ids') or []
+    mode          = (body.get('mode') or 'replace').strip().lower()
+    if mode not in ('append', 'replace'):
+        mode = 'replace'
 
     if not generation_id:
         return jsonify({'error': 'generation_id is required'}), 400
@@ -1288,16 +1324,15 @@ def publish_image_to_shops():
                 else:
                     seg = _extract_products_path_segment(matched_url)
                     if seg:
-                        if seg.isdigit():
+                        body_gql = _shopify_graphql_with_creds(
+                            _GQL_PRODUCT_BY_HANDLE, {'handle': seg},
+                            shop_domain, shop_token, api_version
+                        )
+                        node = (body_gql.get('data') or {}).get('productByHandle')
+                        if node and node.get('id'):
+                            gid = node.get('id')
+                        elif seg.isdigit():
                             gid = f'gid://shopify/Product/{seg}'
-                        else:
-                            body_gql = _shopify_graphql_with_creds(
-                                _GQL_PRODUCT_BY_HANDLE, {'handle': seg},
-                                shop_domain, shop_token, api_version
-                            )
-                            node = (body_gql.get('data') or {}).get('productByHandle')
-                            if node:
-                                gid = node.get('id')
             except Exception as e:
                 logger.warning(f'publish-to-shops: GID from URL failed for shop {shop.id}: {e}')
 
@@ -1331,6 +1366,8 @@ def publish_image_to_shops():
         numeric_id = gid.split('/')[-1]
         endpoint_img = f"{_shopify_base_url(shop_domain)}/admin/api/{api_version}/products/{numeric_id}/images.json"
         headers_img  = {'Content-Type': 'application/json', 'X-Shopify-Access-Token': shop_token}
+        if mode == 'replace':
+            _delete_existing_shopify_images(shop_domain, shop_token, api_version, numeric_id)
 
         published_count = 0
         shop_errors     = []
