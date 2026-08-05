@@ -16,7 +16,7 @@ from shared import (
     _fetch_by_product_id, _fetch_by_storefront_url, _fetch_by_handle_admin,
     _webcate_from_tags, _subcate_from_tags, _parse_gql_product, _parse_rest_product,
     _fetch_shopify_product, fetch_shopify_image_by_product_url, _extract_products_path_segment,
-    model, API_KEY, _cancel_events,
+    model, API_KEY, _cancel_events,_GQL_METAFIELD_DEFINITIONS
 )
 from flask import render_template, request, jsonify, Response, stream_with_context, session, flash, redirect, url_for
 from datetime import datetime, timezone
@@ -118,13 +118,28 @@ def _shopify_product_gid_from_product_url(shopify_url: str) -> str | None:
     seg = _extract_products_path_segment(u)
     if not seg:
         return None
+
+    # Path segment in storefront URL (/products/...) is ALWAYS the handle.
+    # Query productByHandle first (handles can be alphanumeric OR numeric like "9178024596").
+    try:
+        body = _shopify_graphql(_GQL_PRODUCT_BY_HANDLE, {'handle': seg})
+        node = (body.get('data') or {}).get('productByHandle')
+        if node and node.get('id'):
+            return node.get('id')
+    except Exception as e:
+        logger.warning(f"[_shopify_product_gid_from_product_url] handle lookup failed for '{seg}': {e}")
+
+    # Fallback for numeric segment if handle query returned null: try as product ID
     if seg.isdigit():
-        return f'gid://shopify/Product/{seg}'
-    body = _shopify_graphql(_GQL_PRODUCT_BY_HANDLE, {'handle': seg})
-    if body.get('errors'):
-        raise RuntimeError(f'Shopify productByHandle: {body["errors"]}')
-    node = (body.get('data') or {}).get('productByHandle')
-    return node.get('id') if node else None
+        try:
+            body_id = _shopify_graphql(_GQL_PRODUCT, {'id': f'gid://shopify/Product/{seg}'})
+            node_id = (body_id.get('data') or {}).get('product')
+            if node_id and node_id.get('id'):
+                return node_id.get('id')
+        except Exception as e:
+            logger.warning(f"[_shopify_product_gid_from_product_url] ID lookup failed for '{seg}': {e}")
+
+    return None
 
 
 def _shopify_product_gid_from_sku(part_number: str) -> str | None:
@@ -233,6 +248,24 @@ def _record_html_for_shopify(rec) -> str:
         return ''
     return (rec.html_text or '').strip()
 
+def _live_metafield_types() -> dict:
+    """
+    Queries the ACTIVE shop's real metafield definitions from Shopify and
+    returns {'namespace.key': 'type_name'}. This is the ground truth Shopify
+    enforces on write — different stores can define the same key with
+    different types, so this must be checked per-store, not hardcoded.
+    Returns {} on any failure (callers fall back to their existing defaults).
+    """
+    try:
+        body = _shopify_graphql(_GQL_METAFIELD_DEFINITIONS)
+        edges = ((body.get('data') or {}).get('metafieldDefinitions', {}).get('edges') or [])
+        return {
+            f"{(e['node'].get('namespace') or '')}.{(e['node'].get('key') or '')}": (e['node'].get('type') or {}).get('name')
+            for e in edges
+        }
+    except Exception as e:
+        logger.warning(f'_live_metafield_types failed: {e}')
+        return {}
 
 def _get_metafield_cfg_by_key() -> dict:
     """
@@ -262,6 +295,158 @@ def _get_metafield_cfg_by_key() -> dict:
     except Exception as e:
         logger.warning(f'_get_metafield_cfg_by_key failed: {e}')
     return defaults
+
+
+# def publish_generated_content_to_shopify(product_title: str, part_number: str, shopify_url: str = '') -> dict:
+#     logger.info(
+#         "[PUBLISH] START title=%r part_number=%r shopify_url=%r",
+#         product_title, part_number, shopify_url,
+#     )
+#     gid = _shopify_product_gid_from_product_url(shopify_url) if shopify_url else None
+#     if not gid:
+#         # Fall back to SKU-based lookup using the active shop
+#         logger.info("[PUBLISH] No gid from shopify_url, falling back to SKU lookup for part_number=%r", part_number)
+#         gid = _shopify_product_gid_from_sku(part_number)
+#     if not gid:
+#         raise ValueError(f'Could not resolve a Shopify product for part number "{part_number}". Check that the SKU exists in your Shopify store.')
+#     logger.info("[PUBLISH] Resolved target product gid=%s for shopify_url=%r", gid, shopify_url)
+
+#     # Resolve which batch's content actually belongs to this shopify_url, so we don't pull
+#     # content generated for a different listing of the same (title, part_number).
+#     target_batch_id = _batch_id_for_shopify_url(product_title, part_number, shopify_url)
+
+#     body_html    = _record_html_for_shopify(_latest_generated_record(product_title, part_number, 'product_description', target_batch_id))
+#     mf_specs     = _record_html_for_shopify(_latest_generated_record(product_title, part_number, 'technical_specifications', target_batch_id))
+#     mf_bullets   = _record_html_for_shopify(_latest_generated_record(product_title, part_number, 'short_description', target_batch_id))
+#     mf_causes    = _record_html_for_shopify(_latest_generated_record(product_title, part_number, 'common_problems', target_batch_id))
+#     mf_install   = _record_html_for_shopify(_latest_generated_record(product_title, part_number, 'installation_guide', target_batch_id))
+
+#     # Fetch SEO plain text (not HTML) for meta title and meta description
+#     meta_title_rec = _latest_generated_record(product_title, part_number, 'meta_title', target_batch_id)
+#     meta_desc_rec  = _latest_generated_record(product_title, part_number, 'meta_description', target_batch_id)
+#     meta_title_val = (meta_title_rec.plain_text or '').strip() if meta_title_rec else ''
+#     meta_desc_val  = (meta_desc_rec.plain_text  or '').strip() if meta_desc_rec  else ''
+
+#     if not any([body_html, mf_specs, mf_bullets, mf_causes, mf_install, meta_title_val, meta_desc_val]):
+#         raise ValueError('No generated content found for this product — nothing to publish.')
+
+#     logger.info(
+#         "[PUBLISH] About to write to gid=%s | body_html_len=%d meta_title=%r meta_desc_len=%d "
+#         "| specs_len=%d bullets_len=%d causes_len=%d install_len=%d",
+#         gid, len(body_html), meta_title_val, len(meta_desc_val),
+#         len(mf_specs), len(mf_bullets), len(mf_causes), len(mf_install),
+#     )
+
+#     # Always update title; include descriptionHtml only if generated
+#     # Include SEO fields if meta title or meta description were generated
+#     product_input = {'id': gid, 'title': product_title}
+#     if body_html:
+#         product_input['descriptionHtml'] = body_html
+#     if meta_title_val or meta_desc_val:
+#         seo_input = {}
+#         if meta_title_val:
+#             seo_input['title'] = meta_title_val[:255]  # Shopify SEO title limit
+#         if meta_desc_val:
+#             seo_input['description'] = meta_desc_val[:512]  # Shopify SEO description limit
+#         product_input['seo'] = seo_input
+
+#     pu = _shopify_graphql(_GQL_PRODUCT_UPDATE, {'input': product_input})
+#     if pu.get('errors'):
+#         raise RuntimeError(f'Shopify productUpdate: {pu["errors"]}')
+#     pu_user_errors = (((pu.get('data') or {}).get('productUpdate') or {}).get('userErrors') or [])
+#     if pu_user_errors:
+#         raise RuntimeError(f'Shopify productUpdate userErrors: {pu_user_errors}')
+
+#     # Build a dynamic section → metafield config from the shop's saved sections.
+#     # Each saved section has: { name, metafield, namespace, key, target, type, ... }
+#     # We match on normalized section name against SECTION_LABELS values.
+#     def _build_dynamic_section_mf_cfg() -> dict:
+#         """
+#         Returns { section_db_key: { namespace, key, type } } built from the active
+#         shop's saved sections, matched by normalizing the section's 'name' field
+#         against SECTION_LABELS values. Falls back to hardcoded defaults if no
+#         shop section config is found for a given section.
+#         """
+#         # Inverted: normalized label → section DB key  e.g. "short description" → "short_description"
+#         label_to_section_key = {v.strip().lower(): k for k, v in SECTION_LABELS.items()}
+
+#         result = {}
+#         try:
+#             shop = _get_active_shop()
+#             if shop:
+#                 saved_sections = json.loads(shop.sections or '[]')
+#                 for s in saved_sections:
+#                     s_name = (s.get('name') or '').strip().lower()
+#                     section_key = label_to_section_key.get(s_name)
+#                     if not section_key:
+#                         continue
+#                     # Only push sections that target a metafield (not bodyHtml / SEO)
+#                     if (s.get('target') or '').strip().lower() != 'metafield':
+#                         continue
+#                     ns  = (s.get('namespace') or 'custom').strip()
+#                     key = (s.get('key') or '').strip()
+#                     typ = (s.get('type') or SHOPIFY_METAFIELD_TYPES.get(key, 'multi_line_text_field')).strip()
+#                     if key:
+#                         result[section_key] = {'namespace': ns, 'key': key, 'type': typ}
+#         except Exception as e:
+#             logger.warning(f'_build_dynamic_section_mf_cfg failed: {e}')
+
+#         # Hardcoded fallback for any section not covered by shop config
+#         fallback = {
+#             'technical_specifications': {'namespace': 'custom', 'key': 'technical_specifications',    'type': 'multi_line_text_field'},
+#             'short_description':        {'namespace': 'custom', 'key': 'short_description',           'type': 'multi_line_text_field'},
+#             'common_problems':          {'namespace': 'custom', 'key': 'common_causes',               'type': 'multi_line_text_field'},
+#             'installation_guide':       {'namespace': 'custom', 'key': 'symptoms_installation_guide', 'type': 'multi_line_text_field'},
+#         }
+#         for k, v in fallback.items():
+#             result.setdefault(k, v)
+#         return result
+
+#     section_mf_cfg = _build_dynamic_section_mf_cfg()
+#     logger.info(f"section_mf_cfg (dynamic): {section_mf_cfg}")
+
+#     metafields_payload = []
+#     for section_key, val in (
+#         ('technical_specifications', mf_specs),
+#         ('short_description',        mf_bullets),
+#         ('common_problems',          mf_causes),
+#         ('installation_guide',       mf_install),
+#     ):
+#         if not (val or '').strip():
+#             continue
+#         cfg = section_mf_cfg.get(section_key)
+#         if not cfg:
+#             logger.warning(f'No metafield config found for section "{section_key}", skipping.')
+#             continue
+#         # single_line_text_field rejects newlines — collapse to one line while keeping HTML tags
+#         mf_value = val
+#         if cfg['type'] == 'single_line_text_field':
+#             mf_value = ' '.join(val.split())
+#         metafields_payload.append({
+#             'ownerId':   gid,
+#             'namespace': cfg['namespace'],
+#             'key':       cfg['key'],
+#             'type':      cfg['type'],
+#             'value':     mf_value,
+#         })
+
+#     if metafields_payload:
+#         ms = _shopify_graphql(_GQL_METAFIELDS_SET, {'metafields': metafields_payload})
+#         if ms.get('errors'):
+#             raise RuntimeError(f'Shopify metafieldsSet: {ms["errors"]}')
+#         ms_user_errors = (((ms.get('data') or {}).get('metafieldsSet') or {}).get('userErrors') or [])
+#         if ms_user_errors:
+#             logger.info(f"error-:{ms_user_errors}")
+#             raise RuntimeError(f'Shopify metafieldsSet userErrors: {ms_user_errors}')
+
+#     return {
+#         'product_gid':          gid,
+#         'body_html_updated':    bool(body_html),
+#         'metafields_set':       len(metafields_payload),
+#         'seo_title_updated':    bool(meta_title_val),
+#         'seo_description_updated': bool(meta_desc_val),
+#         'shopify_url':          (shopify_url or '')[:512],
+#     }
 
 
 def publish_generated_content_to_shopify(product_title: str, part_number: str, shopify_url: str = '') -> dict:
@@ -370,7 +555,9 @@ def publish_generated_content_to_shopify(product_title: str, part_number: str, s
         return result
 
     section_mf_cfg = _build_dynamic_section_mf_cfg()
+    live_types = _live_metafield_types()
     logger.info(f"section_mf_cfg (dynamic): {section_mf_cfg}")
+    logger.info(f"live_types (from Shopify definitions): {live_types}")
 
     metafields_payload = []
     for section_key, val in (
@@ -385,6 +572,18 @@ def publish_generated_content_to_shopify(product_title: str, part_number: str, s
         if not cfg:
             logger.warning(f'No metafield config found for section "{section_key}", skipping.')
             continue
+
+        # If Shopify already has a live definition for this namespace.key, its type WINS.
+        # This is what stops single_line/multi_line mismatches permanently, across every
+        # store, without needing a hardcoded per-store guess.
+        live_type = live_types.get(f"{cfg['namespace']}.{cfg['key']}")
+        if live_type and live_type != cfg['type']:
+            logger.info(
+                '[PUBLISH] Overriding configured type for %s.%s: %s -> %s (live Shopify definition)',
+                cfg['namespace'], cfg['key'], cfg['type'], live_type,
+            )
+            cfg = {**cfg, 'type': live_type}
+
         # single_line_text_field rejects newlines — collapse to one line while keeping HTML tags
         mf_value = val
         if cfg['type'] == 'single_line_text_field':
@@ -415,7 +614,7 @@ def publish_generated_content_to_shopify(product_title: str, part_number: str, s
         'shopify_url':          (shopify_url or '')[:512],
     }
 
-
+    
 def _get_shop_section_templates_by_name() -> dict:
     """
     Returns {normalized_name: template_string} from the active shop's saved sections.
@@ -1344,6 +1543,24 @@ def _run_generation_job(job_id: str, batch_id: str, products: list, active_secti
     # ── Helpers scoped to this job ────────────────────────────────────────────
 
     _seq_counter = [0]
+    completed_client_ids = set()
+
+    with app.app_context():
+        # Check highest existing sequence number for this job so resumed sequence numbers don't clash
+        last_ev = JobEvent.query.filter_by(job_id=job_id).order_by(JobEvent.seq.desc()).first()
+        if last_ev:
+            _seq_counter[0] = last_ev.seq
+
+        # Identify products that were already completed in a previous attempt of this job
+        past_done_events = JobEvent.query.filter_by(job_id=job_id, event_type='product_done').all()
+        for ev in past_done_events:
+            try:
+                ev_data = json.loads(ev.payload)
+                cid = ev_data.get('id')
+                if cid:
+                    completed_client_ids.add(str(cid))
+            except Exception:
+                pass
 
     def _store_event(event_type: str, payload: dict):
         """Persist one SSE event to JobEvent and update the job's updated_at."""
@@ -1395,22 +1612,27 @@ def _run_generation_job(job_id: str, batch_id: str, products: list, active_secti
             return False
 
     try:
-        _update_job('running')
+        done_count = len(completed_client_ids)
+        _update_job('running', done_products=done_count)
         logger.info(
-            "[JOB %s] init | batch_id=%s products=%d sections=%s",
-            job_id, batch_id, len(products), active_sections
+            "[JOB %s] init | batch_id=%s products=%d sections=%s | completed_so_far=%d",
+            job_id, batch_id, len(products), active_sections, done_count
         )
-        _store_event('batch_start', {'batch_id': batch_id, 'total_products': len(products)})
+
+        with app.app_context():
+            has_start = JobEvent.query.filter_by(job_id=job_id, event_type='batch_start').first()
+            if not has_start:
+                _store_event('batch_start', {'batch_id': batch_id, 'total_products': len(products)})
 
         grand_total_in  = 0
         grand_total_out = 0
         db_lock = threading.Lock()
-        done_count = 0
 
         with app.app_context():
             _job_obj = GenerationJob.query.filter_by(job_id=job_id).first()
             _shop = _get_active_shop()
-            job_shop_id       = payload.get('shop_id') or (_job_obj.shop_id if _job_obj else None) or (_shop.id if _shop else None)
+            job_payload = json.loads(_job_obj.payload) if (_job_obj and _job_obj.payload) else {}
+            job_shop_id       = job_payload.get('shop_id') or (_job_obj.shop_id if _job_obj else None) or (_shop.id if _shop else None)
             _shop_domain      = (_shop.domain.strip()       if _shop else '')
             _shop_token       = (_shop.access_token.strip() if _shop else '')
             _shop_api_version = ((_shop.api_version or '2024-01').strip() if _shop else '2024-01')
@@ -1431,35 +1653,48 @@ def _run_generation_job(job_id: str, batch_id: str, products: list, active_secti
                 })
                 return
 
+            _update_job('running')
+
+            batch_start_idx = batch_index * BATCH_SIZE
+            uncompleted_batch = []
+            for i, prod in enumerate(batch):
+                client_id = _client_id_for_product(prod, batch_start_idx + i)
+                if client_id not in completed_client_ids:
+                    uncompleted_batch.append(prod)
+
+            if not uncompleted_batch:
+                logger.info(f"[JOB {job_id}][BATCH {batch_index + 1}/{len(product_batches)}] All products in batch already completed — skipping")
+                continue
+
             if batch_index > 0:
                 time.sleep(INTER_BATCH_DELAY)
 
-            logger.info(f"[JOB {job_id}][BATCH {batch_index + 1}/{len(product_batches)}] ▶ {len(batch)} products")
+            logger.info(f"[JOB {job_id}][BATCH {batch_index + 1}/{len(product_batches)}] ▶ {len(uncompleted_batch)} uncompleted product(s)")
             logger.info(
                 "[JOB %s][BATCH %d] product_keys=%s",
                 job_id,
                 batch_index + 1,
                 [
                     {
-                        'client_id': _client_id_for_product(p, i),
+                        'client_id': _client_id_for_product(p, batch_start_idx + i),
                         'title': (p.get('product_title') or '').strip(),
                         'part_number': (p.get('part_number') or '').strip(),
                         'brand': (p.get('brand') or '').strip(),
                         'shopify_url': (p.get('shopify_url') or '').strip(),
                     }
-                    for i, p in enumerate(batch)
+                    for i, p in enumerate(uncompleted_batch)
                 ],
             )
 
-            product_data = {_client_id_for_product(prod, i): {
+            product_data = {_client_id_for_product(prod, batch_start_idx + i): {
                 'prod': prod, 'sections': {}, 'total_in': 0, 'total_out': 0,
                 'done_sections': 0
-            } for i, prod in enumerate(batch)}
+            } for i, prod in enumerate(uncompleted_batch)}
 
             # Step 1: resolve images
             with ThreadPoolExecutor(max_workers=MAX_WORKERS) as img_executor:
-                for i, prod in enumerate(batch):
-                    client_id      = _client_id_for_product(prod, i)
+                for i, prod in enumerate(uncompleted_batch):
+                    client_id      = _client_id_for_product(prod, batch_start_idx + i)
                     part_number    = prod.get('part_number', '').strip()
                     shopify_url_in = (prod.get('shopify_url') or '').strip()
                     if shopify_url_in:
@@ -1474,13 +1709,10 @@ def _run_generation_job(job_id: str, batch_id: str, products: list, active_secti
                         )
                     product_data[client_id]['img_future'] = img_future
 
-            # Collect image URLs. Keyed by client_id (NOT part_number) — the same
-            # part_number can legitimately appear on multiple distinct products
-            # in a batch (OEM cross-reference), and a part_number-keyed map would
-            # silently overwrite entries for those products.
+            # Collect image URLs. Keyed by client_id (NOT part_number)
             image_url_map: dict[str, str] = {}
-            for i, prod in enumerate(batch):
-                client_id   = _client_id_for_product(prod, i)
+            for i, prod in enumerate(uncompleted_batch):
+                client_id   = _client_id_for_product(prod, batch_start_idx + i)
                 img_fut     = product_data[client_id].get('img_future')
                 img_url     = ''
                 if img_fut:
@@ -1493,11 +1725,11 @@ def _run_generation_job(job_id: str, batch_id: str, products: list, active_secti
                 job_id, batch_index + 1, image_url_map
             )
 
-            # Step 2: one API call per section for ALL products in this batch
+            # Step 2: one API call per section for ALL uncompleted products in this batch
             valid_batch = []
             valid_client_ids = []
-            for i, prod in enumerate(batch):
-                client_id     = _client_id_for_product(prod, i)
+            for i, prod in enumerate(uncompleted_batch):
+                client_id     = _client_id_for_product(prod, batch_start_idx + i)
                 product_title = prod.get('product_title', '').strip()
                 part_number   = prod.get('part_number', '').strip()
                 if not product_title or not part_number:
@@ -1523,7 +1755,7 @@ def _run_generation_job(job_id: str, batch_id: str, products: list, active_secti
                         image_url_map,
                         4,            # max_retries
                         _cancel_ev,   # cancel signal
-                        valid_client_ids,  # unique keys — part_number is not reliably unique
+                        valid_client_ids,  # unique keys
                     ): section
                     for section in active_sections
                 }
@@ -1635,7 +1867,8 @@ def _run_generation_job(job_id: str, batch_id: str, products: list, active_secti
 
                 grand_total_in  += total_in
                 grand_total_out += total_out
-                done_count      += 1
+                completed_client_ids.add(client_id)
+                done_count      = len(completed_client_ids) 
 
                 event_payload = {
                     'id': client_id,
@@ -1771,7 +2004,7 @@ def generate_stream():
     # the DB rather than from in-memory state — the job is designed to be
     # resumable/executable from any process.
     active_shop = _get_active_shop()
-    stream_shop_id = (data.get('shop_id') or session.get('active_shop_id') or (active_shop.id if active_shop else None))
+    stream_shop_id = (body.get('shop_id') or session.get('active_shop_id') or (active_shop.id if active_shop else None))
     with app.app_context():
         job = GenerationJob(
             job_id=job_id, shop_id=stream_shop_id, batch_id=batch_id,
@@ -1850,7 +2083,6 @@ def job_stream(job_id: str):
                         break
 
             time.sleep(0.3)
-
     return Response(stream_with_context(event_stream()), mimetype='text/event-stream',
                     headers={'Cache-Control': 'no-cache', 'X-Accel-Buffering': 'no', 'Connection': 'keep-alive'})
 
@@ -1921,36 +2153,93 @@ def list_jobs():
         return jsonify({'jobs': [j.to_dict() for j in jobs]})
 
 
+# @app.route('/api/product-sections')
+# @login_required
+# def get_product_sections():
+#     product_title = request.args.get('product_title', '').strip()
+#     part_number   = request.args.get('part_number', '').strip()
+#     batch_id      = request.args.get('batch_id', '').strip()
+#     logger.info(
+#         "product-sections request | title=%r part_number=%s batch_id=%s",
+#         product_title, part_number, batch_id
+#     )
+#     if not product_title or not part_number:
+#         return jsonify({'error': 'product_title and part_number are required'}), 400
+
+#     sections = {}
+#     for section in SECTIONS:
+#         q = GeneratedContent.query.filter_by(
+#             product_title=product_title, part_number=part_number, section=section
+#         )
+#         if batch_id:
+#             q = q.filter_by(batch_id=batch_id)
+#         record = q.order_by(GeneratedContent.created_at.desc()).first()
+#         if record:
+#             sections[section] = {
+#                 'record_id': record.id,
+#                 'plain_text': record.plain_text, 'html_text': record.html_text,
+#                 'prompt_used': record.prompt_used, 'prompt_type': record.prompt_type,
+#                 'input_tokens': record.input_tokens, 'output_tokens': record.output_tokens,
+#                 'total_tokens': record.total_tokens, 'model_used': record.model_used,
+#                 'created_at': record.created_at.strftime('%Y-%m-%d %H:%M:%S'),
+#             }
+#     logger.info(
+#         "product-sections response | title=%r part_number=%s batch_id=%s section_record_ids=%s",
+#         product_title,
+#         part_number,
+#         batch_id,
+#         {k: v.get('record_id') for k, v in sections.items()},
+#     )
+#     return jsonify({'sections': sections})
+
 @app.route('/api/product-sections')
 @login_required
 def get_product_sections():
     product_title = request.args.get('product_title', '').strip()
     part_number   = request.args.get('part_number', '').strip()
     batch_id      = request.args.get('batch_id', '').strip()
+
     logger.info(
         "product-sections request | title=%r part_number=%s batch_id=%s",
         product_title, part_number, batch_id
     )
+
     if not product_title or not part_number:
         return jsonify({'error': 'product_title and part_number are required'}), 400
 
     sections = {}
     for section in SECTIONS:
         q = GeneratedContent.query.filter_by(
-            product_title=product_title, part_number=part_number, section=section
+            product_title=product_title,
+            part_number=part_number,
+            section=section
         )
+
         if batch_id:
             q = q.filter_by(batch_id=batch_id)
+
         record = q.order_by(GeneratedContent.created_at.desc()).first()
+
         if record:
+            # Backfill html_text for legacy records that only have plain_text
+            html_val = (record.html_text or '').strip()
+            if not html_val and (record.plain_text or '').strip():
+                html_val = _plain_text_to_html(record.plain_text)
+
             sections[section] = {
                 'record_id': record.id,
-                'plain_text': record.plain_text, 'html_text': record.html_text,
-                'prompt_used': record.prompt_used, 'prompt_type': record.prompt_type,
-                'input_tokens': record.input_tokens, 'output_tokens': record.output_tokens,
-                'total_tokens': record.total_tokens, 'model_used': record.model_used,
+                'section_label': SECTION_LABELS.get(record.section, record.section),
+                'plain_text': record.plain_text,
+                'html_text': html_val,
+                'prompt_used': record.prompt_used,
+                'prompt_type': record.prompt_type,
+                'input_tokens': record.input_tokens,
+                'output_tokens': record.output_tokens,
+                'total_tokens': record.total_tokens,
+                'model_used': record.model_used,
                 'created_at': record.created_at.strftime('%Y-%m-%d %H:%M:%S'),
             }
+
     logger.info(
         "product-sections response | title=%r part_number=%s batch_id=%s section_record_ids=%s",
         product_title,
@@ -1958,8 +2247,8 @@ def get_product_sections():
         batch_id,
         {k: v.get('record_id') for k, v in sections.items()},
     )
-    return jsonify({'sections': sections})
 
+    return jsonify({'sections': sections})
 
 @app.route('/api/history')
 @login_required
@@ -2412,12 +2701,17 @@ def update_review_status():
 def api_shopify_product():
     body = request.json or {}
     url = (body.get('url') or '').strip()
+    if not url:
+        logger.warning("[api_shopify_product] Received request with empty or missing 'url'")
+        return jsonify({'success': False, 'error': 'Product URL is required'}), 400
+    logger.info(f"[api_shopify_product] Fetch request received for url='{url}'")
     try:
         product = _fetch_shopify_product(url)
+        logger.info(f"[api_shopify_product] SUCCESS for url='{url}' -> title='{product.get('title')}', part_number='{product.get('part_number')}'")
         return jsonify({'success': True, 'product': product})
     except Exception as e:
-        logger.exception(f"[api_shopify_product] failed for url={url}")
-        return jsonify({'success': False, 'error': str(e)}), 500
+        logger.error(f"[api_shopify_product] FAILED for url='{url}': {e}", exc_info=True)
+        return jsonify({'success': False, 'error': str(e), 'url': url}), 400
 
 @app.route('/api/shopify-products-batch', methods=['POST'])
 @login_required
@@ -2426,18 +2720,24 @@ def fetch_shopify_products_batch():
     urls = body.get('urls') or []
     if not urls: return jsonify({'error': 'urls array is required'}), 400
     if len(urls) > 100: return jsonify({'error': 'Maximum 100 URLs per batch'}), 400
+    logger.info(f"[fetch_shopify_products_batch] Processing batch request of {len(urls)} URLs")
     products, errors = [], []
-    for raw_url in urls:
+    for idx, raw_url in enumerate(urls):
         raw_url = (raw_url or '').strip()
         if not raw_url:
-            errors.append({'url': raw_url, 'error': 'Empty URL'})
+            err_msg = 'Empty URL'
+            logger.warning(f"[fetch_shopify_products_batch] Row #{idx+1}: {err_msg}")
+            errors.append({'row': idx + 1, 'url': raw_url, 'error': err_msg})
             continue
         try:
             product = _fetch_shopify_product(raw_url)
             product['source_url'] = raw_url
             products.append(product)
+            logger.info(f"[fetch_shopify_products_batch] Row #{idx+1} SUCCESS for '{raw_url}'")
         except Exception as e:
-            errors.append({'url': raw_url, 'error': str(e)})
+            logger.error(f"[fetch_shopify_products_batch] Row #{idx+1} FAILED for '{raw_url}': {e}")
+            errors.append({'row': idx + 1, 'url': raw_url, 'error': str(e)})
+    logger.info(f"[fetch_shopify_products_batch] Batch complete: {len(products)} fetched, {len(errors)} failed")
     return jsonify({'success': True, 'products': products, 'errors': errors, 'fetched': len(products), 'failed': len(errors)})
 
 @app.route('/api/product-image', methods=['POST'])
