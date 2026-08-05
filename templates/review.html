@@ -689,6 +689,35 @@
       height: 11px;
       flex-shrink: 0;
     }
+    .batch-export-content-btn {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        gap: 4px;
+        margin-left: 6px;
+        margin-right: -4px;
+        padding: 3px 8px;
+        background: var(--surface2);
+        border: 1px solid var(--border);
+        border-radius: 6px;
+        color: var(--text-3);
+        font-size: 0.66rem;
+        font-weight: 600;
+        cursor: pointer;
+        transition: all 0.12s;
+        white-space: nowrap;
+      }
+
+      .batch-export-content-btn:hover:not(:disabled) {
+        border-color: var(--accent);
+        color: var(--accent);
+        background: var(--accent-soft);
+      }
+
+      .batch-export-content-btn:disabled {
+        opacity: 0.6;
+        cursor: default;
+      }
 
     /* ── Product list inside batch ── */
 
@@ -1634,10 +1663,10 @@
         <input type="text" class="search-input" id="searchInput" placeholder="Search products…" oninput="onSearch()" />
       </div>
       <div class="filter-tabs">
-        <button class="filter-tab active" onclick="setFilter('all', this)">
+        <button class="filter-tab" onclick="setFilter('all', this)">
           All
         </button>
-        <button class="filter-tab" onclick="setFilter('pending', this)">
+        <button class="filter-tab active" onclick="setFilter('pending', this)">
           Pending
         </button>
         <button class="filter-tab" onclick="setFilter('reviewed', this)">
@@ -1980,7 +2009,7 @@
     var _totalBatchPages = 1;
     var _totalBatches = 0;
     var _batchesPerPage = 10; /* how many batches per page */
-    var _currentFilter = "all";
+    var _currentFilter = "pending";
     var _searchQuery = "";
     var _searchDebounce = null;
     var _shops = [];
@@ -1993,6 +2022,7 @@
     var _currentUser = '{{ session.get("username", "") }}';
     var _activeShopDomain = "";
     var _openBatches = {};
+    var _loadToken = 0;
 
     /* ── Init ── */
     initPublishShopSelector()
@@ -2027,6 +2057,7 @@
     /* ── Fetch one page of real batches from the server, with filters applied server-side ── */
     function loadBatchesPage(page) {
       page = page || 1;
+      var myToken = ++_loadToken;
       document.getElementById("batchList").innerHTML =
         '<div class="list-loading"><div class="spinner"></div> Loading…</div>';
 
@@ -2046,6 +2077,8 @@
           return r.json();
         })
         .then(function (d) {
+          if (myToken !== _loadToken)
+          return;
           _currentBatches = (d.batches || []).map(_decorateBatch);
           _batchPage = d.current_page || 1;
           _totalBatchPages = d.pages || 1;
@@ -2053,6 +2086,8 @@
           renderBatchesPage();
         })
         .catch(function () {
+          (myToken !== _loadToken)
+          return;
           document.getElementById("batchList").innerHTML =
             '<div class="list-empty">Failed to load products.</div>';
         });
@@ -2270,41 +2305,51 @@
             ? " of " + batch.product_count
             : "") +
           " items</div>" +
-          (String(batch.batch_source || "").toLowerCase() === "csv"
-            ? '<button class="batch-export-btn" data-batch="' +
-            globalIdx +
-            '" title="Export published CSV">⬇ CSV</button>'
-            : "") +
-          "</div>";
+         (String(batch.batch_source || "").toLowerCase() === "csv"
+              ? '<button class="batch-export-btn" data-batch="' +
+                globalIdx +
+                 '" title="Export batch CSV">⬇ CSV</button>' +
+                '<button class="batch-export-content-btn" data-batch="' +
+                globalIdx +
+                '" title="Export CSV with generated content">⬇ Content</button>'
+              : "") +
+            "</div>";
         /* Products list */
-        var productsEl = buildProductsList(batch);
-        productsEl.classList.toggle("open", isOpen);
+          var productsEl = buildProductsList(batch);
+          productsEl.classList.toggle("open", isOpen);
 
-        (function (b, h, pEl) {
-          h.addEventListener("click", function () {
-            var open = !_openBatches[b.id];
-            _openBatches[b.id] = open;
-            h.classList.toggle("active", open);
-            h.querySelector(".batch-chevron").classList.toggle("open", open);
-            pEl.classList.toggle("open", open);
-          });
-        })(batch, hdr, productsEl);
+          (function (b, h, pEl) {
+            h.addEventListener("click", function () {
+              var open = !_openBatches[b.id];
+              _openBatches[b.id] = open;
+              h.classList.toggle("active", open);
+              h.querySelector(".batch-chevron").classList.toggle("open", open);
+              pEl.classList.toggle("open", open);
+            });
+          })(batch, hdr, productsEl);
 
-        row.appendChild(hdr);
-        var exportBtn = hdr.querySelector(".batch-export-btn");
-        if (exportBtn) {
-          exportBtn.addEventListener("click", function (e) {
-            e.stopPropagation();
-            exportBatchToCSV(batch);
-          });
-        }
-        row.appendChild(productsEl);
+          row.appendChild(hdr);
+          var exportBtn = hdr.querySelector(".batch-export-btn");
+          if (exportBtn) {
+            exportBtn.addEventListener("click", function (e) {
+              e.stopPropagation();
+              exportBatchToCSV(batch);
+            });
+          }
+          var exportContentBtn = hdr.querySelector(".batch-export-content-btn");
+          if (exportContentBtn) {
+            exportContentBtn.addEventListener("click", function (e) {
+              e.stopPropagation();
+              exportBatchToCSVWithContent(batch, exportContentBtn);
+            });
+          }
+          row.appendChild(productsEl);
 
-        list.appendChild(row);
-      });
+          list.appendChild(row);
+        });
 
-      renderBatchPagination();
-    }
+        renderBatchPagination();
+      }
 
     /* ── Build the product <div> for a batch (clean closure) ── */
     function buildProductsList(batch) {
@@ -3108,12 +3153,177 @@
         }, 220);
       }, ms);
     }
+
+      /* ── Export a batch's products as CSV, including the actual generated
+       * content. Columns are NOT hardcoded or guessed from the shop's config
+       * — they're built from whatever section keys the DB actually returns
+       * for these products, so this works no matter how a shop names or
+       * configures its sections. ── */
+      function exportBatchToCSVWithContent(batch, btnEl) {
+        var rows = batch.products;
+        if (!rows.length) {
+          showToast("No products in this batch", "info");
+          return;
+        }
+
+        var baseHeader = [
+          "Product Title",
+          "Part Number",
+          "Brand",
+          "Appliance Type",
+          "Shopify URL",
+        ];
+
+        if (btnEl) {
+          btnEl.disabled = true;
+          btnEl.dataset.origText = btnEl.textContent;
+          btnEl.textContent = "Exporting…";
+        }
+
+        var fetches = rows.map(function (p) {
+          var url =
+            `${API_BASE_URL}/api/product-sections?product_title=` +
+            encodeURIComponent((p.product_title || "").trim()) +
+            "&part_number=" +
+            encodeURIComponent((p.part_number || "").trim()) +
+            ((p.batch_id || batch.id || "").trim()
+              ? "&batch_id=" +
+                encodeURIComponent((p.batch_id || batch.id).trim())
+              : "");
+          return fetch(url)
+            .then(function (r) {
+              return r.json();
+            })
+            .then(function (d) {
+              return { product: p, sections: d.sections || {} };
+            })
+            .catch(function () {
+              return { product: p, sections: {} };
+            });
+        });
+
+        Promise.all(fetches)
+          .then(function (results) {
+            /* Columns = union of section keys actually present in the
+             * fetched data. Sorted by the shop's configured SECTIONS order
+             * (not raw JSON key order — Flask's jsonify() alphabetizes dict
+             * keys by default, which scrambled column order run to run). */
+            var orderedKeys = [];
+            var seen = {};
+            results.forEach(function (res) {
+              Object.keys(res.sections).forEach(function (k) {
+                if (!seen[k]) {
+                  seen[k] = true;
+                  orderedKeys.push(k);
+                }
+              });
+            });
+            orderedKeys.sort(function (a, b) {
+              var ia = SECTIONS.indexOf(a);
+              var ib = SECTIONS.indexOf(b);
+              if (ia === -1) ia = SECTIONS.length; // unknown keys sort last
+              if (ib === -1) ib = SECTIONS.length;
+              return ia - ib;
+            });
+            var contentCols = orderedKeys.map(function (k) {
+              var sample = results
+                .map(function (r) {
+                  return r.sections[k];
+                })
+                .find(function (s) {
+                  return s && s.section_label;
+                });
+              var label =
+                (sample && sample.section_label) ||
+                k
+                  .replace(/_/g, " ")
+                  .replace(/\b\w/g, function (c) {
+                    return c.toUpperCase();
+                  });
+              return { key: k, label: label };
+            });
+            var header = baseHeader.concat(
+              contentCols.map(function (c) {
+                return c.label;
+              }),
+            );
+
+            var csv = [
+              header
+                .map(function (v) {
+                  return '"' + String(v || "").replace(/"/g, '""') + '"';
+                })
+                .join(","),
+            ];
+            results.forEach(function (res) {
+              var p = res.product;
+              var rowVals = [
+                p.product_title,
+                p.part_number,
+                p.brand,
+                p.appliance_type,
+                p.shopify_url,
+              ];
+              contentCols.forEach(function (c) {
+                var rec = res.sections[c.key];
+                var text = "";
+                if (rec) {
+                  text = rec.html_text || "";
+                } else {
+                  // No GeneratedContent row exists for this product+section
+                  // under this batch_id — nothing was ever generated for it
+                  // in this batch, so the cell is intentionally left blank
+                  // rather than pulling content from a different batch/listing.
+                  console.warn(
+                    "[CSV export] no content for section '" +
+                      c.key +
+                      "' — product=" +
+                      res.product.product_title +
+                      " part_number=" +
+                      res.product.part_number,
+                  );
+                }
+                rowVals.push(text);
+              });
+              csv.push(
+                rowVals
+                  .map(function (v) {
+                    return '"' + String(v || "").replace(/"/g, '""') + '"';
+                  })
+                  .join(","),
+              );
+            });
+            var blob = new Blob([csv.join("\n")], { type: "text/csv" });
+            var url = URL.createObjectURL(blob);
+            var a = document.createElement("a");
+            a.href = url;
+            a.download =
+              "batch-" + (batch.displayId || batch.id) + "-content.csv";
+            a.click();
+            URL.revokeObjectURL(url);
+            showToast(
+              "Exported " + results.length + " products with content",
+              "success",
+            );
+          })
+          .catch(function () {
+            showToast("Failed to export content CSV", "error");
+          })
+          .finally(function () {
+            if (btnEl) {
+              btnEl.disabled = false;
+              btnEl.textContent = btnEl.dataset.origText || "⬇ Content";
+            }
+          });
+      }
+
+
+
+
     function exportBatchToCSV(batch) {
-      var rows = batch.products.filter(function (p) {
-        return (p.review_status || "pending") === "published";
-      });
-      if (!rows.length) {
-        showToast("No published products in this batch", "info");
+      var rows = batch.products;
+     if (!rows.length) {
+        showToast("No products in this batch", "info");
         return;
       }
       var header = [
@@ -3133,7 +3343,7 @@
             p.brand,
             p.appliance_type,
             p.shopify_url,
-            p.review_status,
+            p.review_status || "pending",
           ]
             .map(function (v) {
               return '"' + String(v || "").replace(/"/g, '""') + '"';
@@ -3146,7 +3356,7 @@
       var a = document.createElement("a");
       a.href = url;
       a.download =
-        "batch-" + (batch.displayId || batch.id) + "-published.csv";
+         "batch-" + (batch.displayId || batch.id) + ".csv";
       a.click();
       URL.revokeObjectURL(url);
     }
