@@ -23,4 +23,4 @@ import worker                   # noqa: F401  # registers /api/worker/run
 if __name__ == '__main__':
     run_migrations()
     debug_mode = os.getenv('FLASK_DEBUG', '0') == '1'
-    app.run(debug=debug_mode, port=int(os.getenv('PORT', '5002')))
+    app.run(debug=debug_mode, port=int(os.getenv('PORT', '5003')))

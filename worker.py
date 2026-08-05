@@ -57,7 +57,7 @@ MAX_CONCURRENT_JOBS = int(os.getenv('MAX_CONCURRENT_JOBS', '2'))
 # If a job has been sitting at status='running' with no update for longer
 # than this, assume the worker process that owned it died (killed, crashed,
 # server restarted) and put it back in the queue so another run picks it up.
-STALE_RUNNING_SECONDS = int(os.getenv('STALE_JOB_SECONDS', '900'))  # 15 min
+STALE_RUNNING_SECONDS = int(os.getenv('STALE_JOB_SECONDS', '3600'))  # 1 hour default for large batches
 
 # In --once mode, stop picking up new jobs after this many seconds so a
 # cron-scheduled run doesn't run forever / overlap the next cron tick.
@@ -79,6 +79,24 @@ def _reclaim_stale_jobs():
             job.status = 'pending'
         if stale:
             db.session.commit()
+
+
+def _claim_next_pending_job(exclude_ids: set | None = None):
+    """Atomically find and claim the next pending job in a single DB transaction."""
+    from datetime import datetime, timezone
+    exclude_ids = exclude_ids or set()
+    with app.app_context():
+        query = GenerationJob.query.filter(GenerationJob.status == 'pending')
+        if exclude_ids:
+            query = query.filter(~GenerationJob.job_id.in_(exclude_ids))
+        job = query.order_by(GenerationJob.created_at.asc()).first()
+        if job:
+            job.status = 'running'
+            job.updated_at = datetime.now(timezone.utc)
+            job_id = job.job_id
+            db.session.commit()
+            return job_id
+        return None
 
 
 def _next_pending_job_id():
@@ -148,16 +166,9 @@ def drain(time_budget_seconds):
 
             # Top up the pool with new pending jobs
             while len(in_flight) < MAX_CONCURRENT_JOBS:
-                job_id = _next_pending_job_id()
-                if not job_id or job_id in in_flight:
+                job_id = _claim_next_pending_job(exclude_ids=set(in_flight.keys()))
+                if not job_id:
                     break
-                with app.app_context():
-                    j = GenerationJob.query.filter_by(job_id=job_id).first()
-                    if j and j.status == 'pending':
-                        j.status = 'running'
-                        db.session.commit()
-                    else:
-                        continue
                 in_flight[job_id] = pool.submit(_run_one, job_id)
 
             if not in_flight:

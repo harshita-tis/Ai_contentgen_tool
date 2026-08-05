@@ -1,5 +1,6 @@
 <!doctype html>
 <html lang="en" data-theme="dark">
+<<<<<<< HEAD
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
@@ -620,6 +621,2121 @@
       .item-status-icon.pending {
         color: var(--warning);
       }
+=======
+
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Review Images — ContentAI</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link
+    href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;600;700&family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap"
+    rel="stylesheet" />
+  <style>
+    :root,
+    [data-theme="dark"] {
+      --bg: #080c0d;
+      --bg-elev: #0e1416;
+      --surface: #121a1d;
+      --surface2: #1a2528;
+      --surface3: #232f34;
+      --border: #223135;
+      --border2: #2d4147;
+      --text: #e0f2f1;
+      --text-2: #94a9ad;
+      --text-3: #60787e;
+      --accent: #22d3ee;
+      --accent-soft: rgba(34, 211, 238, 0.14);
+      --accent2: #14b8a6;
+      --accent2-soft: rgba(20, 184, 166, 0.12);
+      --accent3: #5eead4;
+      --accent3-soft: rgba(94, 234, 212, 0.14);
+      --danger: #f87171;
+      --danger-soft: rgba(248, 113, 113, 0.12);
+      --success: #34d399;
+      --warning: #f59e0b;
+      --warning-soft: rgba(245, 158, 11, 0.12);
+      --shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.4);
+      --shadow-md: 0 8px 24px -8px rgba(0, 0, 0, 0.6);
+      --gradient-accent: linear-gradient(135deg, #22d3ee 0%, #0d9488 100%);
+    }
+
+    [data-theme="light"] {
+      --bg: #f0f9fa;
+      --bg-elev: #ffffff;
+      --surface: #ffffff;
+      --surface2: #e6f2f3;
+      --surface3: #d1e7e9;
+      --border: #cfe1e2;
+      --border2: #b4d3d6;
+      --text: #0f172a;
+      --text-2: #334155;
+      --text-3: #64748b;
+      --accent: #0891b2;
+      --accent-soft: rgba(8, 145, 178, 0.1);
+      --accent2: #0f766e;
+      --accent2-soft: rgba(15, 118, 110, 0.1);
+      --accent3: #0d9488;
+      --accent3-soft: rgba(13, 148, 136, 0.12);
+      --danger: #e11d48;
+      --danger-soft: rgba(225, 29, 72, 0.08);
+      --success: #059669;
+      --warning: #d97706;
+      --warning-soft: rgba(217, 119, 6, 0.1);
+      --shadow-sm: 0 1px 2px rgba(8, 145, 178, 0.06);
+      --shadow-md: 0 10px 30px -12px rgba(8, 145, 178, 0.18);
+      --gradient-accent: linear-gradient(135deg, #0891b2 0%, #0f766e 100%);
+    }
+
+    :root {
+      --radius: 14px;
+      --radius-sm: 10px;
+      --font-head: "Space Grotesk", system-ui, sans-serif;
+      --font-body: "Inter", system-ui, -apple-system, sans-serif;
+      --font-mono: "JetBrains Mono", ui-monospace, Menlo, monospace;
+      --sidebar-expanded: 188px;
+      --sidebar-collapsed: 55px;
+    }
+
+    *,
+    *::before,
+    *::after {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    html {
+      font-size: 15px;
+    }
+
+    body {
+      font-family: var(--font-body);
+      background: var(--bg);
+      color: var(--text);
+      display: flex;
+      min-height: 100vh;
+      overflow-x: hidden;
+      -webkit-font-smoothing: antialiased;
+      transition:
+        background 0.25s,
+        color 0.25s;
+    }
+
+    textarea,
+    input,
+    button,
+    select {
+      font-family: inherit;
+    }
+
+    ::selection {
+      background: var(--accent-soft);
+      color: var(--text);
+    }
+
+    /* ── Sidebar (shared) ── */
+    .sidebar {
+      width: var(--sidebar-expanded);
+      min-height: 100vh;
+      background: var(--bg-elev);
+      border-right: 1px solid var(--border);
+      display: flex;
+      flex-direction: column;
+      position: fixed;
+      left: 0;
+      top: 0;
+      z-index: 100;
+      padding: 12px 0 14px;
+      overflow: hidden;
+      transition: width 0.22s cubic-bezier(0.4, 0, 0.2, 1);
+    }
+
+    .sidebar.collapsed {
+      width: var(--sidebar-collapsed);
+    }
+
+    .sidebar-logo-row {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      padding: 0 10px 16px;
+      border-bottom: 1px solid var(--border);
+      margin-bottom: 8px;
+      flex-shrink: 0;
+      white-space: nowrap;
+      overflow: hidden;
+    }
+
+    .sidebar-logo-icon {
+      width: 28px;
+      height: 28px;
+      min-width: 28px;
+      background: var(--gradient-accent);
+      border-radius: 7px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: #fff;
+      flex-shrink: 0;
+    }
+
+    .sidebar-logo-icon svg {
+      width: 14px;
+      height: 14px;
+    }
+
+    .sidebar-logo-text {
+      font-family: var(--font-head);
+      font-size: 0.95rem;
+      font-weight: 700;
+      letter-spacing: -0.02em;
+      color: var(--text);
+      opacity: 1;
+      transition: opacity 0.15s;
+    }
+
+    .sidebar.collapsed .sidebar-logo-text {
+      opacity: 0;
+      pointer-events: none;
+    }
+
+    .sidebar-nav {
+      flex: 1;
+      padding: 0 6px;
+      display: flex;
+      flex-direction: column;
+      gap: 2px;
+      overflow: hidden;
+    }
+
+    .nav-item {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      padding: 8px;
+      border-radius: 9px;
+      color: var(--text-3);
+      text-decoration: none;
+      transition:
+        background 0.15s,
+        color 0.15s;
+      cursor: pointer;
+      border: none;
+      background: none;
+      white-space: nowrap;
+      overflow: hidden;
+      width: 100%;
+      position: relative;
+    }
+
+    .nav-item:hover {
+      background: var(--surface2);
+      color: var(--text);
+    }
+
+    .nav-item.active {
+      background: var(--accent-soft);
+      color: var(--accent);
+    }
+
+    .nav-item svg {
+      width: 16px;
+      height: 16px;
+      flex-shrink: 0;
+    }
+
+    .nav-label {
+      font-size: 0.82rem;
+      font-weight: 500;
+      opacity: 1;
+      transition: opacity 0.15s;
+    }
+
+    .sidebar.collapsed .nav-label {
+      opacity: 0;
+      pointer-events: none;
+    }
+
+    .nav-item .tooltip {
+      position: absolute;
+      left: calc(var(--sidebar-collapsed) + 8px);
+      top: 50%;
+      transform: translateY(-50%);
+      background: var(--surface3);
+      border: 1px solid var(--border2);
+      color: var(--text);
+      font-size: 0.72rem;
+      font-weight: 600;
+      white-space: nowrap;
+      padding: 4px 9px;
+      border-radius: 6px;
+      pointer-events: none;
+      opacity: 0;
+      transition: opacity 0.15s;
+      z-index: 200;
+      box-shadow: var(--shadow-md);
+    }
+
+    .sidebar.collapsed .nav-item:hover .tooltip {
+      opacity: 1;
+    }
+
+    .sidebar-bottom {
+      margin-top: auto;
+      padding: 0 6px;
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+      overflow: hidden;
+    }
+
+    .sidebar-toggle-btn {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      padding: 7px 8px;
+      border-radius: 9px;
+      background: none;
+      border: none;
+      cursor: pointer;
+      color: var(--text-3);
+      width: 100%;
+      white-space: nowrap;
+      overflow: hidden;
+      transition:
+        background 0.15s,
+        color 0.15s;
+    }
+
+    .sidebar-toggle-btn:hover {
+      background: var(--surface2);
+      color: var(--text);
+    }
+
+    .sidebar-toggle-btn svg {
+      width: 15px;
+      height: 15px;
+      flex-shrink: 0;
+      transition: transform 0.22s;
+    }
+
+    .sidebar.collapsed .sidebar-toggle-btn svg {
+      transform: rotate(180deg);
+    }
+
+    .sidebar-toggle-label {
+      font-size: 0.78rem;
+      font-weight: 500;
+      opacity: 1;
+      transition: opacity 0.15s;
+    }
+
+    .sidebar.collapsed .sidebar-toggle-label {
+      opacity: 0;
+      pointer-events: none;
+    }
+
+    .theme-row {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      padding: 6px 8px;
+      white-space: nowrap;
+      overflow: hidden;
+    }
+
+    .theme-row-label {
+      font-size: 0.75rem;
+      color: var(--text-3);
+      font-weight: 500;
+      opacity: 1;
+      transition: opacity 0.15s;
+    }
+
+    .sidebar.collapsed .theme-row-label {
+      opacity: 0;
+      pointer-events: none;
+    }
+
+    .theme-toggle {
+      width: 32px;
+      height: 18px;
+      min-width: 32px;
+      background: var(--surface2);
+      border: 1px solid var(--border);
+      border-radius: 999px;
+      position: relative;
+      cursor: pointer;
+      transition: background 0.2s;
+      flex-shrink: 0;
+    }
+
+    .theme-toggle::after {
+      content: "";
+      position: absolute;
+      top: 2px;
+      left: 2px;
+      width: 12px;
+      height: 12px;
+      background: var(--text-3);
+      border-radius: 50%;
+      transition: transform 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+    }
+
+    [data-theme="light"] .theme-toggle::after {
+      transform: translateX(14px);
+      background: var(--accent);
+    }
+
+    /* ── Layout: two-pane review queue ── */
+    .main {
+      margin-left: var(--sidebar-expanded);
+      flex: 1;
+      display: flex;
+      height: 100vh;
+      overflow: hidden;
+      transition: margin-left 0.22s cubic-bezier(0.4, 0, 0.2, 1);
+    }
+
+    .main.collapsed {
+      margin-left: var(--sidebar-collapsed);
+    }
+
+    .queue-pane {
+      width: 320px;
+      min-width: 320px;
+      height: 100vh;
+      display: flex;
+      flex-direction: column;
+      border-right: 1px solid var(--border);
+      background: var(--bg-elev);
+    }
+
+    .queue-header {
+      padding: 18px 18px 12px;
+      border-bottom: 1px solid var(--border);
+    }
+
+    .queue-title {
+      font-family: var(--font-head);
+      font-size: 1.15rem;
+      font-weight: 700;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .queue-title svg {
+      width: 18px;
+      height: 18px;
+      color: var(--accent);
+    }
+
+    .queue-subtitle {
+      color: var(--text-3);
+      font-size: 0.78rem;
+      margin-top: 3px;
+    }
+
+    .queue-search {
+      margin: 12px 18px 8px;
+      position: relative;
+    }
+
+    .queue-search input {
+      width: 100%;
+      background: var(--surface2);
+      border: 1px solid var(--border2);
+      color: var(--text);
+      border-radius: 8px;
+      padding: 8px 10px 8px 32px;
+      font-size: 0.83rem;
+    }
+
+    .queue-search svg {
+      position: absolute;
+      left: 10px;
+      top: 9px;
+      width: 14px;
+      height: 14px;
+      color: var(--text-3);
+    }
+
+    .queue-filters {
+      display: flex;
+      gap: 6px;
+      margin: 0 18px 12px;
+      flex-wrap: nowrap;
+      overflow-x: auto;
+      scrollbar-width: none;
+    }
+
+    .queue-filters::-webkit-scrollbar {
+      display: none;
+    }
+
+    .filter-pill {
+      padding: 5px 10px;
+      border-radius: 99px;
+      font-size: 0.72rem;
+      font-weight: 600;
+      border: 1px solid var(--border2);
+      background: var(--surface2);
+      color: var(--text-2);
+      cursor: pointer;
+      transition: all 0.15s;
+      white-space: nowrap;
+      flex-shrink: 0;
+    }
+
+    .filter-pill:hover {
+      border-color: var(--accent);
+    }
+
+    .filter-pill.active {
+      background: var(--accent-soft);
+      border-color: var(--accent);
+      color: var(--accent);
+    }
+
+    .queue-shop-select {
+      margin: 0 18px 14px;
+    }
+
+    .queue-shop-select select {
+      width: 100%;
+      background: var(--surface2);
+      border: 1px solid var(--border2);
+      color: var(--text);
+      border-radius: 8px;
+      padding: 6px 8px;
+      font-size: 0.78rem;
+    }
+
+    .batch-list {
+      flex: 1;
+      overflow-y: auto;
+      padding: 0 10px 16px;
+    }
+
+    .batch-card {
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      margin-bottom: 8px;
+      overflow: hidden;
+    }
+
+    .batch-summary {
+      display: flex;
+      align-items: flex-start;
+      gap: 8px;
+      padding: 10px 12px;
+      cursor: pointer;
+      transition: background 0.15s;
+    }
+
+    .batch-summary:hover {
+      background: var(--surface2);
+    }
+
+    .batch-chevron {
+      width: 13px;
+      height: 13px;
+      color: var(--text-3);
+      transition: transform 0.18s;
+      flex-shrink: 0;
+      margin-top: 3px;
+    }
+
+    .batch-card.expanded .batch-chevron {
+      transform: rotate(90deg);
+    }
+
+    .batch-meta {
+      flex: 1;
+      overflow: hidden;
+    }
+
+    .batch-id-row {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      font-size: 0.78rem;
+      font-weight: 700;
+      font-family: var(--font-mono);
+      color: var(--text);
+    }
+
+    .batch-count-badge {
+      font-size: 0.68rem;
+      color: var(--text-3);
+      font-weight: 500;
+    }
+
+    .batch-tags {
+      display: flex;
+      gap: 5px;
+      margin-top: 5px;
+      flex-wrap: wrap;
+      align-items: center;
+    }
+
+    .tag-pill {
+      font-size: 0.65rem;
+      font-weight: 700;
+      padding: 1px 7px;
+      border-radius: 99px;
+      text-transform: uppercase;
+      letter-spacing: 0.02em;
+    }
+
+    .tag-pill.csv {
+      background: rgba(192, 132, 252, 0.14);
+      color: #c084fc;
+      border: 1px solid rgba(192, 132, 252, 0.3);
+    }
+
+    .tag-pill.manual {
+      background: rgba(94, 234, 212, 0.14);
+      color: var(--accent3);
+      border: 1px solid rgba(94, 234, 212, 0.3);
+    }
+
+    .tag-pill.shop {
+      background: var(--surface3);
+      color: var(--text-2);
+      border: 1px solid var(--border2);
+      text-transform: none;
+    }
+
+    .batch-date {
+      font-size: 0.68rem;
+      color: var(--text-3);
+      margin-top: 4px;
+    }
+
+    .batch-export-btn {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 4px;
+      padding: 3px 8px;
+      background: var(--surface2);
+      border: 1px solid var(--border);
+      border-radius: 6px;
+      color: var(--text-3);
+      font-size: 0.66rem;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.12s;
+      white-space: nowrap;
+      flex-shrink: 0;
+      align-self: center;
+      margin-left: auto;
+    }
+
+    .batch-export-btn:hover {
+      border-color: var(--accent);
+      color: var(--accent);
+      background: var(--accent-soft);
+    }
+
+    .status-dot {
+      width: 7px;
+      height: 7px;
+      border-radius: 50%;
+      flex-shrink: 0;
+      margin-top: 5px;
+    }
+
+    .status-dot.pending {
+      background: var(--warning);
+    }
+
+    .status-dot.reviewed {
+      background: var(--success);
+    }
+
+    .batch-items {
+      background: var(--bg);
+      border-top: 1px solid var(--border);
+      display: none;
+    }
+
+    .batch-card.expanded .batch-items {
+      display: block;
+    }
+
+    .item-row {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      padding: 9px 12px 9px 28px;
+      cursor: pointer;
+      border-bottom: 1px solid var(--border);
+      font-size: 0.78rem;
+      transition: background 0.15s;
+    }
+
+    .item-row:last-child {
+      border-bottom: none;
+    }
+
+    .item-row:hover {
+      background: var(--surface2);
+    }
+
+    .item-row.active-item {
+      background: var(--accent-soft);
+      color: var(--accent);
+    }
+
+    .item-name {
+      flex: 1;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+    }
+
+    .item-sku {
+      font-size: 0.68rem;
+      color: var(--text-3);
+      font-family: var(--font-mono);
+    }
+
+    .item-status-icon {
+      width: 13px;
+      height: 13px;
+      flex-shrink: 0;
+    }
+
+    .item-status-icon.reviewed {
+      color: var(--success);
+    }
+
+    .item-status-icon.published {
+      color: var(--accent2);
+    }
+
+    .item-status-icon.pending {
+      color: var(--warning);
+    }
+
+    .queue-pager {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 10px 18px;
+      border-top: 1px solid var(--border);
+      font-size: 0.76rem;
+      color: var(--text-3);
+    }
+
+    .queue-pager button {
+      background: var(--surface2);
+      border: 1px solid var(--border2);
+      color: var(--text);
+      padding: 4px 10px;
+      border-radius: 7px;
+      font-size: 0.74rem;
+      cursor: pointer;
+    }
+
+    .queue-pager button:disabled {
+      opacity: 0.4;
+      cursor: default;
+    }
+
+    /* ── Detail pane ── */
+    .detail-pane {
+      flex: 1;
+      overflow-y: auto;
+      padding: 28px 36px 60px;
+    }
+
+    .detail-empty {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      height: 80%;
+      color: var(--text-3);
+      gap: 10px;
+      text-align: center;
+    }
+
+    .detail-empty svg {
+      width: 46px;
+      height: 46px;
+      opacity: 0.4;
+    }
+
+    .detail-top {
+      display: flex;
+      align-items: flex-start;
+      justify-content: space-between;
+      gap: 16px;
+      margin-bottom: 6px;
+      flex-wrap: wrap;
+    }
+
+    .detail-title {
+      font-family: var(--font-head);
+      font-size: 1.4rem;
+      font-weight: 700;
+      letter-spacing: -0.02em;
+    }
+
+    .detail-sub {
+      display: flex;
+      gap: 8px;
+      align-items: center;
+      margin-top: 5px;
+      flex-wrap: wrap;
+    }
+
+    .detail-sub .tag-pill {
+      font-size: 0.68rem;
+    }
+
+    .detail-sku {
+      font-family: var(--font-mono);
+      color: var(--text-3);
+      font-size: 0.82rem;
+    }
+
+    .detail-link {
+      color: var(--accent);
+      font-size: 0.78rem;
+      text-decoration: none;
+    }
+
+    .detail-link:hover {
+      text-decoration: underline;
+    }
+
+    .detail-actions {
+      display: flex;
+      gap: 8px;
+      flex-shrink: 0;
+    }
+
+    .btn {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      padding: 8px 16px;
+      border-radius: 8px;
+      font-size: 0.83rem;
+      font-weight: 600;
+      cursor: pointer;
+      border: 1px solid transparent;
+      transition: all 0.15s;
+      font-family: var(--font-body);
+    }
+
+    .btn svg {
+      width: 14px;
+      height: 14px;
+    }
+
+    .btn-ghost {
+      background: var(--surface2);
+      border-color: var(--border2);
+      color: var(--text);
+    }
+
+    .btn-ghost:hover {
+      border-color: var(--accent);
+    }
+
+    .btn-success {
+      background: var(--success);
+      color: #06281c;
+    }
+
+    .btn-success:hover {
+      opacity: 0.88;
+    }
+
+    .btn-accent {
+      background: var(--gradient-accent);
+      color: #00211f;
+    }
+
+    .btn-accent:hover {
+      opacity: 0.88;
+    }
+
+    .btn:disabled {
+      opacity: 0.45;
+      cursor: default;
+    }
+
+    .section-card {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 20px 22px;
+      margin-top: 20px;
+    }
+
+    .section-card-title {
+      font-family: var(--font-head);
+      font-weight: 700;
+      font-size: 0.95rem;
+      margin-bottom: 14px;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .section-card-title-row {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 10px;
+      margin-bottom: 14px;
+    }
+
+    .section-card-title-row .section-card-title {
+      margin-bottom: 0;
+    }
+
+    .search-more-note {
+      font-size: 0.72rem;
+      color: var(--text-3);
+      margin: -8px 0 12px;
+    }
+
+    .section-card-title svg {
+      width: 15px;
+      height: 15px;
+      color: var(--accent);
+    }
+
+    .review-img-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
+      gap: 14px;
+    }
+
+    .review-img-tile {
+      background: var(--surface2);
+      border: 2px solid var(--border);
+      border-radius: 10px;
+      overflow: hidden;
+      cursor: pointer;
+      transition:
+        border-color 0.15s,
+        transform 0.12s;
+      position: relative;
+    }
+
+    .review-img-tile:hover {
+      border-color: var(--accent);
+      transform: scale(1.015);
+    }
+
+    .review-img-tile.selected {
+      border-color: var(--success);
+      box-shadow: 0 0 0 3px rgba(52, 211, 153, 0.18);
+    }
+
+    .review-img-tile img {
+      width: 100%;
+      aspect-ratio: 1;
+      object-fit: cover;
+      display: block;
+      background: var(--surface3);
+    }
+
+    .review-img-tile-label {
+      font-size: 0.66rem;
+      color: var(--text-3);
+      padding: 5px 7px;
+      text-align: center;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+    }
+
+    .review-img-check {
+      position: absolute;
+      top: 7px;
+      right: 7px;
+      width: 20px;
+      height: 20px;
+      background: var(--success);
+      border-radius: 50%;
+      display: none;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .review-img-tile.selected .review-img-check {
+      display: flex;
+    }
+
+    .review-img-check svg {
+      width: 11px;
+      height: 11px;
+      color: #06281c;
+    }
+
+    .review-img-source {
+      position: absolute;
+      top: 7px;
+      left: 7px;
+      font-size: 0.6rem;
+      background: rgba(0, 0, 0, 0.6);
+      color: #fff;
+      padding: 1px 6px;
+      border-radius: 99px;
+    }
+
+    .review-img-pagelink {
+      display: block;
+      padding: 4px 7px 6px;
+      text-decoration: none;
+      overflow: hidden;
+    }
+
+    .review-img-pagetitle {
+      display: block;
+      font-size: 0.68rem;
+      font-weight: 600;
+      color: var(--text);
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+      line-height: 1.3;
+    }
+
+    .review-img-pageurl {
+      display: block;
+      font-size: 0.6rem;
+      color: var(--text-3);
+      font-family: var(--font-mono);
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+      margin-top: 1px;
+    }
+
+    .review-img-pagelink:hover .review-img-pagetitle,
+    .review-img-pagelink:hover .review-img-pageurl {
+      color: var(--accent);
+    }
+
+    .review-img-pagelink:hover .review-img-pageurl {
+      text-decoration: underline;
+    }
+
+    .selected-strip {
+      display: flex;
+      gap: 14px;
+      align-items: center;
+      margin-top: 16px;
+      flex-wrap: wrap;
+    }
+
+    .selected-count-txt {
+      font-size: 0.8rem;
+      color: var(--text-2);
+    }
+
+    .publish-row {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      flex-wrap: wrap;
+      margin-top: 14px;
+    }
+
+    .publish-thumb {
+      width: 46px;
+      height: 46px;
+      border-radius: 7px;
+      object-fit: cover;
+      border: 1px solid var(--border2);
+    }
+
+    .publish-msg {
+      font-size: 0.74rem;
+      color: var(--text-3);
+    }
+
+    .empty-note {
+      color: var(--text-3);
+      font-size: 0.84rem;
+      padding: 6px 0;
+    }
+
+    .spinner {
+      display: inline-block;
+      width: 14px;
+      height: 14px;
+      border: 2px solid var(--border2);
+      border-top-color: var(--accent);
+      border-radius: 50%;
+      animation: spin 0.7s linear infinite;
+    }
+
+    @keyframes spin {
+      to {
+        transform: rotate(360deg);
+      }
+    }
+
+    /* ── Radio button on tile ── */
+    .review-img-radio {
+      position: static;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      padding: 6px 7px 4px;
+      background: transparent;
+    }
+
+    .review-img-radio input[type="radio"] {
+      width: 14px;
+      height: 14px;
+      accent-color: var(--accent);
+      cursor: pointer;
+      flex-shrink: 0;
+    }
+
+    .review-img-radio-label {
+      font-size: 0.65rem;
+      color: var(--text-3);
+      font-weight: 600;
+      white-space: nowrap;
+    }
+
+    .review-img-tile {
+      position: relative;
+    }
+
+    .review-img-tile img {
+      cursor: zoom-in;
+    }
+
+    /* ── Lightbox ── */
+    #imgLightbox {
+      display: none;
+      position: fixed;
+      inset: 0;
+      z-index: 9999;
+      background: rgba(0, 0, 0, 0.82);
+      backdrop-filter: blur(6px);
+      align-items: center;
+      justify-content: center;
+      padding: 20px;
+    }
+
+    #imgLightbox.open {
+      display: flex;
+    }
+
+    .lightbox-inner {
+      background: var(--surface);
+      border: 1px solid var(--border2);
+      border-radius: 16px;
+      max-width: 760px;
+      width: 100%;
+      display: flex;
+      flex-direction: column;
+      overflow: hidden;
+      box-shadow: 0 24px 64px rgba(0, 0, 0, 0.7);
+    }
+
+    .lightbox-topbar {
+      display: flex;
+      align-items: center;
+      justify-content: flex-end;
+      padding: 10px 14px;
+      border-bottom: 1px solid var(--border);
+    }
+
+    .lightbox-close {
+      background: var(--surface2);
+      border: 1px solid var(--border2);
+      color: var(--text);
+      width: 30px;
+      height: 30px;
+      border-radius: 50%;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 1.1rem;
+      line-height: 1;
+      transition:
+        background 0.15s,
+        color 0.15s;
+      flex-shrink: 0;
+    }
+
+    .lightbox-close:hover {
+      background: var(--danger-soft);
+      color: var(--danger);
+      border-color: var(--danger);
+    }
+
+    .lightbox-img-wrap {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      background: var(--bg);
+      min-height: 320px;
+      max-height: 56vh;
+      overflow: hidden;
+    }
+
+    .lightbox-img-wrap img {
+      max-width: 100%;
+      max-height: 56vh;
+      object-fit: contain;
+      display: block;
+    }
+
+    .lightbox-url-bar {
+      padding: 12px 16px;
+      border-top: 1px solid var(--border);
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      flex-wrap: wrap;
+    }
+
+    .lightbox-url-label {
+      font-size: 0.72rem;
+      color: var(--text-3);
+      font-weight: 600;
+      white-space: nowrap;
+    }
+
+    .lightbox-url-val {
+      font-family: var(--font-mono);
+      font-size: 0.72rem;
+      color: var(--accent);
+      word-break: break-all;
+      flex: 1;
+      line-height: 1.5;
+    }
+
+    .lightbox-copy-btn {
+      background: var(--surface2);
+      border: 1px solid var(--border2);
+      color: var(--text);
+      border-radius: 7px;
+      padding: 4px 10px;
+      font-size: 0.72rem;
+      cursor: pointer;
+      white-space: nowrap;
+      flex-shrink: 0;
+      transition: background 0.15s;
+    }
+
+    .lightbox-copy-btn:hover {
+      border-color: var(--accent);
+      color: var(--accent);
+    }
+
+    /* ── Selected Images Sequence Panel ── */
+    .sequence-panel {
+      margin-top: 22px;
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      overflow: hidden;
+    }
+
+    .sequence-panel-header {
+      padding: 16px 20px 14px;
+      border-bottom: 1px solid var(--border);
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+    }
+
+    .sequence-panel-title {
+      font-family: var(--font-head);
+      font-weight: 700;
+      font-size: 0.95rem;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .sequence-panel-title svg {
+      width: 15px;
+      height: 15px;
+      color: var(--accent);
+    }
+
+    .sequence-panel-hint {
+      font-size: 0.72rem;
+      color: var(--text-3);
+      display: flex;
+      align-items: center;
+      gap: 5px;
+    }
+
+    .sequence-panel-hint svg {
+      width: 12px;
+      height: 12px;
+      flex-shrink: 0;
+    }
+
+    .sequence-empty {
+      padding: 28px 20px;
+      text-align: center;
+      color: var(--text-3);
+      font-size: 0.82rem;
+    }
+
+    .sequence-empty svg {
+      width: 32px;
+      height: 32px;
+      opacity: 0.3;
+      display: block;
+      margin: 0 auto 8px;
+    }
+
+    .sequence-list {
+      padding: 12px 14px;
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+      min-height: 60px;
+    }
+
+    .seq-card {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      background: var(--surface2);
+      border: 1px solid var(--border2);
+      border-radius: 10px;
+      padding: 10px 12px;
+      cursor: grab;
+      transition:
+        border-color 0.15s,
+        box-shadow 0.15s,
+        opacity 0.15s;
+      user-select: none;
+      position: relative;
+    }
+
+    .seq-card:active {
+      cursor: grabbing;
+    }
+
+    .seq-card.drag-over {
+      border-color: var(--accent);
+      box-shadow: 0 0 0 2px var(--accent-soft);
+    }
+
+    .seq-card.dragging {
+      opacity: 0.4;
+      border-style: dashed;
+    }
+
+    .seq-badge {
+      width: 24px;
+      height: 24px;
+      min-width: 24px;
+      background: var(--gradient-accent);
+      border-radius: 6px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 0.72rem;
+      font-weight: 700;
+      color: #00211f;
+      font-family: var(--font-mono);
+      flex-shrink: 0;
+    }
+
+    .seq-drag-handle {
+      color: var(--text-3);
+      flex-shrink: 0;
+      display: flex;
+      align-items: center;
+    }
+
+    .seq-drag-handle svg {
+      width: 14px;
+      height: 14px;
+    }
+
+    .seq-thumb {
+      width: 52px;
+      height: 52px;
+      border-radius: 7px;
+      object-fit: cover;
+      border: 1px solid var(--border2);
+      flex-shrink: 0;
+      background: var(--surface3);
+    }
+
+    .seq-info {
+      flex: 1;
+      overflow: hidden;
+    }
+
+    .seq-url {
+      font-family: var(--font-mono);
+      font-size: 0.65rem;
+      color: var(--text-3);
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+    }
+
+    .seq-label {
+      font-size: 0.75rem;
+      color: var(--text-2);
+      font-weight: 500;
+      margin-bottom: 2px;
+    }
+
+    .seq-remove {
+      background: none;
+      border: none;
+      color: var(--text-3);
+      cursor: pointer;
+      padding: 4px;
+      border-radius: 5px;
+      display: flex;
+      align-items: center;
+      transition:
+        color 0.15s,
+        background 0.15s;
+      flex-shrink: 0;
+    }
+
+    .seq-remove:hover {
+      color: var(--danger);
+      background: var(--danger-soft);
+    }
+
+    .seq-remove svg {
+      width: 14px;
+      height: 14px;
+    }
+
+    .global-publish-bar {
+      padding: 14px 20px;
+      border-top: 1px solid var(--border);
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+      flex-wrap: wrap;
+      background: var(--bg-elev);
+    }
+
+    .global-publish-info {
+      font-size: 0.78rem;
+      color: var(--text-2);
+    }
+
+    .global-publish-info strong {
+      color: var(--text);
+      font-weight: 600;
+    }
+
+    .global-publish-actions {
+      display: flex;
+      gap: 8px;
+      align-items: center;
+      flex-wrap: wrap;
+    }
+
+    .publish-progress {
+      font-size: 0.74rem;
+      color: var(--text-3);
+      display: none;
+    }
+
+    .publish-progress.visible {
+      display: block;
+    }
+
+    .btn-publish-all {
+      background: var(--gradient-accent);
+      color: #00211f;
+      font-weight: 700;
+      border: none;
+      padding: 9px 18px;
+      border-radius: 8px;
+      font-size: 0.85rem;
+      cursor: pointer;
+      display: inline-flex;
+      align-items: center;
+      gap: 7px;
+      transition:
+        opacity 0.15s,
+        transform 0.12s;
+      font-family: var(--font-body);
+    }
+
+    .btn-publish-all:hover:not(:disabled) {
+      opacity: 0.88;
+      transform: translateY(-1px);
+    }
+
+    .btn-publish-all:disabled {
+      opacity: 0.45;
+      cursor: default;
+      transform: none;
+    }
+
+    .btn-publish-all svg {
+      width: 15px;
+      height: 15px;
+    }
+
+    /* ── Published Summary Panel ── */
+    .published-summary-panel {
+      margin-top: 20px;
+      background: linear-gradient(135deg,
+          rgba(20, 184, 166, 0.06) 0%,
+          rgba(34, 211, 238, 0.04) 100%);
+      border: 1.5px solid rgba(20, 184, 166, 0.35);
+      border-radius: var(--radius);
+      overflow: hidden;
+    }
+
+    .published-summary-header {
+      padding: 16px 20px 14px;
+      border-bottom: 1px solid rgba(20, 184, 166, 0.2);
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+      flex-wrap: wrap;
+    }
+
+    .published-summary-title {
+      font-family: var(--font-head);
+      font-weight: 700;
+      font-size: 0.95rem;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      color: var(--accent2);
+    }
+
+    .published-summary-title svg {
+      width: 16px;
+      height: 16px;
+    }
+
+    .published-summary-meta {
+      font-size: 0.74rem;
+      color: var(--text-3);
+      display: flex;
+      gap: 12px;
+      flex-wrap: wrap;
+      align-items: center;
+    }
+
+    .published-summary-meta span {
+      display: flex;
+      align-items: center;
+      gap: 4px;
+    }
+
+    .published-summary-meta svg {
+      width: 12px;
+      height: 12px;
+    }
+
+    .published-img-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
+      gap: 12px;
+      padding: 16px 18px;
+    }
+
+    .pub-img-card {
+      background: var(--surface2);
+      border: 1px solid var(--border2);
+      border-radius: 10px;
+      overflow: hidden;
+      position: relative;
+      transition:
+        border-color 0.15s,
+        transform 0.12s;
+    }
+
+    .pub-img-card:hover {
+      border-color: var(--accent2);
+      transform: scale(1.015);
+    }
+
+    .pub-img-seq {
+      position: absolute;
+      top: 7px;
+      left: 7px;
+      width: 22px;
+      height: 22px;
+      background: var(--gradient-accent);
+      border-radius: 6px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 0.68rem;
+      font-weight: 700;
+      color: #00211f;
+      font-family: var(--font-mono);
+      z-index: 1;
+    }
+
+    .pub-img-card img {
+      width: 100%;
+      aspect-ratio: 1;
+      object-fit: cover;
+      display: block;
+      background: var(--surface3);
+      cursor: zoom-in;
+    }
+
+    .pub-img-url {
+      font-size: 0.6rem;
+      color: var(--text-3);
+      padding: 5px 7px;
+      font-family: var(--font-mono);
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+      border-top: 1px solid var(--border);
+    }
+
+    .published-summary-footer {
+      padding: 12px 18px;
+      border-top: 1px solid rgba(20, 184, 166, 0.2);
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      font-size: 0.75rem;
+      color: var(--accent2);
+      font-weight: 600;
+    }
+
+    .published-summary-footer svg {
+      width: 14px;
+      height: 14px;
+      flex-shrink: 0;
+    }
+
+    .publish-success-bar {
+      background: rgba(52, 211, 153, 0.1);
+      border: 1px solid rgba(52, 211, 153, 0.25);
+      border-radius: 8px;
+      padding: 9px 14px;
+      font-size: 0.78rem;
+      color: var(--success);
+      display: none;
+      align-items: center;
+      gap: 7px;
+      margin: 12px 14px 4px;
+      line-height: 1.4;
+    }
+
+    .publish-success-bar.visible {
+      display: flex;
+    }
+
+    .publish-success-bar svg,
+    .publish-error-bar svg {
+      width: 14px;
+      height: 14px;
+      min-width: 14px;
+      flex-shrink: 0;
+    }
+
+    .publish-error-bar {
+      background: var(--danger-soft);
+      border: 1px solid rgba(248, 113, 113, 0.25);
+      border-radius: 8px;
+      padding: 9px 14px;
+      font-size: 0.78rem;
+      color: var(--danger);
+      display: none;
+      align-items: center;
+      gap: 7px;
+      margin: 12px 14px 4px;
+      line-height: 1.4;
+    }
+
+    .publish-error-bar.visible {
+      display: flex;
+    }
+
+    /* ── Shop Mapping Modal ── */
+    #shopMappingModal {
+      display: none;
+      position: fixed;
+      inset: 0;
+      z-index: 10000;
+      background: rgba(0, 0, 0, 0.72);
+      backdrop-filter: blur(5px);
+      align-items: center;
+      justify-content: center;
+      padding: 20px;
+    }
+
+    #shopMappingModal.open {
+      display: flex;
+    }
+
+    .smap-inner {
+      background: var(--surface);
+      border: 1px solid var(--border2);
+      border-radius: 18px;
+      width: 100%;
+      max-width: 620px;
+      max-height: 90vh;
+      display: flex;
+      flex-direction: column;
+      box-shadow: 0 28px 72px rgba(0, 0, 0, 0.72);
+      overflow: hidden;
+    }
+
+    .smap-header {
+      padding: 20px 24px 16px;
+      border-bottom: 1px solid var(--border);
+      display: flex;
+      align-items: flex-start;
+      justify-content: space-between;
+      gap: 12px;
+    }
+
+    .smap-title {
+      font-family: var(--font-head);
+      font-size: 1.1rem;
+      font-weight: 700;
+      letter-spacing: -0.01em;
+    }
+
+    .smap-subtitle {
+      font-size: 0.76rem;
+      color: var(--text-3);
+      margin-top: 3px;
+    }
+
+    .smap-close {
+      background: var(--surface2);
+      border: 1px solid var(--border2);
+      color: var(--text);
+      width: 30px;
+      height: 30px;
+      border-radius: 50%;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 1rem;
+      line-height: 1;
+      transition:
+        background 0.15s,
+        color 0.15s;
+      flex-shrink: 0;
+    }
+
+    .smap-close:hover {
+      background: var(--danger-soft);
+      color: var(--danger);
+      border-color: var(--danger);
+    }
+
+    .smap-images-preview {
+      padding: 14px 24px 10px;
+      border-bottom: 1px solid var(--border);
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      flex-wrap: nowrap;
+      overflow-x: auto;
+      scrollbar-width: thin;
+    }
+
+    .smap-img-badge {
+      position: relative;
+      flex-shrink: 0;
+    }
+
+    .smap-img-badge img {
+      width: 52px;
+      height: 52px;
+      border-radius: 8px;
+      object-fit: cover;
+      border: 2px solid var(--accent);
+      display: block;
+    }
+
+    .smap-img-num {
+      position: absolute;
+      bottom: -6px;
+      left: 50%;
+      transform: translateX(-50%);
+      background: var(--gradient-accent);
+      color: #002;
+      font-size: 0.58rem;
+      font-weight: 700;
+      border-radius: 99px;
+      padding: 1px 7px;
+      white-space: nowrap;
+      font-family: var(--font-mono);
+    }
+
+    .smap-body {
+      flex: 1;
+      overflow-y: auto;
+      padding: 6px 24px;
+    }
+
+    .smap-section-label {
+      font-size: 0.72rem;
+      font-weight: 700;
+      color: var(--text-3);
+      letter-spacing: 0.06em;
+      text-transform: uppercase;
+      padding: 12px 0 6px;
+    }
+
+    .smap-shop-row {
+      display: flex;
+      align-items: flex-start;
+      gap: 14px;
+      padding: 12px 0;
+      border-bottom: 1px solid var(--border);
+    }
+
+    .smap-shop-row:last-child {
+      border-bottom: none;
+    }
+
+    .smap-check-wrap {
+      padding-top: 2px;
+    }
+
+    .smap-check-wrap input[type="checkbox"] {
+      width: 17px;
+      height: 17px;
+      accent-color: var(--accent);
+      cursor: pointer;
+      margin-top: 1px;
+    }
+
+    .smap-shop-info {
+      flex: 1;
+      overflow: hidden;
+    }
+
+    .smap-shop-name {
+      font-weight: 600;
+      font-size: 0.88rem;
+      color: var(--text);
+    }
+
+    .smap-shop-domain {
+      font-size: 0.7rem;
+      color: var(--text-3);
+      font-family: var(--font-mono);
+      margin-top: 1px;
+    }
+
+    .smap-url-match {
+      margin-top: 7px;
+      display: flex;
+      align-items: flex-start;
+      gap: 7px;
+      flex-wrap: wrap;
+    }
+
+    .smap-matched-url {
+      font-size: 0.7rem;
+      color: var(--accent);
+      font-family: var(--font-mono);
+      word-break: break-all;
+      line-height: 1.6;
+      flex: 1;
+    }
+
+    .smap-no-config {
+      font-size: 0.76rem;
+      color: var(--text-3);
+      display: flex;
+      align-items: center;
+      gap: 5px;
+      margin-top: 6px;
+    }
+
+    .smap-no-config svg {
+      width: 12px;
+      height: 12px;
+      flex-shrink: 0;
+      opacity: 0.7;
+    }
+
+    .smap-badge-matched {
+      display: inline-flex;
+      align-items: center;
+      gap: 4px;
+      background: rgba(52, 211, 153, 0.12);
+      color: var(--success);
+      border: 1px solid rgba(52, 211, 153, 0.3);
+      border-radius: 99px;
+      font-size: 0.65rem;
+      font-weight: 700;
+      padding: 2px 8px;
+      flex-shrink: 0;
+    }
+
+    .smap-badge-matched svg {
+      width: 10px;
+      height: 10px;
+    }
+
+    .smap-badge-unmatched {
+      display: inline-flex;
+      align-items: center;
+      gap: 4px;
+      background: var(--warning-soft);
+      color: var(--warning);
+      border: 1px solid rgba(245, 158, 11, 0.3);
+      border-radius: 99px;
+      font-size: 0.65rem;
+      font-weight: 700;
+      padding: 2px 8px;
+      flex-shrink: 0;
+    }
+
+    .smap-footer {
+      padding: 14px 24px;
+      border-top: 1px solid var(--border);
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+      flex-wrap: wrap;
+      background: var(--bg-elev);
+    }
+
+    .smap-footer-info {
+      font-size: 0.76rem;
+      color: var(--text-3);
+    }
+
+    .smap-footer-info strong {
+      color: var(--text);
+    }
+
+    .smap-footer-actions {
+      display: flex;
+      gap: 8px;
+      align-items: center;
+    }
+
+    .smap-publish-progress {
+      font-size: 0.74rem;
+      color: var(--text-3);
+      display: none;
+    }
+
+    .smap-result-bar {
+      border-radius: 8px;
+      padding: 9px 14px;
+      font-size: 0.78rem;
+      display: none;
+      align-items: center;
+      gap: 7px;
+      margin: 4px 24px 8px;
+      line-height: 1.5;
+    }
+
+    .smap-result-bar.success {
+      background: rgba(52, 211, 153, 0.1);
+      border: 1px solid rgba(52, 211, 153, 0.25);
+      color: var(--success);
+      display: flex;
+    }
+
+    .smap-result-bar.error {
+      background: var(--danger-soft);
+      border: 1px solid rgba(248, 113, 113, 0.25);
+      color: var(--danger);
+      display: flex;
+    }
+
+    .smap-result-bar svg {
+      width: 14px;
+      height: 14px;
+      min-width: 14px;
+      flex-shrink: 0;
+    }
+  </style>
+</head>
+
+<body>
+  <!-- ── Sidebar ── -->
+  <aside class="sidebar" id="sidebar">
+    <div class="sidebar-logo-row">
+      <div class="sidebar-logo-icon">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+          <path d="M13 2L3 14h7l-1 8 10-12h-7l1-8z" />
+        </svg>
+      </div>
+      <span class="sidebar-logo-text">ContentAI</span>
+    </div>
+    <nav class="sidebar-nav">
+      <a href="{{ BASE_URL }}/" class="nav-item">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"
+          stroke-linejoin="round">
+          <path
+            d="M12 2v4M12 18v4M4.93 4.93l2.83 2.83M16.24 16.24l2.83 2.83M2 12h4M18 12h4M4.93 19.07l2.83-2.83M16.24 7.76l2.83-2.83" />
+        </svg>
+        <span class="nav-label">Generator</span>
+        <span class="tooltip">Generator</span>
+      </a>
+      <a href="{{ BASE_URL }}/generate-repair" class="nav-item">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"
+          stroke-linejoin="round">
+          <path d="M14.7 6.3a1 1 0 0 0 0 1.4l1.6 1.6a1 1 0 0 0 1.4 0l3.77-3.77a6 6 0 0 1-7.94 7.94l-6.91 6.91a2.12 2.12 0 0 1-3-3l6.91-6.91a6 6 0 0 1 7.94-7.94l-3.76 3.76z" />
+        </svg>
+        <span class="nav-label">Generate Repair</span>
+        <span class="tooltip">Generate Repair</span>
+      </a>
+      <a href="{{ BASE_URL }}/image-search" class="nav-item">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"
+          stroke-linejoin="round">
+          <rect x="3" y="3" width="18" height="18" rx="2" />
+          <circle cx="8.5" cy="8.5" r="1.5" />
+          <path d="M21 15l-5-5L5 21" />
+        </svg>
+        <span class="nav-label">Image Search</span>
+        <span class="tooltip">Image Search</span>
+      </a>
+
+      <a href="{{ BASE_URL }}/history" class="nav-item">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"
+          stroke-linejoin="round">
+          <circle cx="12" cy="12" r="9" />
+          <path d="M12 7v5l3 2" />
+        </svg>
+        <span class="nav-label">History</span>
+        <span class="tooltip">History</span>
+      </a>
+      <a href="{{ BASE_URL }}/history-image-search " class="nav-item">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"
+          stroke-linejoin="round">
+          <circle cx="12" cy="12" r="9" />
+          <path d="M12 7v5l3 2" />
+        </svg>
+        <span class="nav-label">History Image</span>
+        <span class="tooltip">History image</span>
+      </a>
+      <a href="{{ BASE_URL }}/review" class="nav-item">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"
+          stroke-linejoin="round">
+          <path d="M9 11l3 3L22 4" />
+          <path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11" />
+        </svg>
+        <span class="nav-label">Review</span>
+        <span class="tooltip">Review</span>
+      </a>
+      <a href="{{ BASE_URL }}/review-repair" class="nav-item">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"
+          stroke-linejoin="round">
+          <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7" />
+          <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z" />
+        </svg>
+        <span class="nav-label">Review Repair</span>
+        <span class="tooltip">Review Repair</span>
+      </a>
+      <a href="{{ BASE_URL }}/review-image-search" class="nav-item active">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"
+          stroke-linejoin="round">
+          <path d="M9 11l3 3L22 4" />
+          <path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11" />
+        </svg>
+        <span class="nav-label">Review Images</span>
+        <span class="tooltip">Review Images</span>
+      </a>
+      <a href="{{ BASE_URL }}/shop-config" class="nav-item">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"
+          stroke-linejoin="round">
+          <circle cx="12" cy="12" r="3" />
+          <path d="M19.07 4.93a10 10 0 0 1 0 14.14M4.93 4.93a10 10 0 0 0 0 14.14" />
+        </svg>
+        <span class="nav-label">Shop Config</span>
+        <span class="tooltip">Shop Config</span>
+      </a>
+    </nav>
+    <div class="sidebar-bottom">
+      <button class="sidebar-toggle-btn" id="sidebarToggleBtn" onclick="toggleSidebar()">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"
+          stroke-linejoin="round">
+          <polyline points="15 18 9 12 15 6" />
+        </svg>
+        <span class="sidebar-toggle-label">Collapse</span>
+      </button>
+      <div class="theme-row">
+        <div class="theme-toggle" id="themeToggle" role="switch" aria-label="Toggle theme" onclick="toggleTheme()">
+        </div>
+        <span class="theme-row-label">Appearance</span>
+      </div>
+    </div>
+  </aside>
+
+  <main class="main" id="mainContent">
+    <!-- ── Left: batch / item queue ── -->
+    <section class="queue-pane">
+      <div class="queue-header">
+        <div class="queue-title">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"
+            stroke-linejoin="round">
+            <rect x="3" y="3" width="18" height="18" rx="2" />
+            <circle cx="8.5" cy="8.5" r="1.5" />
+            <path d="M21 15l-5-5L5 21" />
+          </svg>
+          Review Queue
+        </div>
+        <div class="queue-subtitle">Batches grouped by source &amp; shop</div>
+      </div>
+
+      <div class="queue-search">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <circle cx="11" cy="11" r="8" />
+          <line x1="21" y1="21" x2="16.65" y2="16.65" />
+        </svg>
+        <input id="searchBox" placeholder="Search products…" oninput="renderBatches()" />
+      </div>
+
+      <div class="queue-filters" id="statusFilters">
+        <button class="filter-pill active" data-f="all" onclick="setFilter('all')">
+          All
+        </button>
+        <button class="filter-pill" data-f="pending" onclick="setFilter('pending')">
+          Pending
+        </button>
+        <button class="filter-pill" data-f="reviewed" onclick="setFilter('reviewed')">
+          Reviewed
+        </button>
+        <button class="filter-pill" data-f="published" onclick="setFilter('published')">
+          Published
+        </button>
+      </div>
+>>>>>>> added repaior image pages
 
       .queue-pager {
         display: flex;
@@ -644,6 +2760,7 @@
         cursor: default;
       }
 
+<<<<<<< HEAD
       /* ── Detail pane ── */
       .detail-pane {
         flex: 1;
@@ -665,6 +2782,13 @@
         height: 46px;
         opacity: 0.4;
       }
+=======
+      <div class="batch-list" id="batchList">
+        <div class="empty-note" style="padding: 14px 8px">
+          Loading batches…
+        </div>
+      </div>
+>>>>>>> added repaior image pages
 
       .detail-top {
         display: flex;
@@ -752,6 +2876,7 @@
         cursor: default;
       }
 
+<<<<<<< HEAD
       .section-card {
         background: var(--surface);
         border: 1px solid var(--border);
@@ -1899,6 +4024,57 @@
           ></div>
           <span class="theme-row-label">Appearance</span>
         </div>
+=======
+    <!-- ── Right: detail / image review ── -->
+    <section class="detail-pane" id="detailPane">
+      <div class="detail-empty">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6">
+          <rect x="3" y="3" width="18" height="18" rx="2" />
+          <circle cx="8.5" cy="8.5" r="1.5" />
+          <path d="M21 15l-5-5L5 21" />
+        </svg>
+        <div>
+          Select a product from the queue to review its image candidates.
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <!-- ── Lightbox ── -->
+  <div id="imgLightbox" onclick="closeLightboxOnBackdrop(event)">
+    <div class="lightbox-inner">
+      <div class="lightbox-topbar">
+        <button class="lightbox-close" onclick="closeLightbox()" title="Close">
+          ✕
+        </button>
+      </div>
+      <div class="lightbox-img-wrap">
+        <img id="lightboxImg" src="" alt="Zoomed image" />
+      </div>
+      <div class="lightbox-url-bar">
+        <span class="lightbox-url-label">URL</span>
+        <span class="lightbox-url-val" id="lightboxUrl"></span>
+        <button class="lightbox-copy-btn" onclick="copyLightboxUrl()">
+          Copy
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ── Shop Mapping Modal ── -->
+  <div id="shopMappingModal" onclick="closeShopModalOnBackdrop(event)">
+    <div class="smap-inner">
+      <div class="smap-header">
+        <div>
+          <div class="smap-title">Publish to Shops</div>
+          <div class="smap-subtitle" id="smapSubtitle">
+            Confirm which shops to receive these images
+          </div>
+        </div>
+        <button class="smap-close" onclick="closeShopModal()" title="Close">
+          ✕
+        </button>
+>>>>>>> added repaior image pages
       </div>
     </aside>
 
@@ -1984,6 +4160,7 @@
           </div>
         </div>
 
+<<<<<<< HEAD
         <div class="queue-pager">
           <span id="pagerLabel">Batches 0–0 of 0</span>
           <span>
@@ -2034,10 +4211,17 @@
           <button class="lightbox-copy-btn" onclick="copyLightboxUrl()">
             Copy
           </button>
+=======
+      <!-- Shop list -->
+      <div class="smap-body" id="smapBody">
+        <div class="empty-note" style="padding: 24px 0; text-align: center">
+          <span class="spinner"></span> Loading shops…
+>>>>>>> added repaior image pages
         </div>
       </div>
     </div>
 
+<<<<<<< HEAD
     <!-- ── Shop Mapping Modal ── -->
     <div id="shopMappingModal" onclick="closeShopModalOnBackdrop(event)">
       <div class="smap-inner">
@@ -2050,6 +4234,28 @@
           </div>
           <button class="smap-close" onclick="closeShopModal()" title="Close">
             ✕
+=======
+      <!-- Result feedback -->
+      <div class="smap-result-bar" id="smapResultBar"></div>
+
+      <!-- Footer -->
+      <div class="smap-footer">
+        <div class="smap-footer-info" id="smapFooterInfo">
+          Select shops to publish to
+        </div>
+        <div class="smap-footer-actions">
+          <span class="smap-publish-progress" id="smapProgress"></span>
+          <button class="btn btn-ghost" onclick="closeShopModal()" style="font-size: 0.78rem; padding: 6px 12px">
+            Cancel
+          </button>
+          <button class="btn-publish-all" id="smapPublishBtn" onclick="confirmPublishToShops()">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+              <path d="M4 12v7a2 2 0 002 2h12a2 2 0 002-2v-7" />
+              <polyline points="16 6 12 2 8 6" />
+              <line x1="12" y1="2" x2="12" y2="15" />
+            </svg>
+            Publish
+>>>>>>> added repaior image pages
           </button>
         </div>
 
@@ -2150,6 +4356,7 @@
       </div>
     </div>
 
+<<<<<<< HEAD
     <script>
       const API_BASE_URL = "{{ BASE_URL }}";
       // ───────────────────────────── theme / sidebar ─────────────────────────────
@@ -3434,3 +5641,1278 @@
     </script>
   </body>
 </html>
+=======
+  <script>
+    const API_BASE_URL = "{{ BASE_URL }}";
+    // ───────────────────────────── theme / sidebar ─────────────────────────────
+    function toggleTheme() {
+      var root = document.documentElement,
+        toggle = document.getElementById("themeToggle"),
+        saved = localStorage.getItem("theme") || "dark";
+      root.setAttribute("data-theme", saved);
+      toggle.addEventListener("click", function () {
+        var n = root.getAttribute("data-theme") === "dark" ? "light" : "dark";
+        root.setAttribute("data-theme", n);
+        localStorage.setItem("theme", n);
+      });
+    }
+    (function () {
+      var root = document.documentElement;
+      var saved = localStorage.getItem("theme") || "dark";
+      root.setAttribute("data-theme", saved);
+    })();
+    function toggleSidebar() {
+      document.getElementById("sidebar").classList.toggle("collapsed");
+      document.getElementById("mainContent").classList.toggle("collapsed");
+    }
+
+    // ───────────────────────────── state ─────────────────────────────
+    var _batches = []; // current page of batches from API
+    var _page = 1,
+      _pages = 1,
+      _total = 0;
+    var _filter = "all";
+    var _expandedBatch = null;
+    var _activeItem = null; // {generation_id,...}
+    var _activeDetail = null; // full generation detail from API
+    var _selectedUrls = {}; // url -> true, for the active item
+    var _selectedOrder = []; // ordered array of selected URLs for sequencing
+    var _searchMoreMsg = null; // {text, ok} — persists across renderDetail() re-renders
+
+    function esc(s) {
+      return String(s || "")
+        .replace(/&/g, "&amp;")
+        .replace(/\"/g, "&quot;")
+        .replace(/</g, "&lt;")
+        .replace(/>/g, "&gt;");
+    }
+
+    function setFilter(f) {
+      _filter = f;
+      document
+        .querySelectorAll("#statusFilters .filter-pill")
+        .forEach(function (b) {
+          b.classList.toggle("active", b.dataset.f === f);
+        });
+      loadBatches(1);
+    }
+
+    function changePage(delta) {
+      var np = _page + delta;
+      if (np < 1 || np > _pages) return;
+      loadBatches(np);
+    }
+
+    // ───────────────────────────── shops dropdown ─────────────────────────────
+    function loadShops() {
+      fetch(`${API_BASE_URL}/api/shops`)
+        .then(function (r) {
+          return r.json();
+        })
+        .then(function (d) {
+          var sel = document.getElementById("shopFilterSelect");
+          (d.shops || []).forEach(function (s) {
+            var opt = document.createElement("option");
+            opt.value = s.name || s.domain;
+            opt.textContent = s.name || s.domain;
+            sel.appendChild(opt);
+          });
+        })
+        .catch(function () { });
+    }
+
+    // ───────────────────────────── load batches ─────────────────────────────
+    async function loadBatches(page) {
+      _page = page || 1;
+      document.getElementById("batchList").innerHTML =
+        '<div class="empty-note" style="padding:14px 8px">Loading batches…</div>';
+      try {
+        var resp = await fetch(
+          `${API_BASE_URL}/api/image-search/batches?page=${_page}&per_page=10`,
+        );
+        var data = await resp.json();
+        if (!resp.ok) throw new Error(data.error || "Failed to load batches");
+        _batches = data.batches || [];
+        _pages = data.pages || 1;
+        _total = data.total || 0;
+        renderBatches();
+      } catch (err) {
+        document.getElementById("batchList").innerHTML =
+          '<div class="empty-note" style="padding:14px 8px">' +
+          esc(err.message) +
+          "</div>";
+      }
+    }
+
+    function _batchMatchesFilter(b) {
+      if (_filter === "all") return true;
+      if (_filter === "pending")
+        return b.items.some(function (it) {
+          return it.review_status === "pending";
+        });
+      if (_filter === "reviewed")
+        return b.items.some(function (it) {
+          return it.review_status === "reviewed";
+        });
+      if (_filter === "published")
+        return b.items.some(function (it) {
+          return it.review_status === "published";
+        });
+      return true;
+    }
+
+    function renderBatches() {
+      var q = (
+        document.getElementById("searchBox").value || ""
+      ).toLowerCase();
+      var shopFilter = document.getElementById("shopFilterSelect").value;
+      var list = document.getElementById("batchList");
+      list.innerHTML = "";
+
+      var shown = 0;
+      _batches.forEach(function (b) {
+        if (!_batchMatchesFilter(b)) return;
+        if (shopFilter && b.shop_name !== shopFilter) return;
+
+        var items = b.items.filter(function (it) {
+          if (!q) return true;
+          return (
+            (it.product_title || "").toLowerCase().indexOf(q) >= 0 ||
+            (it.part_number || "").toLowerCase().indexOf(q) >= 0
+          );
+        });
+        if (q && items.length === 0) return;
+        shown++;
+
+        var card = document.createElement("div");
+        card.className =
+          "batch-card" + (_expandedBatch === b.batch_id ? " expanded" : "");
+
+        // AFTER
+        var anyPending = b.items.some(function (it) {
+          return it.review_status === "pending";
+        });
+        var anyPublished = b.items.some(function (it) {
+          return it.review_status === "published";
+        });
+
+        var summary = document.createElement("div");
+        summary.className = "batch-summary";
+        summary.onclick = function () {
+          _expandedBatch = _expandedBatch === b.batch_id ? null : b.batch_id;
+          renderBatches();
+        };
+        // AFTER
+        // AFTER
+        summary.innerHTML =
+          '<svg class="batch-chevron" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="9 18 15 12 9 6"/></svg>' +
+          '<span class="status-dot ' +
+          (anyPending ? "pending" : "reviewed") +
+          '"></span>' +
+          '<div class="batch-meta">' +
+          '<div class="batch-id-row">#' +
+          esc(b.batch_id.slice(0, 8)) +
+          '<span class="batch-count-badge">' +
+          b.product_count +
+          " item" +
+          (b.product_count !== 1 ? "s" : "") +
+          "</span></div>" +
+          '<div class="batch-tags">' +
+          '<span class="tag-pill ' +
+          (b.source === "csv" ? "csv" : "manual") +
+          '">' +
+          (b.source === "csv" ? "CSV" : "Manual") +
+          "</span>" +
+          (b.shop_name
+            ? '<span class="tag-pill shop">' + esc(b.shop_name) + "</span>"
+            : "") +
+          "</div>" +
+          '<div class="batch-date">' +
+          esc(b.created_at) +
+          "</div>" +
+          "</div>" +
+          (anyPublished
+            ? '<button class="batch-export-btn" title="Export published CSV">⬇ CSV</button>'
+            : "");
+        if (anyPublished) {
+          var exportBtn = summary.querySelector(".batch-export-btn");
+          exportBtn.addEventListener("click", function (e) {
+            e.stopPropagation();
+            exportBatchToCSV(b);
+          });
+        }
+        card.appendChild(summary);
+        var itemsWrap = document.createElement("div");
+        itemsWrap.className = "batch-items";
+        items.forEach(function (it) {
+          var row = document.createElement("div");
+          row.className =
+            "item-row" +
+            (_activeItem && _activeItem.generation_id === it.generation_id
+              ? " active-item"
+              : "");
+          row.onclick = function () {
+            selectItem(it);
+          };
+          var iconSvg =
+            it.review_status === "published"
+              ? '<svg class="item-status-icon published" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M5 13l4 4L19 7"/></svg>'
+              : it.review_status === "reviewed"
+                ? '<svg class="item-status-icon reviewed" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M5 13l4 4L19 7"/></svg>'
+                : '<svg class="item-status-icon pending" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><circle cx="12" cy="12" r="9"/></svg>';
+          row.innerHTML =
+            iconSvg +
+            '<span class="item-name">' +
+            esc(it.product_title || it.part_number) +
+            "</span>" +
+            '<span class="item-sku">' +
+            esc(it.part_number) +
+            "</span>";
+          itemsWrap.appendChild(row);
+        });
+        card.appendChild(itemsWrap);
+        list.appendChild(card);
+      });
+
+      if (shown === 0) {
+        list.innerHTML =
+          '<div class="empty-note" style="padding:14px 8px">No batches match this view.</div>';
+      }
+
+      document.getElementById("pagerLabel").textContent =
+        "Batches " +
+        (_total === 0 ? 0 : (_page - 1) * 10 + 1) +
+        "–" +
+        Math.min(_page * 10, _total) +
+        " of " +
+        _total;
+      document.getElementById("prevPageBtn").disabled = _page <= 1;
+      document.getElementById("nextPageBtn").disabled = _page >= _pages;
+    }
+    // AFTER
+    function _parseShopifyUrls(raw) {
+      if (!raw) return [];
+      try {
+        var parsed = raw.trim().startsWith("[") ? JSON.parse(raw) : [raw];
+        return (parsed || []).filter(function (u) {
+          return !!u;
+        });
+      } catch (e) {
+        return [raw];
+      }
+    }
+
+    function exportBatchToCSV(b) {
+      var rows = [];
+      b.items.forEach(function (it) {
+        if ((it.review_status || "pending") !== "published") return;
+        var shopUrl = _parseShopifyUrls(it.shopify_url).join("; ");
+        var urls = (it.selected_urls || []).filter(function (u) {
+          return !!u;
+        });
+        if (!urls.length) {
+          rows.push([
+            it.product_title,
+            it.part_number,
+            it.brand,
+            shopUrl,
+            "",
+          ]);
+        } else {
+          urls.forEach(function (u) {
+            rows.push([
+              it.product_title,
+              it.part_number,
+              it.brand,
+              shopUrl,
+              u,
+            ]);
+          });
+        }
+      });
+      if (!rows.length) {
+        alert("No published products in this batch.");
+        return;
+      }
+      var header = [
+        "Product Title",
+        "Part Number",
+        "Brand",
+        "Shopify URL",
+        "Image URL",
+      ];
+      var csv = [header.join(",")];
+      rows.forEach(function (r) {
+        csv.push(
+          r
+            .map(function (v) {
+              return '"' + String(v || "").replace(/"/g, '""') + '"';
+            })
+            .join(","),
+        );
+      });
+      var blob = new Blob([csv.join("\n")], { type: "text/csv" });
+      var url = URL.createObjectURL(blob);
+      var a = document.createElement("a");
+      a.href = url;
+      a.download =
+        "batch-" + (b.batch_id || "").slice(0, 8) + "-published-images.csv";
+      a.click();
+      URL.revokeObjectURL(url);
+    }
+    // ───────────────────────────── item detail / review ─────────────────────────────
+    async function selectItem(it) {
+      _activeItem = it;
+      _selectedUrls = {};
+      _selectedOrder = [];
+      _searchMoreMsg = null;
+      renderBatches();
+      var pane = document.getElementById("detailPane");
+      pane.innerHTML =
+        '<div class="empty-note" style="padding:30px"><span class="spinner"></span> Loading images…</div>';
+
+      try {
+        var resp = await fetch(
+          `${API_BASE_URL}/api/image-search/generation/${it.generation_id}`,
+        );
+        var data = await resp.json();
+        if (!resp.ok)
+          throw new Error(data.error || "Failed to load generation");
+        _activeDetail = data;
+        _selectedOrder = [];
+        (data.selected_urls || []).forEach(function (u) {
+          _selectedUrls[u] = true;
+          _selectedOrder.push(u);
+        });
+        renderDetail();
+      } catch (err) {
+        pane.innerHTML =
+          '<div class="empty-note" style="padding:30px">' +
+          esc(err.message) +
+          "</div>";
+      }
+    }
+
+    function renderPublishedSummary(d) {
+      if (!d || d.review_status !== "published") return "";
+      // Use d.selected_urls as the authoritative ordered list from the API.
+      // _selectedOrder mirrors it after selectItem loads, but d.selected_urls
+      // is always correct even on the very first render.
+      var urls = (d.selected_urls || []).filter(function (u) {
+        return !!u;
+      });
+      if (!urls.length) return "";
+
+      var gridHtml = urls
+        .map(function (url, i) {
+          return (
+            '<div class="pub-img-card">' +
+            '<div class="pub-img-seq">' +
+            (i + 1) +
+            "</div>" +
+            '<img src="' +
+            esc(url) +
+            '" loading="lazy" onerror="this.closest(\'.pub-img-card\').style.opacity=\'.4\'" onclick="openLightbox(\'' +
+            esc(url) +
+            '\')" title="Click to enlarge">' +
+            '<div class="pub-img-url">' +
+            esc(url) +
+            "</div>" +
+            "</div>"
+          );
+        })
+        .join("");
+
+      return (
+        '<div class="published-summary-panel">' +
+        '<div class="published-summary-header">' +
+        '<div class="published-summary-title">' +
+        '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M5 13l4 4L19 7"/></svg>' +
+        "Published Images" +
+        "</div>" +
+        '<div class="published-summary-meta">' +
+        '<span><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><path d="M21 15l-5-5L5 21"/></svg>' +
+        urls.length +
+        " image" +
+        (urls.length !== 1 ? "s" : "") +
+        " published</span>" +
+        '<span><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M8 6h13M8 12h13M8 18h13M3 6h.01M3 12h.01M3 18h.01"/></svg>In sequence order</span>' +
+        "</div>" +
+        "</div>" +
+        '<div class="published-img-grid">' +
+        gridHtml +
+        "</div>" +
+        '<div class="published-summary-footer">' +
+        '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M4 12v7a2 2 0 002 2h12a2 2 0 002-2v-7"/><polyline points="16 6 12 2 8 6"/><line x1="12" y1="2" x2="12" y2="15"/></svg>' +
+        "These images were published to Shopify in the order shown above." +
+        "</div>" +
+        "</div>"
+      );
+    }
+
+    function renderDetail() {
+      var d = _activeDetail;
+      var pane = document.getElementById("detailPane");
+      if (!d) {
+        return;
+      }
+
+      var imagesHtml = "";
+      if (!d.images || d.images.length === 0) {
+        imagesHtml =
+          '<div class="empty-note">No image candidates were found for this product.</div>';
+      } else {
+        imagesHtml =
+          '<div class="review-img-grid" id="reviewImgGrid">' +
+          d.images
+            .map(function (img, idx) {
+              var url = typeof img === "string" ? img : img.url;
+              var srcLabel =
+                typeof img === "object" && img.source ? img.source : "";
+              var pageUrl =
+                typeof img === "object" && img.page_url ? img.page_url : "";
+              var pageTitle =
+                typeof img === "object" && (img.page_title || img.title)
+                  ? img.page_title || img.title
+                  : "";
+              var selected = !!_selectedUrls[url];
+              var radioId = "radio_img_" + idx;
+              return (
+                '<div class="review-img-tile' +
+                (selected ? " selected" : "") +
+                '" data-url="' +
+                esc(url) +
+                '">' +
+                (srcLabel
+                  ? '<span class="review-img-source">' +
+                  esc(srcLabel) +
+                  "</span>"
+                  : "") +
+                '<img src="' +
+                esc(url) +
+                '" loading="lazy" onerror="this.closest(\'.review-img-tile\').style.display=\'none\'" onclick="openLightbox(\'' +
+                esc(url) +
+                "')\">" +
+                '<div class="review-img-check"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><path d="M5 13l4 4L19 7"/></svg></div>' +
+                '<div class="review-img-radio">' +
+                '<input type="radio" name="img_select_' +
+                esc(d.generation_id) +
+                '" id="' +
+                radioId +
+                '" data-url="' +
+                esc(url) +
+                '"' +
+                (selected ? " checked" : "") +
+                " onclick=\"event.stopPropagation();toggleSelect('" +
+                esc(url) +
+                "')\">" +
+                '<label for="' +
+                radioId +
+                '" class="review-img-radio-label" onclick="event.stopPropagation()">Select</label>' +
+                "</div>" +
+                (pageUrl
+                  ? '<a class="review-img-pagelink" href="' +
+                  esc(pageUrl) +
+                  '" target="_blank" rel="noopener" title="' +
+                  esc(pageTitle || pageUrl) +
+                  '" onclick="event.stopPropagation()">' +
+                  (pageTitle
+                    ? '<span class="review-img-pagetitle">' +
+                    esc(pageTitle) +
+                    "</span>"
+                    : "") +
+                  '<span class="review-img-pageurl">' +
+                  esc(pageUrl) +
+                  "</span>" +
+                  "</a>"
+                  : "") +
+                "</div>"
+              );
+            })
+            .join("") +
+          "</div>";
+      }
+
+      var statusPill =
+        d.review_status === "published"
+          ? '<span class="tag-pill manual" style="background:var(--accent2-soft);color:var(--accent2);border-color:rgba(20,184,166,.3)">Published</span>'
+          : d.review_status === "reviewed"
+            ? '<span class="tag-pill manual">Reviewed</span>'
+            : '<span class="tag-pill shop" style="color:var(--warning);border-color:rgba(245,158,11,.3);background:var(--warning-soft)">Pending</span>';
+
+      var selCount = _selectedOrder.length;
+
+      pane.innerHTML =
+        '<div class="detail-top">' +
+        "<div>" +
+        '<div class="detail-title">' +
+        esc(d.product_title || d.part_number) +
+        "</div>" +
+        '<div class="detail-sub">' +
+        '<span class="detail-sku">' +
+        esc(d.part_number) +
+        "</span>" +
+        (d.brand
+          ? '<span class="tag-pill shop">' + esc(d.brand) + "</span>"
+          : "") +
+        statusPill +
+        (d.shopify_url
+          ? '<a class="detail-link" href="' +
+          esc(d.shopify_url) +
+          '" target="_blank">View on Shopify ↗</a>'
+          : "") +
+        "</div>" +
+        "</div>" +
+        '<div class="detail-actions">' +
+        '<button class="btn btn-ghost" id="markReviewedBtn" onclick="markReviewed()">' +
+        '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M5 13l4 4L19 7"/></svg> Mark Reviewed</button>' +
+        "</div>" +
+        "</div>" +
+        // CORRECT — replace your whole snippet with this
+        '<div class="section-card">' +
+        '<div class="section-card-title-row">' +
+        '<div class="section-card-title"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><path d="M21 15l-5-5L5 21"/></svg> Candidate Images</div>' +
+        '<div style="display:flex;gap:8px">' +
+        '<button class="btn btn-ghost" id="exportCandidatesBtn" onclick="exportCandidateImagesToCSV()" title="Export image URLs">' +
+        '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M12 3v13"/><path d="M7 11l5 5 5-5"/><path d="M5 21h14"/></svg> CSV</button>' +
+        '<button class="btn btn-ghost" id="searchMoreBtn" onclick="searchMoreImages()">' +
+        '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><circle cx="11" cy="11" r="7"/><path d="M21 21l-4.3-4.3"/></svg> Search More</button>' +
+        "</div>" +
+        "</div>" +
+        '<div id="searchMoreStatus">' +
+        (_searchMoreMsg
+          ? '<div class="search-more-note" style="color:' +
+          (_searchMoreMsg.ok ? "var(--success)" : "var(--error)") +
+          '">' +
+          esc(_searchMoreMsg.text) +
+          "</div>"
+          : "") +
+        "</div>" +
+        imagesHtml +
+        '<div class="selected-strip">' +
+        '<span class="selected-count-txt" id="selCountTxt">' +
+        selCount +
+        " selected</span>" +
+        "</div>" +
+        "</div>" +
+        (d.review_status === "published" ? renderPublishedSummary(d) : "") +
+        '<div id="publishArea"></div>';
+
+      renderPublishArea();
+    }
+
+    function exportCandidateImagesToCSV() {
+      var d = _activeDetail;
+      if (!d || !d.images || !d.images.length) {
+        alert("No candidate images found for this product.");
+        return;
+      }
+      var csv = ["Image URL"];
+      d.images.forEach(function (img) {
+        var url = typeof img === "string" ? img : img.url || "";
+        if (!url) return;
+        csv.push('"' + url.replace(/"/g, '""') + '"');
+      });
+      var blob = new Blob([csv.join("\n")], { type: "text/csv" });
+      var url2 = URL.createObjectURL(blob);
+      var a = document.createElement("a");
+      a.href = url2;
+      a.download =
+        (d.part_number || d.generation_id || "candidates") +
+        "-image-urls.csv";
+      a.click();
+      URL.revokeObjectURL(url2);
+    }
+    async function searchMoreImages() {
+      if (!_activeDetail) return;
+      var btn = document.getElementById("searchMoreBtn");
+      if (btn.disabled) return; // already running
+
+      btn.disabled = true;
+      btn.innerHTML = '<span class="spinner"></span> Searching the web…';
+      _searchMoreMsg = null;
+
+      try {
+        var resp = await fetch(
+          `${API_BASE_URL}/api/image-search/search-more`,
+          {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({
+              generation_id: _activeDetail.generation_id,
+            }),
+          },
+        );
+        var data = await resp.json();
+        if (!resp.ok) throw new Error(data.error || "Search failed");
+
+        _activeDetail.images = data.images || _activeDetail.images;
+        _searchMoreMsg =
+          data.added > 0
+            ? {
+              ok: true,
+              text:
+                "Found " +
+                data.added +
+                " new image" +
+                (data.added === 1 ? "" : "s") +
+                " from the web.",
+            }
+            : {
+              ok: false,
+              text: "No additional images found elsewhere on the web.",
+            };
+        renderDetail();
+      } catch (err) {
+        _searchMoreMsg = { ok: false, text: err.message };
+        renderDetail();
+      }
+    }
+
+    function toggleSelect(url) {
+      if (_selectedUrls[url]) {
+        delete _selectedUrls[url];
+        _selectedOrder = _selectedOrder.filter(function (u) {
+          return u !== url;
+        });
+      } else {
+        _selectedUrls[url] = true;
+        _selectedOrder.push(url);
+      }
+      renderDetail();
+    }
+
+    async function saveSelection() {
+      var urls = _selectedOrder.slice();
+      try {
+        var resp = await fetch(
+          `${API_BASE_URL}/api/image-search/save-selection`,
+          {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({
+              generation_id: _activeDetail.generation_id,
+              selected_urls: urls,
+            }),
+          },
+        );
+        var data = await resp.json();
+        if (!resp.ok) throw new Error(data.error || "Save failed");
+        renderSequencePanel("Selection saved.");
+      } catch (err) {
+        renderSequencePanel(null, err.message);
+      }
+    }
+
+    // ── Sequence Panel ──────────────────────────────────────────────────────────
+    function renderPublishArea() {
+      renderSequencePanel();
+    }
+
+    function renderSequencePanel(successMsg, errorMsg) {
+      var area = document.getElementById("publishArea");
+      if (!area) return;
+      var count = _selectedOrder.length;
+      var isPublished =
+        _activeDetail && _activeDetail.review_status === "published";
+
+      var seqItemsHtml = "";
+      if (count === 0) {
+        seqItemsHtml =
+          '<div class="sequence-empty">' +
+          '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><path d="M21 15l-5-5L5 21"/></svg>' +
+          "Select images above using the radio buttons — they'll appear here for sequencing.</div>";
+      } else {
+        seqItemsHtml = '<div class="sequence-list" id="seqList">';
+        _selectedOrder.forEach(function (url, i) {
+          seqItemsHtml +=
+            '<div class="seq-card" ' +
+            (isPublished ? "" : 'draggable="true" ') +
+            ' data-url="' +
+            esc(url) +
+            '" data-idx="' +
+            i +
+            '" style="' +
+            (isPublished ? "cursor:default;" : "") +
+            '">' +
+            (isPublished
+              ? ""
+              : '<div class="seq-drag-handle"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="9" cy="5" r="1"/><circle cx="15" cy="5" r="1"/><circle cx="9" cy="12" r="1"/><circle cx="15" cy="12" r="1"/><circle cx="9" cy="19" r="1"/><circle cx="15" cy="19" r="1"/></svg></div>') +
+            '<div class="seq-badge">' +
+            (i + 1) +
+            "</div>" +
+            '<img class="seq-thumb" src="' +
+            esc(url) +
+            '" onerror="this.style.display=\'none\'">' +
+            '<div class="seq-info"><div class="seq-label">Image ' +
+            (i + 1) +
+            '</div><div class="seq-url">' +
+            esc(url) +
+            "</div></div>" +
+            (isPublished
+              ? ""
+              : '<button class="seq-remove" title="Remove" onclick="removeFromSequence(\'' +
+              esc(url) +
+              "')\">" +
+              '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>' +
+              "</button>") +
+            "</div>";
+        });
+        seqItemsHtml += "</div>";
+      }
+
+      var successHtml = successMsg
+        ? '<div class="publish-success-bar visible"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M5 13l4 4L19 7"/></svg>' +
+        esc(successMsg) +
+        "</div>"
+        : "";
+      var errorHtml = errorMsg
+        ? '<div class="publish-error-bar visible"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><circle cx="12" cy="12" r="9"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>' +
+        esc(errorMsg) +
+        "</div>"
+        : "";
+
+      var isPublished =
+        _activeDetail && _activeDetail.review_status === "published";
+      var publishBarHtml =
+        count > 0
+          ? '<div class="global-publish-bar">' +
+          '<div class="global-publish-info"><strong>' +
+          count +
+          "</strong> image" +
+          (count !== 1 ? "s" : "") +
+          " selected · will publish in the order shown</div>" +
+          '<div class="global-publish-actions">' +
+          '<span class="publish-progress" id="publishProgress"></span>' +
+          '<button class="btn btn-ghost" onclick="saveSelection()" style="font-size:.78rem;padding:6px 12px">Save Order</button>' +
+          (!isPublished
+            ? '<button class="btn-publish-all" id="publishAllBtn" onclick="publishAll()">' +
+            '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M4 12v7a2 2 0 002 2h12a2 2 0 002-2v-7"/><polyline points="16 6 12 2 8 6"/><line x1="12" y1="2" x2="12" y2="15"/></svg>' +
+            "Publish All to Shopify" +
+            "</button>"
+            : '<span style="display:inline-flex;align-items:center;gap:6px;font-size:.78rem;color:var(--accent2);font-weight:600;padding:6px 10px;background:var(--accent2-soft);border-radius:8px;border:1px solid rgba(20,184,166,.3)">' +
+            '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M5 13l4 4L19 7"/></svg>Published</span>') +
+          "</div>" +
+          "</div>"
+          : "";
+
+      area.innerHTML =
+        '<div class="sequence-panel">' +
+        '<div class="sequence-panel-header">' +
+        '<div class="sequence-panel-title">' +
+        '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M8 6h13M8 12h13M8 18h13M3 6h.01M3 12h.01M3 18h.01"/></svg>' +
+        (isPublished ? "Published Sequence" : "Publish Sequence") +
+        "</div>" +
+        (count > 0 && !isPublished
+          ? '<div class="sequence-panel-hint"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 5v14M5 12l7-7 7 7"/></svg>Drag cards to reorder</div>'
+          : "") +
+        (isPublished && count > 0
+          ? '<div class="sequence-panel-hint" style="color:var(--accent2)"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M5 13l4 4L19 7"/></svg>Published to Shopify</div>'
+          : "") +
+        "</div>" +
+        seqItemsHtml +
+        successHtml +
+        errorHtml +
+        publishBarHtml +
+        "</div>";
+
+      if (count > 0) initDragDrop();
+    }
+
+    function removeFromSequence(url) {
+      delete _selectedUrls[url];
+      _selectedOrder = _selectedOrder.filter(function (u) {
+        return u !== url;
+      });
+      // Uncheck the radio in the image grid
+      var grid = document.getElementById("reviewImgGrid");
+      if (grid) {
+        var tile = grid.querySelector(
+          '.review-img-tile[data-url="' + url + '"]',
+        );
+        if (tile) {
+          tile.classList.remove("selected");
+          var radio = tile.querySelector('input[type="radio"]');
+          if (radio) radio.checked = false;
+        }
+      }
+      // Update selected count
+      var ct = document.getElementById("selCountTxt");
+      if (ct) ct.textContent = _selectedOrder.length + " selected";
+      renderSequencePanel();
+    }
+
+    // ── Drag & Drop ─────────────────────────────────────────────────────────────
+    var _dragSrcIdx = null;
+
+    function initDragDrop() {
+      var list = document.getElementById("seqList");
+      if (!list) return;
+      var cards = list.querySelectorAll(".seq-card");
+
+      cards.forEach(function (card) {
+        card.addEventListener("dragstart", function (e) {
+          _dragSrcIdx = parseInt(card.dataset.idx);
+          card.classList.add("dragging");
+          e.dataTransfer.effectAllowed = "move";
+        });
+        card.addEventListener("dragend", function () {
+          card.classList.remove("dragging");
+          list.querySelectorAll(".seq-card").forEach(function (c) {
+            c.classList.remove("drag-over");
+          });
+        });
+        card.addEventListener("dragover", function (e) {
+          e.preventDefault();
+          e.dataTransfer.dropEffect = "move";
+          list.querySelectorAll(".seq-card").forEach(function (c) {
+            c.classList.remove("drag-over");
+          });
+          card.classList.add("drag-over");
+        });
+        card.addEventListener("dragleave", function () {
+          card.classList.remove("drag-over");
+        });
+        card.addEventListener("drop", function (e) {
+          e.preventDefault();
+          var targetIdx = parseInt(card.dataset.idx);
+          if (_dragSrcIdx === null || _dragSrcIdx === targetIdx) return;
+          // reorder _selectedOrder
+          var moved = _selectedOrder.splice(_dragSrcIdx, 1)[0];
+          _selectedOrder.splice(targetIdx, 0, moved);
+          _dragSrcIdx = null;
+          renderSequencePanel();
+        });
+      });
+    }
+
+    // ── Shop Mapping Modal ──────────────────────────────────────────────────────
+    var _smapShops = []; // all shops from API
+    var _smapUrls = []; // ordered image URLs to publish
+
+    /**
+     * Opens the shop mapping modal.
+     * Called instead of publishing directly — lets user see which shop URLs
+     * match and confirm / deselect before actual publish.
+     */
+    async function publishAll() {
+      var urls = _selectedOrder.slice();
+      if (!urls.length) return;
+      _smapUrls = urls;
+      openShopModal();
+    }
+
+    async function openShopModal() {
+      // Reset modal state
+      var modal = document.getElementById("shopMappingModal");
+      document.getElementById("smapResultBar").className = "smap-result-bar";
+      document.getElementById("smapResultBar").innerHTML = "";
+      document.getElementById("smapProgress").style.display = "none";
+      document.getElementById("smapPublishBtn").disabled = false;
+
+      // Image preview strip
+      var prev = document.getElementById("smapImagesPreview");
+      prev.innerHTML = _smapUrls
+        .map(function (url, i) {
+          return (
+            '<div class="smap-img-badge">' +
+            '<img src="' +
+            esc(url) +
+            '" onerror="this.style.opacity=\'0.3\'">' +
+            '<div class="smap-img-num">#' +
+            (i + 1) +
+            "</div>" +
+            "</div>"
+          );
+        })
+        .join("");
+
+      var subtitle = document.getElementById("smapSubtitle");
+      subtitle.textContent =
+        _smapUrls.length +
+        " image" +
+        (_smapUrls.length !== 1 ? "s" : "") +
+        " · select target shops below";
+
+      modal.classList.add("open");
+      document.body.style.overflow = "hidden";
+
+      // Fetch shops and render
+      document.getElementById("smapBody").innerHTML =
+        '<div class="empty-note" style="padding:24px 0;text-align:center"><span class="spinner"></span> Loading shops…</div>';
+      try {
+        var resp = await fetch(`${API_BASE_URL}/api/shops`);
+        var data = await resp.json();
+        _smapShops = data.shops || [];
+        renderShopRows();
+      } catch (err) {
+        document.getElementById("smapBody").innerHTML =
+          '<div class="empty-note" style="padding:24px 0;text-align:center;color:var(--danger)">' +
+          esc(err.message) +
+          "</div>";
+      }
+    }
+
+    function closeShopModal() {
+      document.getElementById("shopMappingModal").classList.remove("open");
+      document.body.style.overflow = "";
+    }
+    function closeShopModalOnBackdrop(e) {
+      if (e.target === document.getElementById("shopMappingModal"))
+        closeShopModal();
+    }
+
+    /**
+     * Normalises a hostname: strips www., trailing slashes, path, protocol.
+     */
+    function _normDomain(s) {
+      s = (s || "").trim().toLowerCase();
+      // strip protocol
+      s = s.replace(/^https?:\/\//, "");
+      // strip www.
+      s = s.replace(/^www\./, "");
+      // strip path + query
+      s = s.split("/")[0].split("?")[0];
+      return s;
+    }
+
+    /**
+     * For a given shop, find the CSV product URL whose domain matches
+     * shop.website_domain. Returns the matching URL or ''.
+     */
+    function _findMatchedUrl(shop) {
+      var wd = _normDomain(shop.website_domain || "");
+      if (!wd) return "";
+      var shopifyUrls = [];
+      try {
+        var raw = _activeDetail.shopify_url || "[]";
+        shopifyUrls =
+          typeof raw === "string"
+            ? raw.startsWith("[")
+              ? JSON.parse(raw)
+              : [raw]
+            : Array.isArray(raw)
+              ? raw
+              : [raw];
+      } catch (e) {
+        shopifyUrls = [];
+      }
+      shopifyUrls = shopifyUrls.filter(Boolean);
+      for (var i = 0; i < shopifyUrls.length; i++) {
+        var urlHost = _normDomain(shopifyUrls[i]);
+        if (
+          urlHost === wd ||
+          urlHost.endsWith("." + wd) ||
+          wd.endsWith("." + urlHost) ||
+          urlHost.indexOf(wd) >= 0 ||
+          wd.indexOf(urlHost) >= 0
+        ) {
+          return shopifyUrls[i];
+        }
+      }
+      return "";
+    }
+
+    function renderShopRows() {
+      var body = document.getElementById("smapBody");
+      if (!_smapShops.length) {
+        body.innerHTML =
+          '<div class="empty-note" style="padding:24px 0;text-align:center">No shops configured. Add a shop in Shop Config.</div>';
+        updateSmapFooter();
+        return;
+      }
+
+      var matchedHtml = "";
+      var noConfigHtml = "";
+
+      _smapShops.forEach(function (shop) {
+        var matched = _findMatchedUrl(shop);
+        var checkId = "smap_shop_" + shop.id;
+        // Auto-check shops that have a matching URL; leave unchecked if no config
+        var checked = matched ? " checked" : "";
+        var rowHtml =
+          '<div class="smap-shop-row">' +
+          '<div class="smap-check-wrap"><input type="checkbox" id="' +
+          checkId +
+          '" value="' +
+          shop.id +
+          '"' +
+          checked +
+          ' onchange="updateSmapFooter()"></div>' +
+          '<label for="' +
+          checkId +
+          '" class="smap-shop-info" style="cursor:pointer">' +
+          '<div class="smap-shop-name">' +
+          esc(shop.name || shop.domain) +
+          "</div>" +
+          '<div class="smap-shop-domain">' +
+          esc(shop.website_domain || shop.domain) +
+          "</div>";
+
+        if (matched) {
+          rowHtml +=
+            '<div class="smap-url-match">' +
+            '<span class="smap-badge-matched"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><path d="M5 13l4 4L19 7"/></svg>Matched</span>' +
+            '<span class="smap-matched-url">' +
+            esc(matched) +
+            "</span>" +
+            "</div>";
+        } else if (shop.website_domain) {
+          rowHtml +=
+            '<div class="smap-no-config">' +
+            '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="9"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>' +
+            "No matching URL found for this shop" +
+            "</div>";
+        } else {
+          rowHtml +=
+            '<div class="smap-no-config">' +
+            '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="9"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>' +
+            "No configuration set — website domain not defined for this shop" +
+            "</div>";
+        }
+        rowHtml += "</label></div>";
+
+        if (matched) {
+          matchedHtml += rowHtml;
+        } else {
+          noConfigHtml += rowHtml;
+        }
+      });
+
+      var html = "";
+      if (matchedHtml) {
+        html +=
+          '<div class="smap-section-label">Matched shops</div>' + matchedHtml;
+      }
+      if (noConfigHtml) {
+        html +=
+          '<div class="smap-section-label" style="margin-top:' +
+          (matchedHtml ? "8px" : "0") +
+          '">Other shops</div>' +
+          noConfigHtml;
+      }
+      body.innerHTML = html;
+      updateSmapFooter();
+    }
+
+    function updateSmapFooter() {
+      var checked = Array.from(
+        document.querySelectorAll('#smapBody input[type="checkbox"]:checked'),
+      );
+      var count = checked.length;
+      var info = document.getElementById("smapFooterInfo");
+      if (count === 0) {
+        info.innerHTML = "No shops selected";
+      } else {
+        info.innerHTML =
+          "<strong>" +
+          count +
+          "</strong> shop" +
+          (count !== 1 ? "s" : "") +
+          " selected · " +
+          _smapUrls.length +
+          " image" +
+          (_smapUrls.length !== 1 ? "s" : "") +
+          " each";
+      }
+      document.getElementById("smapPublishBtn").disabled = count === 0;
+    }
+
+    async function confirmPublishToShops() {
+      var checkedInputs = Array.from(
+        document.querySelectorAll('#smapBody input[type="checkbox"]:checked'),
+      );
+      var shopIds = checkedInputs.map(function (inp) {
+        return parseInt(inp.value);
+      });
+      if (!shopIds.length) return;
+
+      var btn = document.getElementById("smapPublishBtn");
+      var prog = document.getElementById("smapProgress");
+      var resBar = document.getElementById("smapResultBar");
+      btn.disabled = true;
+      prog.textContent = "Publishing…";
+      prog.style.display = "block";
+      resBar.className = "smap-result-bar";
+      resBar.innerHTML = "";
+
+      try {
+        var resp = await fetch(
+          `${API_BASE_URL}/api/image-search/publish-to-shops`,
+          {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({
+              generation_id: _activeDetail.generation_id,
+              image_urls: _smapUrls,
+              shop_ids: shopIds,
+            }),
+          },
+        );
+        var data = await resp.json();
+        if (!resp.ok) throw new Error(data.error || "Publish failed");
+
+        var results = data.results || [];
+        var successes = results.filter(function (r) {
+          return r.success;
+        });
+        var failures = results.filter(function (r) {
+          return !r.success;
+        });
+
+        prog.style.display = "none";
+
+        if (failures.length === 0) {
+          resBar.className = "smap-result-bar success";
+          resBar.innerHTML =
+            '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M5 13l4 4L19 7"/></svg>' +
+            "Published " +
+            _smapUrls.length +
+            " image" +
+            (_smapUrls.length !== 1 ? "s" : "") +
+            " to " +
+            successes.length +
+            " shop" +
+            (successes.length !== 1 ? "s" : "") +
+            " successfully.";
+          _activeDetail.review_status = "published";
+          if (_activeItem) _activeItem.review_status = "published";
+          renderBatches();
+          renderSequencePanel(
+            "Published to " +
+            successes.length +
+            " shop" +
+            (successes.length !== 1 ? "s" : "") +
+            " successfully.",
+          );
+          setTimeout(closeShopModal, 2400);
+        } else {
+          var errLines = failures.map(function (r) {
+            return (
+              esc(r.shop_name) +
+              ": " +
+              (r.errors || [r.error] || []).join(", ")
+            );
+          });
+          var partialMsg =
+            successes.length > 0
+              ? successes.length +
+              " shop" +
+              (successes.length !== 1 ? "s" : "") +
+              " succeeded. "
+              : "";
+          resBar.className = "smap-result-bar error";
+          resBar.innerHTML =
+            '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><circle cx="12" cy="12" r="9"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>' +
+            partialMsg +
+            "Failed: " +
+            errLines.join(" · ");
+          btn.disabled = false;
+        }
+      } catch (err) {
+        prog.style.display = "none";
+        resBar.className = "smap-result-bar error";
+        resBar.innerHTML =
+          '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><circle cx="12" cy="12" r="9"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>' +
+          esc(err.message);
+        btn.disabled = false;
+      }
+    }
+
+    async function publishOne(url, btnEl) {
+      btnEl.disabled = true;
+      var orig = btnEl.textContent;
+      btnEl.textContent = "Publishing…";
+      try {
+        var resp = await fetch(
+          `${API_BASE_URL}/api/image-search/publish-image`,
+          {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({
+              generation_id: _activeDetail.generation_id,
+              image_url: url,
+              shopify_url: _activeDetail.shopify_url,
+            }),
+          },
+        );
+        var data = await resp.json();
+        if (!resp.ok) throw new Error(data.error || "Publish failed");
+        btnEl.textContent = "✓ Published";
+        _activeDetail.review_status = "published";
+        if (_activeItem) _activeItem.review_status = "published";
+        renderBatches();
+      } catch (err) {
+        btnEl.disabled = false;
+        btnEl.textContent = orig;
+        alert(err.message);
+      }
+    }
+
+    async function markReviewed() {
+      var btn = document.getElementById("markReviewedBtn");
+      btn.disabled = true;
+      try {
+        var resp = await fetch(
+          `${API_BASE_URL}/api/image-search/mark-reviewed`,
+          {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({
+              generation_id: _activeDetail.generation_id,
+              status: "reviewed",
+            }),
+          },
+        );
+        var data = await resp.json();
+        if (!resp.ok) throw new Error(data.error || "Failed");
+        _activeDetail.review_status = "reviewed";
+        if (_activeItem) _activeItem.review_status = "reviewed";
+        renderDetail();
+        renderBatches();
+      } catch (err) {
+        alert(err.message);
+      } finally {
+        btn.disabled = false;
+      }
+    }
+
+    // ───────────────────────────── lightbox ─────────────────────────────
+    function openLightbox(url) {
+      document.getElementById("lightboxImg").src = url;
+      document.getElementById("lightboxUrl").textContent = url;
+      document.getElementById("imgLightbox").classList.add("open");
+      document.body.style.overflow = "hidden";
+    }
+    function closeLightbox() {
+      document.getElementById("imgLightbox").classList.remove("open");
+      document.getElementById("lightboxImg").src = "";
+      document.body.style.overflow = "";
+    }
+    function closeLightboxOnBackdrop(e) {
+      if (e.target === document.getElementById("imgLightbox"))
+        closeLightbox();
+    }
+    function copyLightboxUrl() {
+      var url = document.getElementById("lightboxUrl").textContent;
+      navigator.clipboard.writeText(url).then(function () {
+        var btn = document.querySelector(".lightbox-copy-btn");
+        var orig = btn.textContent;
+        btn.textContent = "Copied!";
+        setTimeout(function () {
+          btn.textContent = orig;
+        }, 1500);
+      });
+    }
+    document.addEventListener("keydown", function (e) {
+      if (e.key === "Escape") closeLightbox();
+    });
+
+    // ───────────────────────────── init ─────────────────────────────
+    loadShops();
+    loadBatches(1);
+  </script>
+</body>
+
+</html>
+>>>>>>> added repaior image pages
