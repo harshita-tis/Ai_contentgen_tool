@@ -14,47 +14,26 @@ from flask import (
 )
 
 from flask_sqlalchemy import SQLAlchemy
-
 from datetime import datetime, timezone, timedelta
-
 import openai
-
 import requests
-
 import os
-
 import json
-
 import uuid
-
 import threading
-
 from concurrent.futures import ThreadPoolExecutor, as_completed
-
 from dotenv import load_dotenv
-
 from flask_cors import CORS
-
 from functools import wraps
-
 import re
-
 import logging
-
 import time
-
 from html import escape as html_escape
-
 import hashlib
-
 import asyncio
-
 import requests as _req
-
 from urllib.parse import urlparse
-
 from bs4 import BeautifulSoup
-
 from playwright.async_api import async_playwright
 
 
@@ -65,7 +44,6 @@ BASE_URL = os.getenv("BASE_URL", "")
 shopify_bp = Blueprint("shopify", __name__)
 
 app = Flask(__name__)
-
 CORS(
     app,
     supports_credentials=True,
@@ -74,11 +52,13 @@ CORS(
 
 
 # ─── MySQL Configuration ──────────────────────────────────────────────────────
+
 _DB_HOST = os.getenv("HOST", "localhost")
 
 _DB_USER = os.getenv("USER", "root")
 
 # print("Connecting to MySQL database at %s, user %s, database %s", _DB_HOST, _DB_USER, os.getenv("DATABASE", "content_gen"))
+
 _DB_PASSWORD = os.getenv("DATABASE_PASSWORD", "")
 
 _DB_NAME = os.getenv("DATABASE", "content_gen")
@@ -112,7 +92,6 @@ db = SQLAlchemy(app)
 
 
 # ─── User Credentials & Role Definitions ─────────────────────────────────────
-
 USERS = {
     "grp_user": {"password": "12345", "role": "user"},
     "grp_reviewer": {"password": "review@123", "role": "reviewer"},
@@ -120,7 +99,6 @@ USERS = {
 
 
 logging.basicConfig(level=logging.INFO, format="%(levelname)s | %(name)s | %(message)s")
-
 logger = logging.getLogger(__name__)
 
 
@@ -263,53 +241,30 @@ def reviewer_required(f):
 
 def _get_active_shop() -> "ShopConfig | None":
     """
-
     Resolves the *current user's* active shop.
-
     Per-session: each logged-in user gets their own active-shop choice,
-
     stored in their Flask session, so one user switching shops never
-
     affects another concurrent user/session.
-
     Falls back to the DB-wide default shop (legacy `is_active` flag) and
-
     then to the first created shop if the session has no selection yet
-
     or points at a shop that no longer exists.
-
-
-
     IMPORTANT: this is also called from worker.py, a completely separate
-
     process (spun up by cron/systemd) that never has a Flask request
-
     context. Touching `session` outside a request context raises
-
     RuntimeError, so all session access below is guarded with
-
     has_request_context(). Without this guard, the function silently
-
     returned None for every call made from the worker, which caused it
-
     to fall back to the unauthenticated storefront API and hit
-
     Shopify's storefront rate limit (429s) instead of using the
-
     Admin API.
-
     """
-
     try:
-
         if has_request_context():
 
             shop_id = session.get("active_shop_id")
 
             if shop_id:
-
                 shop = ShopConfig.query.get(shop_id)
-
                 if shop:
 
                     logger.info(
@@ -317,7 +272,6 @@ def _get_active_shop() -> "ShopConfig | None":
                     )
 
                     return shop
-
                 # Session pointed at a shop that's been deleted — clear it and fall through.
 
                 logger.warning(
@@ -340,11 +294,8 @@ def _get_active_shop() -> "ShopConfig | None":
         )
 
         return shop
-
     except Exception as e:
-
         logger.error(f"[_get_active_shop] failed to resolve active shop: {e}")
-
         return None
 
 
@@ -360,7 +311,6 @@ def _shopify_base_url(domain: str = "") -> str:
 
 
 def _utc_now():
-
     return datetime.now(timezone.utc)
 
 
@@ -370,242 +320,131 @@ API_KEY = os.getenv("OPENAI_API_KEY")
 
 
 # In-memory cancel flags: job_id -> threading.Event
-
 # Set the event to signal a running job to stop ASAP.
-
 _cancel_events: dict[str, threading.Event] = {}
 
 
 _GQL_PRODUCT = """
-
 query GetProduct($id: ID!) {
-
   product(id: $id) {
-
     id
-
     title
-
     handle
-
     productType
-
     vendor
-
     tags
-
     bodyHtml
-
     images(first: 1) {
-
       edges {
-
         node {
-
           url
-
           altText
-
         }
-
       }
-
     }
-
     variants(first: 1) {
-
       edges {
-
         node {
-
           sku
-
           image {
-
             url
-
           }
-
         }
-
       }
-
     }
-
   }
-
 }
-
 """
 
 
 _GQL_PRODUCT_BY_SKU = """
-
 query GetProductBySku($query: String!) {
-
   products(first: 1, query: $query) {
-
     edges {
-
       node {
-
         id
-
         title
-
         images(first: 1) {
-
           edges {
-
             node {
-
               url
-
               altText
-
             }
-
           }
-
         }
-
         variants(first: 5) {
-
           edges {
-
             node {
-
               sku
-
               image {
-
                 url
-
               }
-
             }
-
           }
-
         }
-
       }
-
     }
-
   }
-
 }
-
 """
 
 
 _GQL_PRODUCT_UPDATE = """
-
 mutation ProductUpdate($input: ProductInput!) {
-
   productUpdate(input: $input) {
-
     product {
-
       id
-
       seo {
-
         title
-
         description
-
       }
-
     }
-
     userErrors { field message }
-
   }
-
 }
-
 """
 
 
 _GQL_METAFIELDS_SET = """
-
 mutation MetafieldsSet($metafields: [MetafieldsSetInput!]!) {
-
   metafieldsSet(metafields: $metafields) {
-
     metafields { id namespace key }
-
     userErrors { field message }
-
   }
-
 }
-
 """
 
 
 _GQL_PRODUCT_BY_HANDLE = """
-
 query ProductByHandle($handle: String!) {
-
   productByHandle(handle: $handle) {
-
     id
-
     title
-
     handle
-
     productType
-
     vendor
-
     tags
-
     bodyHtml  
-
     images(first: 1) {
-
       edges {
-
         node {
-
           url
-
           altText
-
         }
-
       }
-
     }
-
     variants(first: 5) {
-
       edges {
-
         node {
-
           sku
-
           image {
-
             url
-
           }
-
         }
-
       }     
-
     }
-
   }
-
 }
-
 """
 
 
@@ -629,7 +468,6 @@ COST_PER_OUTPUT_TOKEN = 0.600 / 1_000_000
 
 
 # Max parallel workers for HTML template formatting inside _generate_section_batch.
-
 # Each worker makes one OpenAI API call, so keep this within your RPM quota.
 
 MAX_FORMAT_WORKERS = int(os.getenv("MAX_FORMAT_WORKERS", "2"))
@@ -637,53 +475,32 @@ MAX_FORMAT_WORKERS = int(os.getenv("MAX_FORMAT_WORKERS", "2"))
 
 DEFAULT_PROMPTS = {
     "short_description": """You are a professional product copywriter.
-
 Product Title: {product_title}
-
 Part Number: {part_number}
-
 Write 5-6 short product description items. Output ONLY plain text, one item per line.""",
     "product_description": """You are a professional product copywriter.
-
 Product Title: {product_title}
-
 Part Number: {part_number}
-
 Write a detailed description showing features and benefits concisely.""",
     "technical_specifications": """You are a technical documentation specialist.
-
 Product Title: {product_title}
-
 Part Number: {part_number}
-
 List 5 key technical specifications configurations.""",
     "common_problems": """You are a product support specialist.
-
 Product Title: {product_title}
-
 Part Number: {part_number}
-
 List 4-6 common symptoms or failure causes.""",
     "installation_guide": """You are a technical writer.
-
 Product Title: {product_title}
-
 Part Number: {part_number}
-
 Write short actionable installation steps.""",
     "meta_title": """You are an SEO specialist.
-
 Product Title: {product_title}
-
 Part Number: {part_number}
-
 Write a single SEO-optimized meta title for this product page. It must be under 60 characters, include the part number, and clearly describe the product. Output ONLY the meta title text, nothing else.""",
     "meta_description": """You are an SEO specialist.
-
 Product Title: {product_title}
-
 Part Number: {part_number}
-
 Write a single SEO-optimized meta description for this product page. It must be between 140-160 characters, include the part number, highlight key benefits, and include a call to action. Output ONLY the meta description text, nothing else.""",
 }
 
@@ -703,12 +520,10 @@ SECTIONS = list(DEFAULT_PROMPTS.keys())
 
 
 # ─── Database Models ──────────────────────────────────────────────────────
-
 # ─── Database Models ──────────────────────────────────────────────────────────
 
 
 class GeneratedContent(db.Model):
-
     id = db.Column(db.Integer, primary_key=True)
 
     shop_id = db.Column(
@@ -716,41 +531,24 @@ class GeneratedContent(db.Model):
     )
 
     batch_id = db.Column(db.String(36), index=True)
-
     product_title = db.Column(db.String(255), nullable=False)
-
     part_number = db.Column(db.String(100), nullable=False)
-
     part_type = db.Column(db.String(100))
-
     brand = db.Column(db.String(100))
-
     appliance_type = db.Column(db.String(100))
-
     section = db.Column(db.String(100), nullable=False)
-
     prompt_type = db.Column(db.String(20), nullable=False)
-
     prompt_used = db.Column(db.Text, nullable=False)
-
     plain_text = db.Column(db.Text)
-
     html_text = db.Column(db.Text)
-
     product_image_url = db.Column(db.String(1024))
-
     input_tokens = db.Column(db.Integer)
-
     output_tokens = db.Column(db.Integer)
-
     total_tokens = db.Column(db.Integer)
-
     model_used = db.Column(db.String(100))
-
     created_at = db.Column(db.DateTime, default=_utc_now)
 
     def to_dict(self):
-
         return {
             "id": self.id,
             "shop_id": self.shop_id,
@@ -786,39 +584,25 @@ class ProductHistory(db.Model):
     )
 
     batch_id = db.Column(db.String(36), index=True)
-
     product_title = db.Column(db.String(255), nullable=False)
-
     part_number = db.Column(db.String(100), nullable=False)
-
     part_type = db.Column(db.String(100))
-
     brand = db.Column(db.String(100))
-
     appliance_type = db.Column(db.String(100))
 
     source = db.Column(db.String(20), default="manual")
 
     shopify_url = db.Column(db.String(1024))
-
     product_image_url = db.Column(db.String(1024))
-
     total_input_tokens = db.Column(db.Integer, default=0)
-
     total_output_tokens = db.Column(db.Integer, default=0)
-
     total_tokens = db.Column(db.Integer, default=0)
-
     cost_usd = db.Column(db.Float, default=0.0)
-
     sections_generated = db.Column(db.Integer, default=0)
-
     model_used = db.Column(db.String(100))
-
     created_at = db.Column(db.DateTime, default=_utc_now)
 
     def to_dict(self):
-
         return {
             "id": self.id,
             "shop_id": self.shop_id,
@@ -856,21 +640,14 @@ class BatchHistory(db.Model):
     source = db.Column(db.String(20), default="manual")
 
     product_count = db.Column(db.Integer, default=0)
-
     total_input_tokens = db.Column(db.Integer, default=0)
-
     total_output_tokens = db.Column(db.Integer, default=0)
-
     total_tokens = db.Column(db.Integer, default=0)
-
     cost_usd = db.Column(db.Float, default=0.0)
-
     model_used = db.Column(db.String(100))
-
     created_at = db.Column(db.DateTime, default=_utc_now)
 
     def to_dict(self):
-
         return {
             "id": self.id,
             "shop_id": self.shop_id,
@@ -897,17 +674,13 @@ class ReviewStatus(db.Model):
     )
 
     product_title = db.Column(db.String(255), nullable=False)
-
     part_number = db.Column(db.String(100), nullable=False)
 
     status = db.Column(db.String(20), default="pending")
 
     reviewer = db.Column(db.String(100))
-
     reviewed_at = db.Column(db.DateTime)
-
     published_at = db.Column(db.DateTime)
-
     updated_at = db.Column(db.DateTime, default=_utc_now, onupdate=_utc_now)
 
     __table_args__ = (
@@ -915,7 +688,6 @@ class ReviewStatus(db.Model):
     )
 
     def to_dict(self):
-
         return {
             "id": self.id,
             "shop_id": self.shop_id,
@@ -946,11 +718,8 @@ class ReviewStatus(db.Model):
 
 class GenerationJob(db.Model):
     """
-
     Tracks the lifecycle of a bulk generation request so work continues
-
     on the server even if the client tab is closed/refreshed.
-
     """
 
     __tablename__ = "generation_job"
@@ -976,23 +745,17 @@ class GenerationJob(db.Model):
     error_message = db.Column(db.Text)
 
     # Full request payload (products/sections/prompts/templates) needed to actually
-
     # run the job. Persisting this lets a separate worker process (see worker.py)
-
     # pick the job up and run it — the web request process that created it doesn't
-
     # have to stay alive. This is what makes jobs survive Passenger/cPanel killing
-
     # the web worker process mid-generation.
 
     payload = db.Column(db.Text(16777215))
 
     created_at = db.Column(db.DateTime, default=_utc_now)
-
     updated_at = db.Column(db.DateTime, default=_utc_now, onupdate=_utc_now)
 
     def to_dict(self):
-
         return {
             "job_id": self.job_id,
             "shop_id": self.shop_id,
@@ -1007,11 +770,8 @@ class GenerationJob(db.Model):
 
 class JobEvent(db.Model):
     """
-
     Stores each SSE event emitted during a job so late/reconnecting clients
-
     can replay the full event history and catch up seamlessly.
-
     """
 
     __tablename__ = "job_event"
@@ -1062,7 +822,6 @@ class ShopConfig(db.Model):
     updated_at = db.Column(db.DateTime, default=_utc_now, onupdate=_utc_now)
 
     def to_dict(self, hide_token=True, active_id=None):
-
         return {
             "id": self.id,
             "name": self.name,
@@ -1146,29 +905,20 @@ class AppSetting(db.Model):
 
     @classmethod
     def get(cls, key, default=None):
-
         row = cls.query.filter_by(key=key).first()
-
         return row.value if row else default
 
     @classmethod
     def set(cls, key, value):
-
         row = cls.query.filter_by(key=key).first()
-
         if row:
-
             row.value = value
-
         else:
-
             db.session.add(cls(key=key, value=value))
-
         db.session.commit()
 
 
 # ─── Shop Config Routes (used by both modules' UIs) ──────────────────────
-
 # ─── Shop Config Routes ───────────────────────────────────────────────────────
 
 
@@ -1182,11 +932,8 @@ def shop_config_page():
 @app.route("/api/shops", methods=["GET"])
 @login_required
 def list_shops():
-
     shops = ShopConfig.query.order_by(ShopConfig.created_at.asc()).all()
-
     current = _get_active_shop()
-
     current_id = current.id if current else None
 
     return jsonify({"shops": [s.to_dict(active_id=current_id) for s in shops]})
@@ -1195,7 +942,6 @@ def list_shops():
 @app.route("/api/shops", methods=["POST"])
 @reviewer_required
 def create_shop():
-
     body = request.json or {}
 
     name = (body.get("name") or "").strip()
@@ -1230,9 +976,7 @@ def create_shop():
         sections=json.dumps(sections),
         is_active=ShopConfig.query.count() == 0,
     )
-
     db.session.add(shop)
-
     db.session.commit()
 
     return jsonify({"success": True, "shop": shop.to_dict()}), 201
@@ -1241,9 +985,7 @@ def create_shop():
 @app.route("/api/shops/<int:shop_id>", methods=["PUT", "POST"])
 @reviewer_required
 def update_shop(shop_id):
-
     shop = ShopConfig.query.get_or_404(shop_id)
-
     body = request.json or {}
 
     if "name" in body:
@@ -1277,23 +1019,14 @@ def update_shop(shop_id):
 @app.route("/api/shops/<int:shop_id>", methods=["DELETE"])
 @reviewer_required
 def delete_shop(shop_id):
-
     shop = ShopConfig.query.get_or_404(shop_id)
-
     was_active = shop.is_active
-
     db.session.delete(shop)
-
     db.session.commit()
-
     if was_active:
-
         nxt = ShopConfig.query.order_by(ShopConfig.created_at.asc()).first()
-
         if nxt:
-
             nxt.is_active = True
-
             db.session.commit()
 
     return jsonify({"success": True})
@@ -1302,9 +1035,7 @@ def delete_shop(shop_id):
 @app.route("/api/shops/<int:shop_id>/set-active", methods=["POST"])
 @login_required
 def set_active_shop(shop_id):
-
     shop = ShopConfig.query.get_or_404(shop_id)
-
     # Per-session only — does NOT touch other users' active-shop selection.
 
     session["active_shop_id"] = shop.id
@@ -1313,38 +1044,24 @@ def set_active_shop(shop_id):
 
 
 _GQL_METAFIELD_DEFINITIONS = """
-
 query {
-
   metafieldDefinitions(first: 100, ownerType: PRODUCT) {
-
     edges {
-
       node {
-
         namespace
-
         key
-
         name
-
         type { name }
-
       }
-
     }
-
   }
-
 }
-
 """
 
 
 @app.route("/api/shops/<int:shop_id>/metafields", methods=["GET"])
 @reviewer_required
 def get_shop_metafields(shop_id):
-
     shop = ShopConfig.query.get_or_404(shop_id)
 
     domain = shop.domain.strip().rstrip("/")
@@ -1422,7 +1139,6 @@ def get_shop_metafields(shop_id):
     edges = (body.get("data") or {}).get("metafieldDefinitions", {}).get("edges") or []
 
     metafields = []
-
     for edge in edges:
 
         node = edge.get("node") or {}
@@ -1537,7 +1253,6 @@ def fetch_metafields_direct():
     ) or []
 
     metafields = []
-
     for edge in edges:
 
         node = edge.get("node") or {}
@@ -1564,7 +1279,6 @@ def fetch_metafields_direct():
 @app.route("/api/shops/<int:shop_id>/test-connection", methods=["POST"])
 @reviewer_required
 def test_shop_connection_by_id(shop_id):
-
     shop = ShopConfig.query.get_or_404(shop_id)
 
     domain = shop.domain.strip().rstrip("/")
@@ -1694,7 +1408,6 @@ def test_shop_connection():
 
 
 _image_cache: dict = {}
-
 _image_cache_lock = threading.Lock()
 
 
@@ -1717,6 +1430,9 @@ def _extract_admin_product_id(raw_url: str) -> str | None:
 
 
 def _is_storefront_url(raw_url: str) -> bool:
+    return bool(
+        _extract_products_path_segment(raw_url)
+    ) and not _extract_admin_product_id(raw_url)
 
     return bool(
         _extract_products_path_segment(raw_url)
@@ -1759,7 +1475,6 @@ def _shopify_graphql_with_creds(
         raise RuntimeError(f"Shopify request failed: {e}")
 
     logger.info(f"[shopify_graphql] domain={domain} status={resp.status_code}")
-
     if not resp.ok:
 
         logger.error(
@@ -1783,11 +1498,8 @@ def _shopify_graphql_with_creds(
         )
 
     # Mutation-level userErrors (e.g. productUpdate / metafieldsSet) — these come
-
     # back with HTTP 200 and no top-level 'errors', so they were previously
-
     # invisible unless a caller happened to inspect them manually. Surface them
-
     # here so every publish attempt logs the real reason for a failure.
 
     payload = data.get("data") or {}
@@ -1814,11 +1526,8 @@ def _fetch_by_product_id(
     )
 
     if not domain or not token:
-
         shop = _get_active_shop()
-
         logger.info(f"[fetch_by_product_id] Active shop lookup: {shop}")
-
         if not shop:
 
             logger.error(
@@ -1868,19 +1577,14 @@ def _fetch_by_storefront_url(raw_url: str) -> dict:
         url += ".json"
 
     logger.info(f"[fetch_by_storefront_url] GET {url}")
-
     try:
 
         resp = requests.get(url, headers={"User-Agent": "Mozilla/5.0"}, timeout=10)
 
     except Exception as req_err:
-
         logger.error(f"[fetch_by_storefront_url] Network error GET {url}: {req_err}")
-
         raise ValueError(f"Storefront request failed: {req_err}")
-
     logger.info(f"[fetch_by_storefront_url] status={resp.status_code}")
-
     if not resp.ok:
 
         logger.error(
@@ -1888,9 +1592,7 @@ def _fetch_by_storefront_url(raw_url: str) -> dict:
         )
 
         raise ValueError(f"Shopify storefront error (HTTP {resp.status_code}).")
-
     try:
-
         data = resp.json()
 
         if "product" not in data:
@@ -1910,15 +1612,12 @@ def _fetch_by_storefront_url(raw_url: str) -> dict:
 
 def _webcate_from_tags(tags) -> str:
     """Extract the value of the 'webcate:<value>' tag from a list or comma-separated string of tags."""
-
     if isinstance(tags, str):
 
         tag_list = [t.strip() for t in tags.split(",")]
 
         logger.info(f"tag_list-:{tag_list}")
-
     else:
-
         tag_list = list(tags or [])
 
     for tag in tag_list:
@@ -1934,17 +1633,13 @@ def _webcate_from_tags(tags) -> str:
 
 def _subcate_from_tags(tags) -> str:
     """Extract the value of the 'subcate:<value>' tag from a list or comma-separated string of tags."""
-
     if isinstance(tags, str):
 
         tag_list = [t.strip() for t in tags.split(",")]
 
         logger.info(f"tag_list-:{tag_list}")
-
     else:
-
         tag_list = list(tags or [])
-
     for tag in tag_list:
 
         if tag.lower().startswith("subcate:"):
@@ -2011,9 +1706,7 @@ def _fetch_by_handle_admin(
     )
 
     if not domain or not token:
-
         shop = _get_active_shop()
-
         if not shop:
 
             logger.error(
@@ -2088,19 +1781,14 @@ def _fetch_shopify_product(
 ) -> dict:
 
     if not raw_url or not raw_url.strip():
-
         logger.error("[fetch_shopify_product] Received empty or whitespace URL")
-
         raise ValueError("URL is required.")
 
     raw_url = raw_url.strip()
-
     logger.info(f"[fetch_shopify_product] Processing URL: '{raw_url}'")
-
     attempt_errors = []
 
     product_id = _extract_admin_product_id(raw_url)
-
     if product_id:
 
         logger.info(
@@ -2114,31 +1802,20 @@ def _fetch_shopify_product(
             )
 
         except Exception as e:
-
             msg = f"Admin Product ID '{product_id}' lookup failed: {e}"
-
             logger.warning(f"[fetch_shopify_product] {msg}")
-
             attempt_errors.append(msg)
 
     seg = _extract_products_path_segment(raw_url)
-
     logger.info(f"[fetch_shopify_product] Extracted path segment='{seg}'")
-
     if not seg and not product_id:
-
         msg = f"Invalid URL structure (could not extract product handle or ID from '{raw_url}')"
-
         logger.error(f"[fetch_shopify_product] {msg}")
-
         raise ValueError(msg)
 
     domain, token = _domain.strip(), _token.strip()
-
     if not domain or not token:
-
         active_shop = _get_active_shop()
-
         if active_shop:
 
             domain, token, _api_version = (
@@ -2154,7 +1831,6 @@ def _fetch_shopify_product(
             )
 
     if seg and seg.isdigit():
-
         try:
 
             logger.info(
@@ -2166,15 +1842,11 @@ def _fetch_shopify_product(
             )
 
         except Exception as e:
-
             msg = f"Numeric ID '{seg}' lookup failed: {e}"
-
             logger.warning(f"[fetch_shopify_product] {msg}")
-
             attempt_errors.append(msg)
 
     if seg and domain and token:
-
         try:
 
             logger.info(
@@ -2186,15 +1858,11 @@ def _fetch_shopify_product(
             )
 
         except Exception as e:
-
             msg = f"Admin Handle '{seg}' lookup failed: {e}"
-
             logger.warning(f"[fetch_shopify_product] {msg}")
-
             attempt_errors.append(msg)
 
     if _is_storefront_url(raw_url):
-
         try:
 
             logger.info(
@@ -2202,13 +1870,9 @@ def _fetch_shopify_product(
             )
 
             return _fetch_by_storefront_url(raw_url)
-
         except Exception as e:
-
             msg = f"Storefront REST lookup failed: {e}"
-
             logger.warning(f"[fetch_shopify_product] {msg}")
-
             attempt_errors.append(msg)
 
     err_summary = (
@@ -2218,9 +1882,7 @@ def _fetch_shopify_product(
     )
 
     final_msg = f"Could not fetch product for '{raw_url}'. Details: {err_summary}"
-
     logger.error(f"[fetch_shopify_product] FAILED: {final_msg}")
-
     raise ValueError(final_msg)
 
 
@@ -2344,13 +2006,10 @@ def index():
 
 
 def run_migrations():
-
     from sqlalchemy import inspect, text
 
     with app.app_context():
-
         db.create_all()  # creates generation_job and job_event tables automatically
-
         inspector = inspect(db.engine)
 
         existing_cols = {c["name"] for c in inspector.get_columns("generated_content")}
@@ -2360,11 +2019,8 @@ def run_migrations():
             "batch_id": "VARCHAR(36)",
             "product_image_url": "VARCHAR(1024)",
         }
-
         with db.engine.connect() as conn:
-
             for col, col_type in gc_new_cols.items():
-
                 if col not in existing_cols:
 
                     conn.execute(
@@ -2389,9 +2045,7 @@ def run_migrations():
             ]
 
             table_names = inspector.get_table_names()
-
             for tname in tables_needing_shop_id:
-
                 if tname in table_names:
 
                     cols = {c["name"] for c in inspector.get_columns(tname)}
@@ -2413,7 +2067,6 @@ def run_migrations():
                 }
 
                 for col, col_type in ph_new_cols.items():
-
                     if col not in ph_cols:
 
                         conn.execute(
@@ -2467,7 +2120,6 @@ def run_migrations():
                         )
 
                     except Exception:
-
                         pass
 
                 if "source" not in isg_cols:
@@ -2499,7 +2151,6 @@ def run_migrations():
                         pass
 
             # Widen job_event.payload from TEXT (64 KB) to MEDIUMTEXT (16 MB)
-
             # product_done payloads with full HTML can easily exceed 64 KB.
 
             if "job_event" in table_names:
@@ -2524,7 +2175,6 @@ def run_migrations():
                             )
 
                         except Exception:
-
                             pass
 
             conn.commit()
