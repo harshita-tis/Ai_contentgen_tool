@@ -2336,8 +2336,7 @@ def _run_generation_job(
                 grand_total_in += total_in
                 grand_total_out += total_out
                 completed_client_ids.add(client_id)
-                done_count = len(completed_client_ids)
-
+                done_count      = len(completed_client_ids)
                 event_payload = {
                     "id": client_id,
                     "product_title": product_title,
