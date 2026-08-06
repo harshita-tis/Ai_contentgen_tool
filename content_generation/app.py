@@ -1869,12 +1869,7 @@ def _run_generation_job(job_id: str, batch_id: str, products: list, active_secti
                 grand_total_in  += total_in
                 grand_total_out += total_out
                 completed_client_ids.add(client_id)
-<<<<<<< HEAD
-                done_count      = len(completed_client_ids) 
-=======
                 done_count      = len(completed_client_ids)
->>>>>>> added repaior image pages
-
                 event_payload = {
                     'id': client_id,
                     'product_title': product_title,
