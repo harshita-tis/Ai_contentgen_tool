@@ -1,5 +1,6 @@
 <!doctype html>
 <html lang="en" data-theme="dark">
+<<<<<<< HEAD
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
@@ -2525,9 +2526,2253 @@
           <button class="modal-close" onclick="closeModal()">✕</button>
         </div>
         <div class="modal-body" id="modalBody"></div>
+=======
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>AI Content Generator</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link
+    href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;600;700&family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap"
+    rel="stylesheet">
+  <style>
+    :root,
+    [data-theme="dark"] {
+      --bg: #080c0d;
+      --bg-elev: #0e1416;
+      --surface: #121a1d;
+      --surface2: #1a2528;
+      --surface3: #232f34;
+      --border: #223135;
+      --border2: #2d4147;
+      --text: #e0f2f1;
+      --text-2: #94a9ad;
+      --text-3: #60787e;
+      --accent: #22d3ee;
+      --accent-soft: rgba(34, 211, 238, 0.14);
+      --accent2: #14b8a6;
+      --accent2-soft: rgba(20, 184, 166, 0.12);
+      --accent3: #5eead4;
+      --accent3-soft: rgba(94, 234, 212, 0.14);
+      --danger: #f87171;
+      --danger-soft: rgba(248, 113, 113, 0.12);
+      --success: #34d399;
+      --warning: #f59e0b;
+      --warning-soft: rgba(245, 158, 11, 0.12);
+      --shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.4);
+      --shadow-md: 0 8px 24px -8px rgba(0, 0, 0, 0.6);
+      --gradient-accent: linear-gradient(135deg, #22d3ee 0%, #0d9488 100%)
+    }
+
+    [data-theme="light"] {
+      --bg: #f0f9fa;
+      --bg-elev: #ffffff;
+      --surface: #ffffff;
+      --surface2: #e6f2f3;
+      --surface3: #d1e7e9;
+      --border: #cfe1e2;
+      --border2: #b4d3d6;
+      --text: #0f172a;
+      --text-2: #334155;
+      --text-3: #64748b;
+      --accent: #0891b2;
+      --accent-soft: rgba(8, 145, 178, 0.10);
+      --accent2: #0f766e;
+      --accent2-soft: rgba(15, 118, 110, 0.10);
+      --accent3: #0d9488;
+      --accent3-soft: rgba(13, 148, 136, 0.12);
+      --danger: #e11d48;
+      --danger-soft: rgba(225, 29, 72, 0.08);
+      --success: #059669;
+      --warning: #d97706;
+      --warning-soft: rgba(217, 119, 6, 0.10);
+      --shadow-sm: 0 1px 2px rgba(8, 145, 178, 0.06);
+      --shadow-md: 0 10px 30px -12px rgba(8, 145, 178, 0.18);
+      --gradient-accent: linear-gradient(135deg, #0891b2 0%, #0f766e 100%)
+    }
+
+    :root {
+      --radius: 14px;
+      --radius-sm: 10px;
+      --font-head: 'Space Grotesk', system-ui, sans-serif;
+      --font-body: 'Inter', system-ui, -apple-system, sans-serif;
+      --font-mono: 'JetBrains Mono', ui-monospace, Menlo, monospace
+    }
+
+    *,
+    *::before,
+    *::after {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0
+    }
+
+    html {
+      font-size: 15px
+    }
+
+    body {
+      font-family: var(--font-body);
+      background: var(--bg);
+      color: var(--text);
+      display: flex;
+      min-height: 100vh;
+      overflow-x: hidden;
+      -webkit-font-smoothing: antialiased;
+      transition: background .25s, color .25s
+    }
+
+    textarea,
+    input,
+    button,
+    select {
+      font-family: inherit
+    }
+
+    ::selection {
+      background: var(--accent-soft);
+      color: var(--text)
+    }
+
+    /* ── Sidebar ── */
+    :root {
+      --sidebar-expanded: 188px;
+      --sidebar-collapsed: 55px
+    }
+
+    .sidebar {
+      width: var(--sidebar-expanded);
+      min-height: 100vh;
+      background: var(--bg-elev);
+      border-right: 1px solid var(--border);
+      display: flex;
+      flex-direction: column;
+      position: fixed;
+      left: 0;
+      top: 0;
+      z-index: 100;
+      padding: 12px 0 14px;
+      overflow: hidden;
+      transition: width .22s cubic-bezier(.4, 0, .2, 1);
+    }
+
+    .sidebar.collapsed {
+      width: var(--sidebar-collapsed)
+    }
+
+    /* Logo row */
+    .sidebar-logo-row {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      padding: 0 10px 16px;
+      border-bottom: 1px solid var(--border);
+      margin-bottom: 8px;
+      flex-shrink: 0;
+      white-space: nowrap;
+      overflow: hidden
+    }
+
+    .sidebar-logo-icon {
+      width: 28px;
+      height: 28px;
+      min-width: 28px;
+      background: var(--gradient-accent);
+      border-radius: 7px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: #fff;
+      flex-shrink: 0
+    }
+
+    .sidebar-logo-icon svg {
+      width: 14px;
+      height: 14px
+    }
+
+    .sidebar-logo-text {
+      font-family: var(--font-head);
+      font-size: .95rem;
+      font-weight: 700;
+      letter-spacing: -.02em;
+      color: var(--text);
+      opacity: 1;
+      transition: opacity .15s
+    }
+
+    .sidebar.collapsed .sidebar-logo-text {
+      opacity: 0;
+      pointer-events: none
+    }
+
+    /* Nav */
+    .sidebar-nav {
+      flex: 1;
+      padding: 0 6px;
+      display: flex;
+      flex-direction: column;
+      gap: 2px;
+      overflow: hidden
+    }
+
+    .nav-item {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      padding: 8px;
+      border-radius: 9px;
+      color: var(--text-3);
+      text-decoration: none;
+      transition: background .15s, color .15s;
+      cursor: pointer;
+      border: none;
+      background: none;
+      white-space: nowrap;
+      overflow: hidden;
+      width: 100%;
+    }
+
+    .nav-item:hover {
+      background: var(--surface2);
+      color: var(--text)
+    }
+
+    .nav-item.active {
+      background: var(--accent-soft);
+      color: var(--accent)
+    }
+
+    .nav-item svg {
+      width: 16px;
+      height: 16px;
+      flex-shrink: 0
+    }
+
+    .nav-label {
+      font-size: .82rem;
+      font-weight: 500;
+      opacity: 1;
+      transition: opacity .15s
+    }
+
+    .sidebar.collapsed .nav-label {
+      opacity: 0;
+      pointer-events: none
+    }
+
+    /* Tooltip only visible when collapsed */
+    .nav-item .tooltip {
+      position: absolute;
+      left: calc(var(--sidebar-collapsed) + 8px);
+      top: 50%;
+      transform: translateY(-50%);
+      background: var(--surface3);
+      border: 1px solid var(--border2);
+      color: var(--text);
+      font-size: .72rem;
+      font-weight: 600;
+      white-space: nowrap;
+      padding: 4px 9px;
+      border-radius: 6px;
+      pointer-events: none;
+      opacity: 0;
+      transition: opacity .15s;
+      z-index: 200;
+      box-shadow: var(--shadow-md)
+    }
+
+    .sidebar.collapsed .nav-item:hover .tooltip {
+      opacity: 1
+    }
+
+    .nav-item {
+      position: relative
+    }
+
+    /* Bottom controls */
+    .sidebar-bottom {
+      margin-top: auto;
+      padding: 0 6px;
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+      overflow: hidden
+    }
+
+    .sidebar-toggle-btn {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      padding: 7px 8px;
+      border-radius: 9px;
+      background: none;
+      border: none;
+      cursor: pointer;
+      color: var(--text-3);
+      width: 100%;
+      white-space: nowrap;
+      overflow: hidden;
+      transition: background .15s, color .15s;
+    }
+
+    .sidebar-toggle-btn:hover {
+      background: var(--surface2);
+      color: var(--text)
+    }
+
+    .sidebar-toggle-btn svg {
+      width: 15px;
+      height: 15px;
+      flex-shrink: 0;
+      transition: transform .22s
+    }
+
+    .sidebar.collapsed .sidebar-toggle-btn svg {
+      transform: rotate(180deg)
+    }
+
+    .sidebar-toggle-label {
+      font-size: .78rem;
+      font-weight: 500;
+      opacity: 1;
+      transition: opacity .15s
+    }
+
+    .sidebar.collapsed .sidebar-toggle-label {
+      opacity: 0;
+      pointer-events: none
+    }
+
+    .theme-row {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      padding: 6px 8px;
+      white-space: nowrap;
+      overflow: hidden
+    }
+
+    .theme-row-label {
+      font-size: .75rem;
+      color: var(--text-3);
+      font-weight: 500;
+      opacity: 1;
+      transition: opacity .15s
+    }
+
+    .sidebar.collapsed .theme-row-label {
+      opacity: 0;
+      pointer-events: none
+    }
+
+    .theme-toggle {
+      width: 32px;
+      height: 18px;
+      min-width: 32px;
+      background: var(--surface2);
+      border: 1px solid var(--border);
+      border-radius: 999px;
+      position: relative;
+      cursor: pointer;
+      transition: background .2s;
+      flex-shrink: 0
+    }
+
+    .theme-toggle::after {
+      content: '';
+      position: absolute;
+      top: 2px;
+      left: 2px;
+      width: 12px;
+      height: 12px;
+      background: var(--text-3);
+      border-radius: 50%;
+      transition: transform .25s cubic-bezier(.4, 0, .2, 1)
+    }
+
+    [data-theme="light"] .theme-toggle::after {
+      transform: translateX(14px);
+      background: var(--accent)
+    }
+
+    /* ── Main ── */
+    .main {
+      margin-left: var(--sidebar-expanded);
+      flex: 1;
+      padding: 32px 36px 60px;
+      max-width: calc(100vw - var(--sidebar-expanded));
+      transition: margin-left .22s cubic-bezier(.4, 0, .2, 1), max-width .22s cubic-bezier(.4, 0, .2, 1)
+    }
+
+    .main.collapsed {
+      margin-left: var(--sidebar-collapsed);
+      max-width: calc(100vw - var(--sidebar-collapsed))
+    }
+
+    .page-header {
+      margin-bottom: 26px
+    }
+
+    .page-title {
+      font-family: var(--font-head);
+      font-size: 1.85rem;
+      font-weight: 700;
+      letter-spacing: -.025em
+    }
+
+    .page-subtitle {
+      color: var(--text-2);
+      font-size: .92rem;
+      margin-top: 5px
+    }
+
+    /* ── Input card ── */
+    .card {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 22px;
+      box-shadow: var(--shadow-sm)
+    }
+
+    .input-card {
+      margin-bottom: 24px
+    }
+
+    .input-card-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 18px;
+      flex-wrap: wrap;
+      gap: 10px
+    }
+
+    .input-card-title {
+      font-family: var(--font-head);
+      font-size: 1rem;
+      font-weight: 700;
+      display: flex;
+      align-items: center;
+      gap: 9px;
+      flex-wrap: wrap
+    }
+
+    .part-count-badge {
+      font-size: .7rem;
+      font-weight: 600;
+      padding: 2px 8px;
+      border-radius: 20px;
+      background: var(--accent-soft);
+      color: var(--accent);
+      letter-spacing: .05em
+    }
+
+    .btn-csv-import {
+      display: inline-flex;
+      align-items: center;
+      gap: 7px;
+      padding: 7px 14px;
+      background: var(--warning-soft);
+      border: 1px solid rgba(245, 158, 11, .3);
+      border-radius: var(--radius-sm);
+      color: var(--warning);
+      font-size: .82rem;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all .15s;
+      white-space: nowrap
+    }
+
+    .btn-csv-import:hover {
+      background: rgba(245, 158, 11, .2)
+    }
+
+    .csv-hint {
+      font-size: .72rem;
+      color: var(--text-3);
+      margin-top: 6px
+    }
+
+    .csv-loaded-pill {
+      display: none;
+      align-items: center;
+      gap: 8px;
+      padding: 5px 12px;
+      background: var(--warning-soft);
+      border: 1px solid rgba(245, 158, 11, .3);
+      border-radius: 20px;
+      font-size: .77rem;
+      color: var(--warning);
+      font-weight: 600
+    }
+
+    .csv-loaded-pill.visible {
+      display: inline-flex
+    }
+
+    .btn-clear-csv {
+      background: none;
+      border: none;
+      color: var(--warning);
+      cursor: pointer;
+      font-size: .85rem;
+      line-height: 1;
+      padding: 0 2px;
+      opacity: .7
+    }
+
+    .btn-clear-csv:hover {
+      opacity: 1
+    }
+
+    .btn-csv-sample {
+      display: inline-flex;
+      align-items: center;
+      gap: 7px;
+      padding: 7px 14px;
+      background: var(--accent2-soft);
+      border: 1px solid rgba(20, 184, 166, .3);
+      border-radius: var(--radius-sm);
+      color: var(--accent2);
+      font-size: .82rem;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all .15s;
+      white-space: nowrap
+    }
+
+    .btn-csv-sample:hover {
+      background: rgba(20, 184, 166, .2)
+    }
+
+    /* ── Shopify inline fetch status ── */
+    .shopify-fetch-status {
+      margin-top: 12px;
+      font-size: .78rem;
+      display: none
+    }
+
+    .shopify-fetch-status.visible {
+      display: block
+    }
+
+    .shopify-fetch-status.loading {
+      color: var(--accent)
+    }
+
+    .shopify-fetch-status.success {
+      color: var(--success)
+    }
+
+    .shopify-fetch-status.error {
+      color: var(--danger)
+    }
+
+    .shopify-fetched-pill {
+      display: none;
+      align-items: center;
+      gap: 8px;
+      padding: 5px 12px;
+      background: var(--accent2-soft);
+      border: 1px solid rgba(20, 184, 166, .3);
+      border-radius: 20px;
+      font-size: .77rem;
+      color: var(--accent2);
+      font-weight: 600;
+      margin-top: 8px
+    }
+
+    .shopify-fetched-pill.visible {
+      display: inline-flex
+    }
+
+    .btn-fetch-row {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      width: 28px;
+      height: 28px;
+      background: var(--accent-soft);
+      border: 1px solid rgba(34, 211, 238, .3);
+      border-radius: 7px;
+      color: var(--accent);
+      cursor: pointer;
+      transition: all .15s;
+      flex-shrink: 0;
+      font-size: .78rem
+    }
+
+    .btn-fetch-row:hover {
+      background: rgba(34, 211, 238, .22)
+    }
+
+    .btn-fetch-row:disabled {
+      opacity: .4;
+      cursor: not-allowed
+    }
+
+    .btn-fetch-row.fetched {
+      background: var(--accent2-soft);
+      border-color: rgba(20, 184, 166, .3);
+      color: var(--accent2)
+    }
+
+    .col-headers {
+      display: grid;
+      grid-template-columns: 36px 1fr 1fr 1fr 1fr 1fr 1fr 64px;
+      gap: 10px;
+      padding: 0 0 6px;
+      margin-top: 14px
+    }
+
+    .field-label-sm {
+      display: block;
+      font-size: .65rem;
+      font-weight: 600;
+      letter-spacing: .06em;
+      text-transform: uppercase;
+      color: var(--text-3)
+    }
+
+    .req {
+      color: var(--accent)
+    }
+
+    .parts-list {
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+      margin-bottom: 14px
+    }
+
+    .part-row {
+      display: grid;
+      grid-template-columns: 36px 1fr 1fr 1fr 1fr 1fr 1fr 64px;
+      gap: 10px;
+      align-items: center;
+      background: var(--bg-elev);
+      border: 1px solid var(--border);
+      border-radius: var(--radius-sm);
+      padding: 12px 14px;
+      transition: border-color .15s
+    }
+
+    .part-row:focus-within {
+      border-color: var(--accent)
+    }
+
+    .part-index {
+      font-family: var(--font-head);
+      font-size: .7rem;
+      font-weight: 700;
+      color: var(--accent);
+      background: var(--accent-soft);
+      border-radius: 7px;
+      width: 28px;
+      height: 28px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      flex-shrink: 0
+    }
+
+    .field-input {
+      width: 100%;
+      background: var(--surface2);
+      border: 1px solid var(--border);
+      border-radius: var(--radius-sm);
+      padding: 9px 12px;
+      color: var(--text);
+      font-size: .88rem;
+      outline: none;
+      transition: border-color .15s, box-shadow .15s
+    }
+
+    .field-input:focus {
+      border-color: var(--accent);
+      box-shadow: 0 0 0 3px var(--accent-soft)
+    }
+
+    .field-input::placeholder {
+      color: var(--text-3)
+    }
+
+    .btn-remove-part {
+      width: 28px;
+      height: 28px;
+      background: var(--danger-soft);
+      border: 1px solid rgba(248, 113, 113, .2);
+      border-radius: 7px;
+      color: var(--danger);
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: .9rem;
+      transition: all .15s;
+      flex-shrink: 0
+    }
+
+    .btn-remove-part:hover {
+      background: rgba(248, 113, 113, .25)
+    }
+
+    .btn-remove-part:disabled {
+      opacity: .3;
+      cursor: not-allowed
+    }
+
+    .add-part-row {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      margin-bottom: 16px
+    }
+
+    .btn-add-part {
+      display: inline-flex;
+      align-items: center;
+      gap: 7px;
+      padding: 8px 16px;
+      background: var(--surface2);
+      border: 1px dashed var(--border2);
+      border-radius: var(--radius-sm);
+      color: var(--accent);
+      font-size: .84rem;
+      font-weight: 500;
+      cursor: pointer;
+      transition: all .15s
+    }
+
+    .btn-add-part:hover {
+      background: var(--accent-soft);
+      border-color: var(--accent)
+    }
+
+    .parts-hint {
+      font-size: .74rem;
+      color: var(--text-3)
+    }
+
+    .generate-bar {
+      display: flex;
+      align-items: center;
+      gap: 14px;
+      padding-top: 16px;
+      border-top: 1px solid var(--border);
+      flex-wrap: wrap
+    }
+
+    .btn-generate-all {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      background: var(--gradient-accent);
+      color: #fff;
+      border: none;
+      border-radius: var(--radius-sm);
+      padding: 11px 24px;
+      font-size: .9rem;
+      font-weight: 600;
+      cursor: pointer;
+      transition: transform .1s, box-shadow .2s, opacity .2s;
+      box-shadow: 0 6px 18px -6px var(--accent-soft);
+      white-space: nowrap
+    }
+
+    .btn-generate-all:hover {
+      transform: translateY(-1px);
+      box-shadow: 0 10px 24px -6px rgba(34, 211, 238, .35)
+    }
+
+    .btn-generate-all:active {
+      transform: translateY(0)
+    }
+
+    .btn-generate-all:disabled {
+      opacity: .5;
+      cursor: not-allowed;
+      transform: none
+    }
+
+    .btn-stop-gen {
+      display: none;
+      align-items: center;
+      gap: 8px;
+      background: var(--danger-soft);
+      color: var(--danger);
+      border: 1px solid rgba(248, 113, 113, .35);
+      border-radius: var(--radius-sm);
+      padding: 11px 20px;
+      font-size: .9rem;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all .15s;
+      white-space: nowrap
+    }
+
+    .btn-stop-gen.visible {
+      display: inline-flex
+    }
+
+    .btn-stop-gen:hover {
+      background: rgba(248, 113, 113, .22);
+      border-color: var(--danger)
+    }
+
+    .btn-stop-gen:disabled {
+      opacity: .5;
+      cursor: not-allowed
+    }
+
+    .queue-status {
+      font-size: .8rem;
+      color: var(--text-3);
+      display: none
+    }
+
+    .queue-status.visible {
+      display: block
+    }
+
+    .progress-bar-wrap {
+      flex: 1;
+      min-width: 180px;
+      height: 4px;
+      background: var(--surface2);
+      border-radius: 99px;
+      overflow: hidden;
+      display: none
+    }
+
+    .progress-bar-wrap.visible {
+      display: block
+    }
+
+    .progress-bar-fill {
+      height: 100%;
+      background: var(--gradient-accent);
+      border-radius: 99px;
+      transition: width .4s ease;
+      width: 0%
+    }
+
+    /* ── Results area ── */
+    .results-area {
+      display: flex;
+      flex-direction: column;
+      gap: 28px
+    }
+
+    /* ── Per-product result card ── */
+    .part-result {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      overflow: hidden;
+      box-shadow: var(--shadow-sm);
+      transition: border-color .2s
+    }
+
+    .part-result.is-loading {
+      border-color: var(--accent3)
+    }
+
+    .part-result.is-streaming {
+      border-color: var(--accent);
+      animation: streaming-glow 1.2s ease-in-out infinite alternate
+    }
+
+    @keyframes streaming-glow {
+      from {
+        border-color: var(--accent);
+        box-shadow: 0 0 0 0 transparent
+      }
+
+      to {
+        border-color: var(--accent3);
+        box-shadow: 0 0 12px -2px var(--accent3-soft)
+      }
+    }
+
+    .part-result.is-done {
+      border-color: var(--accent2)
+    }
+
+    .part-result.is-error {
+      border-color: var(--danger)
+    }
+
+    /* Card header */
+    .part-result-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 14px 20px;
+      background: var(--bg-elev);
+      border-bottom: 1px solid var(--border)
+    }
+
+    .part-result-meta {
+      display: flex;
+      align-items: center;
+      gap: 12px
+    }
+
+    .part-result-num {
+      font-family: var(--font-head);
+      font-size: .7rem;
+      font-weight: 700;
+      padding: 3px 9px;
+      border-radius: 6px;
+      background: var(--accent-soft);
+      color: var(--accent);
+      letter-spacing: .06em
+    }
+
+    .part-result-title {
+      font-family: var(--font-head);
+      font-size: 1rem;
+      font-weight: 600
+    }
+
+    .part-result-sub {
+      font-size: .78rem;
+      color: var(--text-3);
+      font-family: var(--font-mono);
+      margin-top: 2px
+    }
+
+    .part-result-right {
+      display: flex;
+      align-items: center;
+      gap: 10px
+    }
+
+    .part-result-status {
+      display: flex;
+      align-items: center;
+      gap: 7px;
+      font-size: .74rem;
+      color: var(--text-3);
+      font-weight: 500
+    }
+
+    .btn-collapse-card {
+      background: var(--surface2);
+      border: 1px solid var(--border);
+      border-radius: 7px;
+      color: var(--text-3);
+      width: 26px;
+      height: 26px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+      font-size: .72rem;
+      transition: all .15s;
+      flex-shrink: 0;
+      line-height: 1
+    }
+
+    .btn-collapse-card:hover {
+      border-color: var(--border2);
+      color: var(--text-2)
+    }
+
+    .part-result-body {
+      transition: none
+    }
+
+    .part-result.collapsed .part-result-body {
+      display: none
+    }
+
+    .part-result.collapsed .btn-collapse-card {
+      color: var(--accent);
+      border-color: var(--accent-soft)
+    }
+
+    .status-dot {
+      width: 7px;
+      height: 7px;
+      border-radius: 50%;
+      background: var(--border2);
+      transition: background .3s
+    }
+
+    .part-result.is-loading .status-dot {
+      background: var(--accent3);
+      animation: pulse 1.1s infinite;
+      box-shadow: 0 0 0 4px var(--accent3-soft)
+    }
+
+    .part-result.is-streaming .status-dot {
+      background: var(--accent);
+      animation: pulse .6s infinite;
+      box-shadow: 0 0 0 4px var(--accent-soft)
+    }
+
+    .part-result.is-done .status-dot {
+      background: var(--success)
+    }
+
+    .part-result.is-error .status-dot {
+      background: var(--danger)
+    }
+
+    @keyframes pulse {
+
+      0%,
+      100% {
+        opacity: 1
+      }
+
+      50% {
+        opacity: .4
+      }
+    }
+
+    @keyframes spin {
+      to {
+        transform: rotate(360deg)
+      }
+    }
+
+    /* ── Prompts panel ── */
+    .prompts-panel {
+      border-bottom: 1px solid var(--border)
+    }
+
+    .prompts-panel-toggle {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 11px 20px;
+      cursor: pointer;
+      user-select: none;
+      background: var(--surface2)
+    }
+
+    .prompts-panel-toggle:hover {
+      background: var(--surface3)
+    }
+
+    .prompts-panel-label {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      font-size: .82rem;
+      font-weight: 600;
+      color: var(--text-2)
+    }
+
+    .prompts-panel-label svg {
+      width: 13px;
+      height: 13px;
+      color: var(--accent);
+      flex-shrink: 0
+    }
+
+    .prompts-chevron {
+      font-size: .75rem;
+      color: var(--text-3);
+      transition: transform .2s
+    }
+
+    .prompts-panel.open .prompts-chevron {
+      transform: rotate(180deg)
+    }
+
+    .prompts-panel-body {
+      display: none;
+      padding: 16px 20px;
+      background: var(--bg-elev)
+    }
+
+    .prompts-panel.open .prompts-panel-body {
+      display: block
+    }
+
+    .prompts-locked-notice {
+      font-size: .73rem;
+      color: var(--warning);
+      background: var(--warning-soft);
+      border: 1px solid rgba(245, 158, 11, .2);
+      border-radius: 6px;
+      padding: 6px 10px;
+      margin-bottom: 12px;
+      display: none
+    }
+
+    .prompts-locked-notice.visible {
+      display: block
+    }
+
+    /* Individual prompt block inside panel */
+    .prompt-block {
+      margin-bottom: 14px
+    }
+
+    .prompt-block:last-child {
+      margin-bottom: 0
+    }
+
+    .prompt-block-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 6px
+    }
+
+    .prompt-block-label {
+      display: flex;
+      align-items: center;
+      gap: 7px;
+      font-size: .76rem;
+      font-weight: 600;
+      color: var(--text-2)
+    }
+
+    .prompt-block-num {
+      width: 20px;
+      height: 20px;
+      border-radius: 5px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: .64rem;
+      font-weight: 700;
+      flex-shrink: 0
+    }
+
+    .prompt-modified-tag {
+      font-size: .66rem;
+      padding: 2px 7px;
+      border-radius: 10px;
+      background: var(--warning-soft);
+      color: var(--warning);
+      font-weight: 600;
+      display: none
+    }
+
+    .prompt-modified-tag.visible {
+      display: inline-block
+    }
+
+    .prompt-textarea {
+      width: 100%;
+      min-height: 90px;
+      background: var(--surface2);
+      border: 1px solid var(--border);
+      border-radius: var(--radius-sm);
+      padding: 10px 12px;
+      color: var(--text);
+      font-family: var(--font-mono);
+      font-size: .76rem;
+      line-height: 1.6;
+      resize: vertical;
+      outline: none;
+      transition: border-color .15s
+    }
+
+    .prompt-textarea:focus {
+      border-color: var(--accent);
+      box-shadow: 0 0 0 3px var(--accent-soft)
+    }
+
+    .prompt-textarea:disabled {
+      opacity: .45;
+      cursor: not-allowed;
+      background: var(--surface3)
+    }
+
+    .btn-reset-prompt {
+      margin-top: 5px;
+      padding: 3px 10px;
+      background: transparent;
+      border: 1px solid var(--border);
+      border-radius: 6px;
+      color: var(--text-3);
+      font-size: .72rem;
+      cursor: pointer;
+      transition: all .15s
+    }
+
+    .btn-reset-prompt:hover:not(:disabled) {
+      border-color: var(--border2);
+      color: var(--text-2)
+    }
+
+    .btn-reset-prompt:disabled {
+      opacity: .3;
+      cursor: not-allowed
+    }
+
+    /* ── Global prompts editor (in input card, before generate) ── */
+    .global-prompts-panel {
+      border-top: 1px solid var(--border);
+      margin-top: 16px
+    }
+
+    .global-prompts-toggle {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 11px 0 11px;
+      cursor: pointer;
+      user-select: none
+    }
+
+    .global-prompts-toggle:hover .global-prompts-label {
+      color: var(--text)
+    }
+
+    .global-prompts-label {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      font-size: .82rem;
+      font-weight: 600;
+      color: var(--text-2);
+      transition: color .15s
+    }
+
+    .global-prompts-label svg {
+      width: 14px;
+      height: 14px;
+      color: var(--accent);
+      flex-shrink: 0
+    }
+
+    .global-prompts-chevron {
+      font-size: .75rem;
+      color: var(--text-3);
+      transition: transform .2s;
+      flex-shrink: 0
+    }
+
+    .global-prompts-panel.open .global-prompts-chevron {
+      transform: rotate(180deg)
+    }
+
+    .global-prompts-body {
+      display: none;
+      padding-bottom: 4px
+    }
+
+    .global-prompts-panel.open .global-prompts-body {
+      display: block
+    }
+
+    .gp-tabs {
+      display: flex;
+      gap: 0;
+      border: 1px solid var(--border);
+      border-radius: var(--radius-sm);
+      overflow: hidden;
+      margin-bottom: 14px
+    }
+
+    .gp-tab {
+      flex: 1;
+      padding: 8px 10px;
+      background: var(--surface2);
+      border: none;
+      border-right: 1px solid var(--border);
+      color: var(--text-3);
+      font-size: .76rem;
+      font-weight: 500;
+      cursor: pointer;
+      transition: all .15s;
+      white-space: nowrap;
+      text-align: center;
+      position: relative
+    }
+
+    .gp-tab:last-child {
+      border-right: none
+    }
+
+    .gp-tab.active {
+      background: var(--accent-soft);
+      color: var(--accent);
+      font-weight: 600
+    }
+
+    .gp-tab:hover:not(.active) {
+      color: var(--text-2);
+      background: var(--surface3)
+    }
+
+    .gp-tab .gp-dot {
+      display: none;
+      width: 6px;
+      height: 6px;
+      border-radius: 50%;
+      background: var(--warning);
+      position: absolute;
+      top: 6px;
+      right: 6px
+    }
+
+    .gp-tab.modified .gp-dot {
+      display: inline-block
+    }
+
+    .gp-pane {
+      display: none
+    }
+
+    .gp-pane.active {
+      display: block
+    }
+
+    .gp-prompt-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 6px
+    }
+
+    .gp-prompt-label {
+      font-size: .74rem;
+      font-weight: 600;
+      color: var(--text-2)
+    }
+
+    .gp-modified-badge {
+      font-size: .66rem;
+      padding: 2px 7px;
+      border-radius: 10px;
+      background: var(--warning-soft);
+      color: var(--warning);
+      font-weight: 600;
+      display: none
+    }
+
+    .gp-modified-badge.visible {
+      display: inline-block
+    }
+
+    .gp-prompt-textarea {
+      width: 100%;
+      min-height: 110px;
+      background: var(--surface2);
+      border: 1px solid var(--border);
+      border-radius: var(--radius-sm);
+      padding: 10px 12px;
+      color: var(--text);
+      font-family: var(--font-mono);
+      font-size: .76rem;
+      line-height: 1.6;
+      resize: vertical;
+      outline: none;
+      transition: border-color .15s, box-shadow .15s
+    }
+
+    .gp-prompt-textarea:focus {
+      border-color: var(--accent);
+      box-shadow: 0 0 0 3px var(--accent-soft)
+    }
+
+    .gp-prompt-footer {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-top: 6px
+    }
+
+    .gp-prompt-hint {
+      font-size: .7rem;
+      color: var(--text-3)
+    }
+
+    .btn-reset-gp {
+      padding: 3px 10px;
+      background: transparent;
+      border: 1px solid var(--border);
+      border-radius: 6px;
+      color: var(--text-3);
+      font-size: .72rem;
+      cursor: pointer;
+      transition: all .15s
+    }
+
+    .btn-reset-gp:hover {
+      border-color: var(--border2);
+      color: var(--text-2)
+    }
+
+    /* ── Loading banner ── */
+    .part-loading-banner {
+      display: none;
+      align-items: center;
+      gap: 10px;
+      padding: 22px 20px;
+      color: var(--text-3);
+      font-size: .85rem;
+      background: var(--bg-elev)
+    }
+
+    .part-loading-banner.visible {
+      display: flex
+    }
+
+    .part-error-banner {
+      display: none;
+      padding: 12px 20px;
+      background: var(--danger-soft);
+      color: var(--danger);
+      font-size: .83rem;
+      border-left: 3px solid var(--danger)
+    }
+
+    .part-error-banner.visible {
+      display: block
+    }
+
+    /* ── Output area (single merged view) ── */
+    .part-output {
+      display: none
+    }
+
+    .part-output.visible {
+      display: block
+    }
+
+    /* Output toolbar */
+    .output-toolbar {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 0 6px 0 14px;
+      background: var(--surface2);
+      border-bottom: 1px solid var(--border);
+      flex-wrap: wrap;
+      gap: 4px
+    }
+
+    .output-tabs {
+      display: flex;
+      gap: 2px
+    }
+
+    .output-tab {
+      padding: 9px 13px;
+      background: none;
+      border: none;
+      border-bottom: 2px solid transparent;
+      color: var(--text-3);
+      font-size: .78rem;
+      font-weight: 500;
+      cursor: pointer;
+      transition: color .15s;
+      white-space: nowrap
+    }
+
+    .output-tab.active {
+      color: var(--accent2);
+      border-bottom-color: var(--accent2);
+      font-weight: 600
+    }
+
+    .output-tab:hover:not(.active) {
+      color: var(--text-2)
+    }
+
+    .output-actions {
+      display: flex;
+      align-items: center;
+      gap: 5px;
+      padding: 6px 0
+    }
+
+    .edit-indicator {
+      font-size: .68rem;
+      color: var(--accent);
+      background: var(--accent-soft);
+      border-radius: 4px;
+      padding: 2px 6px;
+      font-weight: 600;
+      display: none;
+      animation: pulse 1.5s infinite
+    }
+
+    .edit-indicator.visible {
+      display: inline-block
+    }
+
+    /* Panes */
+    .output-pane {
+      display: none
+    }
+
+    .output-pane.active {
+      display: block
+    }
+
+    .output-textarea {
+      width: 100%;
+      min-height: 320px;
+      background: transparent;
+      border: none;
+      padding: 16px;
+      color: var(--text);
+      font-size: .85rem;
+      line-height: 1.75;
+      resize: vertical;
+      outline: none
+    }
+
+    .output-textarea.editable {
+      background: var(--surface2);
+      outline: 2px solid var(--accent);
+      outline-offset: -2px
+    }
+
+    .output-code {
+      font-family: var(--font-mono);
+      font-size: .78rem;
+      color: var(--accent2)
+    }
+
+    /* HTML Preview pane — renders all sections with white background, grey/black theme */
+    .html-preview-pane {
+      padding: 24px 28px;
+      min-height: 320px;
+      background: #ffffff;
+      color: #1a1a1a;
+      font-size: .9rem;
+      line-height: 1.75;
+      border: 1px solid #e0e0e0
+    }
+
+    .html-preview-pane h2 {
+      font-size: 1.15rem;
+      font-weight: 700;
+      margin: 24px 0 10px;
+      color: #111111;
+      font-family: Arial, sans-serif
+    }
+
+    .html-preview-pane h2:first-child {
+      margin-top: 0
+    }
+
+    .html-preview-pane h3 {
+      font-size: 1rem;
+      font-weight: 700;
+      margin: 16px 0 8px;
+      color: #111111;
+      font-family: Arial, sans-serif
+    }
+
+    .html-preview-pane p {
+      margin-bottom: 10px;
+      color: #333333
+    }
+
+    .html-preview-pane ul,
+    .html-preview-pane ol {
+      padding-left: 22px;
+      margin-bottom: 10px
+    }
+
+    .html-preview-pane li {
+      margin-bottom: 5px;
+      color: #333333
+    }
+
+    .html-preview-pane strong {
+      color: #111111;
+      font-weight: 600
+    }
+
+    .html-preview-pane table {
+      width: 100%;
+      border-collapse: collapse;
+      margin-bottom: 12px
+    }
+
+    .html-preview-pane th,
+    .html-preview-pane td {
+      border: 1px solid #d0d0d0;
+      padding: 8px 12px;
+      font-size: .85rem
+    }
+
+    .html-preview-pane th {
+      background: #f5f5f5;
+      font-weight: 600;
+      color: #111
+    }
+
+    .html-preview-pane tbody tr:nth-child(even) td {
+      background: #fafafa
+    }
+
+    /* Section divider inside preview */
+    .section-divider {
+      border: none;
+      border-top: 1px solid #d0d0d0;
+      margin: 22px 0
+    }
+
+    /* Output meta footer */
+    .output-meta {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      padding: 8px 14px;
+      border-top: 1px solid var(--border);
+      background: var(--surface2);
+      font-size: .71rem;
+      flex-wrap: wrap
+    }
+
+    .meta-tag {
+      padding: 2px 8px;
+      border-radius: 20px;
+      font-weight: 600;
+      letter-spacing: .04em;
+      font-size: .68rem
+    }
+
+    .meta-date {
+      color: var(--text-3);
+      margin-left: auto;
+      font-family: var(--font-mono)
+    }
+
+    .edited-tag {
+      padding: 2px 8px;
+      border-radius: 20px;
+      font-weight: 600;
+      font-size: .68rem;
+      background: rgba(245, 158, 11, .12);
+      color: #f59e0b;
+      display: none
+    }
+
+    .edited-tag.visible {
+      display: inline-block
+    }
+
+    /* Token + cost strip */
+    .cost-strip {
+      display: none;
+      align-items: center;
+      gap: 14px;
+      padding: 8px 20px;
+      background: var(--surface);
+      border-top: 1px solid var(--border);
+      font-size: .77rem;
+      flex-wrap: wrap
+    }
+
+    .cost-strip.visible {
+      display: flex
+    }
+
+    .cost-item {
+      display: flex;
+      align-items: center;
+      gap: 5px;
+      color: var(--text-3)
+    }
+
+    .cost-val {
+      color: var(--text-2);
+      font-weight: 600;
+      font-family: var(--font-mono)
+    }
+
+    .cost-val.green {
+      color: var(--success)
+    }
+
+    /* ── Rich editor toolbar ── */
+    .rich-toolbar {
+      display: flex;
+      align-items: center;
+      flex-wrap: wrap;
+      gap: 3px;
+      padding: 6px 10px;
+      background: var(--surface3);
+      border-bottom: 1px solid var(--border);
+      position: sticky;
+      top: 0;
+      z-index: 10
+    }
+
+    .rtb-btn {
+      padding: 4px 9px;
+      background: var(--surface2);
+      border: 1px solid var(--border);
+      border-radius: 5px;
+      color: var(--text-2);
+      font-size: .75rem;
+      cursor: pointer;
+      transition: all .12s;
+      white-space: nowrap;
+      line-height: 1.4
+    }
+
+    .rtb-btn:hover {
+      background: var(--accent-soft);
+      border-color: var(--accent);
+      color: var(--accent)
+    }
+
+    .rtb-btn:active {
+      transform: scale(.96)
+    }
+
+    .rtb-btn-src {
+      color: var(--accent2);
+      border-color: rgba(20, 184, 166, .3);
+      background: var(--accent2-soft)
+    }
+
+    .rtb-btn-src.active {
+      background: var(--accent2);
+      color: #fff;
+      border-color: var(--accent2)
+    }
+
+    .rtb-sep {
+      width: 1px;
+      height: 18px;
+      background: var(--border2);
+      margin: 0 3px;
+      flex-shrink: 0
+    }
+
+    .html-preview-pane[contenteditable="true"] {
+      outline: 2px solid var(--accent);
+      outline-offset: -2px;
+      cursor: text;
+      min-height: 320px
+    }
+
+    .html-src-editor {
+      min-height: 320px;
+      padding: 14px 16px;
+      font-size: .78rem;
+      line-height: 1.65;
+      border: none;
+      background: var(--surface2);
+      width: 100%;
+      color: var(--accent2);
+      font-family: var(--font-mono);
+      resize: vertical;
+      outline: 2px solid var(--accent2);
+      outline-offset: -2px
+    }
+
+    /* ── Common buttons ── */
+    .btn-sm {
+      display: inline-flex;
+      align-items: center;
+      gap: 4px;
+      padding: 5px 10px;
+      background: var(--bg-elev);
+      border: 1px solid var(--border);
+      border-radius: 6px;
+      color: var(--text-2);
+      font-size: .73rem;
+      font-weight: 500;
+      cursor: pointer;
+      transition: all .15s;
+      white-space: nowrap
+    }
+
+    .btn-sm:hover {
+      border-color: var(--border2);
+      color: var(--text)
+    }
+
+    .btn-edit:hover {
+      border-color: var(--accent);
+      color: var(--accent)
+    }
+
+    .btn-edit.active {
+      border-color: var(--accent);
+      color: var(--accent);
+      background: var(--accent-soft)
+    }
+
+    .btn-save {
+      display: none
+    }
+
+    .btn-save.visible {
+      display: inline-flex;
+      background: var(--accent2);
+      border-color: var(--accent2);
+      color: #fff
+    }
+
+    .btn-save:hover {
+      background: var(--accent);
+      border-color: var(--accent)
+    }
+
+    .btn-save:disabled {
+      opacity: .5;
+      cursor: not-allowed
+    }
+
+    .btn-discard {
+      display: none
+    }
+
+    .btn-discard.visible {
+      display: inline-flex
+    }
+
+    .btn-discard:hover {
+      border-color: var(--danger);
+      color: var(--danger)
+    }
+
+    .btn-copy:hover {
+      border-color: var(--accent2);
+      color: var(--accent2)
+    }
+
+    /* ── Modal ── */
+    .modal-overlay {
+      position: fixed;
+      inset: 0;
+      background: rgba(0, 0, 0, .6);
+      z-index: 200;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      opacity: 0;
+      pointer-events: none;
+      transition: opacity .2s;
+      backdrop-filter: blur(6px)
+    }
+
+    .modal-overlay.active {
+      opacity: 1;
+      pointer-events: all
+    }
+
+    .modal {
+      background: var(--bg-elev);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      width: 90%;
+      max-width: 680px;
+      max-height: 85vh;
+      overflow: hidden;
+      display: flex;
+      flex-direction: column;
+      transform: translateY(16px) scale(.98);
+      transition: transform .25s cubic-bezier(.4, 0, .2, 1);
+      box-shadow: var(--shadow-md)
+    }
+
+    .modal-overlay.active .modal {
+      transform: translateY(0) scale(1)
+    }
+
+    .modal-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 16px 20px;
+      border-bottom: 1px solid var(--border)
+    }
+
+    .modal-title {
+      font-family: var(--font-head);
+      font-size: 1rem;
+      font-weight: 600
+    }
+
+    .modal-close {
+      background: var(--surface2);
+      border: 1px solid var(--border);
+      color: var(--text-2);
+      cursor: pointer;
+      font-size: .85rem;
+      width: 28px;
+      height: 28px;
+      border-radius: 7px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      transition: all .15s
+    }
+
+    .modal-close:hover {
+      color: var(--text);
+      border-color: var(--border2)
+    }
+
+    .modal-body {
+      padding: 20px;
+      overflow-y: auto;
+      flex: 1
+    }
+
+    /* ── Shop selector bar ── */
+    .shop-selector-bar {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      padding: 11px 16px;
+      background: var(--bg-elev);
+      border: 1px solid var(--border);
+      border-radius: var(--radius-sm);
+      margin-bottom: 22px;
+      flex-wrap: wrap
+    }
+
+    .shop-selector-label {
+      font-size: .76rem;
+      font-weight: 600;
+      color: var(--text-3);
+      white-space: nowrap;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      flex-shrink: 0
+    }
+
+    .shop-selector-label svg {
+      width: 13px;
+      height: 13px;
+      color: var(--accent)
+    }
+
+    .shop-select {
+      flex: 1;
+      min-width: 180px;
+      max-width: 320px;
+      background: var(--surface2);
+      border: 1px solid var(--border);
+      border-radius: var(--radius-sm);
+      padding: 8px 12px;
+      color: var(--text);
+      font-size: .87rem;
+      outline: none;
+      cursor: pointer;
+      transition: border-color .15s, box-shadow .15s;
+      appearance: none;
+      background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 24 24' fill='none' stroke='%2360787e' stroke-width='2'%3E%3Cpath d='M6 9l6 6 6-6'/%3E%3C/svg%3E");
+      background-repeat: no-repeat;
+      background-position: right 10px center;
+      padding-right: 30px
+    }
+
+    .shop-select:focus {
+      border-color: var(--accent);
+      box-shadow: 0 0 0 3px var(--accent-soft)
+    }
+
+    .shop-select option {
+      background: var(--surface2);
+      color: var(--text)
+    }
+
+    .shop-active-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 5px;
+      font-size: .72rem;
+      font-weight: 600;
+      padding: 3px 9px;
+      border-radius: 20px;
+      background: var(--accent2-soft);
+      color: var(--accent2);
+      border: 1px solid rgba(20, 184, 166, .25);
+      white-space: nowrap
+    }
+
+    .shop-active-badge::before {
+      content: '';
+      width: 6px;
+      height: 6px;
+      border-radius: 50%;
+      background: var(--accent2);
+      flex-shrink: 0
+    }
+
+    .shop-select-none {
+      color: var(--text-3);
+      font-style: italic
+    }
+
+    .shop-config-link {
+      margin-left: auto;
+      display: inline-flex;
+      align-items: center;
+      gap: 5px;
+      font-size: .75rem;
+      color: var(--text-3);
+      text-decoration: none;
+      padding: 5px 10px;
+      border-radius: 6px;
+      border: 1px solid var(--border);
+      transition: all .15s;
+      white-space: nowrap;
+      flex-shrink: 0
+    }
+
+    .shop-config-link:hover {
+      color: var(--accent);
+      border-color: var(--accent);
+      background: var(--accent-soft)
+    }
+
+    .shop-config-link svg {
+      width: 11px;
+      height: 11px
+    }
+
+    @media(max-width:880px) {
+      .sidebar {
+        width: 100%;
+        height: auto;
+        min-height: 0;
+        position: relative
+      }
+
+      .main {
+        margin-left: 0;
+        max-width: 100vw;
+        padding: 24px 16px 48px
+      }
+
+      .col-headers {
+        display: none
+      }
+
+      .part-row {
+        grid-template-columns: 28px 1fr 1fr;
+        row-gap: 8px
+      }
+
+      .output-toolbar {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 0
+      }
+
+      .shop-selector-bar {
+        gap: 8px
+      }
+
+      .shop-select {
+        min-width: 140px
+      }
+    }
+  </style>
+</head>
+
+<body>
+  <aside class="sidebar" id="sidebar">
+    <div class="sidebar-logo-row">
+      <div class="sidebar-logo-icon">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"
+          stroke-linejoin="round">
+          <path d="M13 2L3 14h7l-1 8 10-12h-7l1-8z" />
+        </svg>
+      </div>
+      <span class="sidebar-logo-text">ContentAI</span>
+    </div>
+    <nav class="sidebar-nav">
+      <a href="{{ BASE_URL }}/" class="nav-item active">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"
+          stroke-linejoin="round">
+          <path
+            d="M12 2v4M12 18v4M4.93 4.93l2.83 2.83M16.24 16.24l2.83 2.83M2 12h4M18 12h4M4.93 19.07l2.83-2.83M16.24 7.76l2.83-2.83" />
+        </svg>
+        <span class="nav-label">Generator</span>
+        <span class="tooltip">Generator</span>
+      </a>
+      <a href="{{ BASE_URL }}/generate-repair" class="nav-item">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"
+          stroke-linejoin="round">
+          <path d="M14.7 6.3a1 1 0 0 0 0 1.4l1.6 1.6a1 1 0 0 0 1.4 0l3.77-3.77a6 6 0 0 1-7.94 7.94l-6.91 6.91a2.12 2.12 0 0 1-3-3l6.91-6.91a6 6 0 0 1 7.94-7.94l-3.76 3.76z" />
+        </svg>
+        <span class="nav-label">Generate Repair</span>
+        <span class="tooltip">Generate Repair</span>
+      </a>
+      <a href="{{ BASE_URL }}/image-search" class="nav-item">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"
+          stroke-linejoin="round">
+          <circle cx="12" cy="12" r="9" />
+          <path d="M12 7v5l3 2" />
+        </svg>
+        <span class="nav-label">Image Search</span>
+        <span class="tooltip">Image Search</span>
+      </a>
+      <a href="{{ BASE_URL }}/history" class="nav-item">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"
+          stroke-linejoin="round">
+          <circle cx="12" cy="12" r="9" />
+          <path d="M12 7v5l3 2" />
+        </svg>
+        <span class="nav-label">History</span>
+        <span class="tooltip">History</span>
+      </a>
+      <a href="{{ BASE_URL }}/history-image-search " class="nav-item">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"
+          stroke-linejoin="round">
+          <circle cx="12" cy="12" r="9" />
+          <path d="M12 7v5l3 2" />
+        </svg>
+        <span class="nav-label">History Image</span>
+        <span class="tooltip">History image</span>
+      </a>
+      <a href="{{ BASE_URL }}/review" class="nav-item">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"
+          stroke-linejoin="round">
+          <path d="M9 11l3 3L22 4" />
+          <path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11" />
+        </svg>
+        <span class="nav-label">Review</span>
+        <span class="tooltip">Review</span>
+      </a>
+      <a href="{{ BASE_URL }}/review-repair" class="nav-item">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"
+          stroke-linejoin="round">
+          <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7" />
+          <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z" />
+        </svg>
+        <span class="nav-label">Review Repair</span>
+        <span class="tooltip">Review Repair</span>
+      </a>
+      <a href="{{ BASE_URL }}/review-image-search " class="nav-item">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"
+          stroke-linejoin="round">
+          <circle cx="12" cy="12" r="9" />
+          <path d="M12 7v5l3 2" />
+        </svg>
+        <span class="nav-label">Review Images</span>
+        <span class="tooltip">Review images</span>
+      </a>
+      <a href="{{ BASE_URL }}/shop-config" class="nav-item">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"
+          stroke-linejoin="round">
+          <circle cx="12" cy="12" r="3" />
+          <path d="M19.07 4.93a10 10 0 0 1 0 14.14M4.93 4.93a10 10 0 0 0 0 14.14" />
+        </svg>
+        <span class="nav-label">Shop Config</span>
+        <span class="tooltip">Shop Config</span>
+      </a>
+    </nav>
+    <div class="sidebar-bottom">
+      <button class="sidebar-toggle-btn" id="sidebarToggleBtn" onclick="toggleSidebar()">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"
+          stroke-linejoin="round">
+          <polyline points="15 18 9 12 15 6" />
+        </svg>
+        <span class="sidebar-toggle-label">Collapse</span>
+      </button>
+      <div class="theme-row">
+        <div class="theme-toggle" id="themeToggle" role="switch" aria-label="Toggle theme"></div>
+        <span class="theme-row-label">Appearance</span>
       </div>
     </div>
+  </aside>
 
+
+  <main class="main">
+    <header class="page-header">
+      <h1 class="page-title">AI Content Generator</h1>
+      <p class="page-subtitle">Add parts manually or import a CSV — prompts are editable before generating</p>
+    </header>
+
+    <!-- Shop Selector -->
+    <div class="shop-selector-bar" id="shopSelectorBar">
+      <span class="shop-selector-label">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"
+          stroke-linejoin="round">
+          <path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z" />
+          <polyline points="9 22 9 12 15 12 15 22" />
+        </svg>
+        Active Shop
+      </span>
+      <select class="shop-select" id="shopSelectDropdown" onchange="onShopSelectChange(this)">
+        <option value="" class="shop-select-none">— Select a shop —</option>
+      </select>
+      <span class="shop-active-badge" id="shopActiveBadge" style="display:none"></span>
+      <a href="{{ BASE_URL }}/shop-config" class="shop-config-link" title="Manage shops">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"
+          stroke-linejoin="round">
+          <circle cx="12" cy="12" r="3" />
+          <path d="M19.07 4.93a10 10 0 0 1 0 14.14M4.93 4.93a10 10 0 0 0 0 14.14" />
+        </svg>
+        Manage Shops
+      </a>
+    </div>
+
+    <!-- Input card -->
+    <section class="card input-card">
+      <div class="input-card-header">
+        <div class="input-card-title">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"
+            stroke-linejoin="round" width="17" height="17">
+            <rect x="3" y="3" width="18" height="18" rx="3" />
+            <path d="M9 9h6M9 12h6M9 15h4" />
+          </svg>
+          Parts to Generate
+          <span class="part-count-badge" id="partCountBadge">1 PART</span>
+          <span class="csv-loaded-pill" id="csvLoadedPill">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="12" height="12">
+              <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z" />
+              <polyline points="14,2 14,8 20,8" />
+            </svg>
+            <span id="csvPillText">CSV Loaded</span>
+            <button class="btn-clear-csv" onclick="clearCsv()" title="Clear">✕</button>
+          </span>
+        </div>
+        <div style="display:flex;align-items:center;gap:10px">
+          <button class="btn-csv-sample" onclick="downloadSampleCsv()">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="13" height="13">
+              <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4" />
+              <polyline points="7,10 12,15 17,10" />
+              <line x1="12" y1="3" x2="12" y2="15" />
+            </svg>
+            Sample CSV
+          </button>
+          <button class="btn-csv-import" id="importCsvBtn" onclick="document.getElementById('csvFileInput').click()">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="13" height="13">
+              <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4" />
+              <polyline points="17,8 12,3 7,8" />
+              <line x1="12" y1="3" x2="12" y2="15" />
+            </svg>
+            Import CSV
+          </button>
+          <input type="file" id="csvFileInput" accept=".csv" style="display:none" onchange="handleCsvUpload(this)">
+        </div>
+      </div>
+
+      <!-- Shopify fetch status bar (shared across all rows) -->
+      <div class="shopify-fetch-status" id="shopifyFetchStatus" style="margin-bottom:10px"></div>
+      <div class="shopify-fetched-pill" id="shopifyFetchedPill" style="margin-bottom:10px">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="12" height="12">
+          <path d="M20 6L9 17l-5-5" />
+        </svg>
+        <span id="shopifyFetchedText"></span>
+        <button class="btn-clear-csv" onclick="clearShopifyFetched()" title="Clear">✕</button>
+>>>>>>> added repaior image pages
+      </div>
+
+<<<<<<< HEAD
     <!-- Logout Button -->
     <div
       style="
@@ -3410,8 +5655,1511 @@
           );
         });
         return lines.join("\n");
+=======
+      <!-- Container for failed product details during CSV upload -->
+      <div class="shopify-fetch-errors" id="shopifyFetchErrors"
+        style="display:none;margin-bottom:12px;padding:12px 14px;background:rgba(239,68,68,0.1);border:1px solid rgba(239,68,68,0.3);border-radius:8px;font-size:0.85rem;color:#ef4444;">
+        <div
+          style="display:flex;justify-content:space-between;align-items:center;font-weight:600;margin-bottom:8px;border-bottom:1px solid rgba(239,68,68,0.2);padding-bottom:6px;">
+          <span id="shopifyFetchErrorsHeader">⚠️ Failed Fetch Details</span>
+          <button onclick="document.getElementById('shopifyFetchErrors').style.display='none'"
+            style="background:none;border:none;color:inherit;cursor:pointer;font-size:0.9rem;padding:0 4px;">✕</button>
+        </div>
+        <div id="shopifyFetchErrorsList"
+          style="max-height:180px;overflow-y:auto;font-family:var(--font-mono);font-size:0.8rem;white-space:pre-wrap;word-break:break-all;line-height:1.4">
+        </div>
+      </div>
+
+      <div class="csv-hint" style="margin-bottom:12px">CSV columns: <strong>title</strong>,
+        <strong>part_number</strong>, <strong>appliance_type</strong>, <strong>part_type</strong>,
+        <strong>brand</strong>, <strong>shopify_url</strong> — adding a <strong
+          style="color:var(--accent2)">shopify_url</strong> column auto-fills fields from Shopify
+      </div>
+
+      <div class="col-headers">
+        <div></div>
+        <div class="field-label-sm">Part Title <span class="req">*</span></div>
+        <div class="field-label-sm">Part Number <span class="req">*</span></div>
+        <div class="field-label-sm">Appliance Type</div>
+        <div class="field-label-sm">Part Type</div>
+        <div class="field-label-sm">Brand</div>
+        <div class="field-label-sm">Shop URL</div>
+        <div></div>
+      </div>
+
+      <div class="parts-list" id="partsList">
+        <div class="part-row" id="part-row-1">
+          <div class="part-index">1</div>
+          <input type="text" class="field-input part-title" placeholder="e.g. LG Refrigerator Filter" data-part="1">
+          <input type="text" class="field-input part-number" placeholder="e.g. ADQ36006107" data-part="1">
+          <input type="text" class="field-input part-appliance" placeholder="e.g. Refrigerator" data-part="1">
+          <input type="text" class="field-input part-type" placeholder="e.g. Water Filter" data-part="1">
+          <input type="text" class="field-input part-brand" placeholder="e.g. LG" data-part="1">
+          <input type="url" class="field-input part-shopify-url"
+            placeholder="https://spark236.myshopify.com/products/abcd" data-part="1" oninput="onShopifyUrlInput(this)">
+          <div style="display:flex;align-items:center;gap:4px">
+            <button class="btn-fetch-row" id="btn-fetch-1" onclick="fetchShopifyRowUrl(1)"
+              title="Fetch from Shopify URL" disabled>
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" width="12" height="12">
+                <path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4" />
+                <polyline points="17 8 12 3 7 8" />
+                <line x1="12" y1="3" x2="12" y2="15" />
+              </svg>
+            </button>
+            <button class="btn-remove-part" onclick="removePart(1)" disabled title="Cannot remove only part">✕</button>
+          </div>
+        </div>
+      </div>
+
+      <div class="add-part-row">
+        <button class="btn-add-part" onclick="addPart()">
+          <span style="font-size:1.1rem;line-height:1">＋</span> Add Part
+        </button>
+        <span class="parts-hint">Or import CSV to batch-fill rows</span>
+      </div>
+
+      <!-- Global prompts editor — review & edit before generating -->
+      <div class="global-prompts-panel" id="globalPromptsPanel">
+        <div class="global-prompts-toggle" onclick="toggleGlobalPrompts()">
+          <div class="global-prompts-label">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"
+              stroke-linejoin="round">
+              <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7" />
+              <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z" />
+            </svg>
+            Review &amp; Edit Prompts before generating
+          </div>
+          <span class="global-prompts-chevron">▼</span>
+        </div>
+        <div class="global-prompts-body">
+          <!-- Tabs and panes are built dynamically by _rebuildPromptsPanel() when a shop is selected -->
+          <div class="gp-tabs" id="gpTabs"></div>
+          <!-- Panes injected here by JS -->
+        </div>
+      </div>
+
+      <div class="generate-bar">
+        <button class="btn-generate-all" id="generateAllBtn" onclick="generateAll()">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" width="15" height="15">
+            <path d="M13 2L3 14h7l-1 8 10-12h-7l1-8z" />
+          </svg>
+          Generate All Content
+        </button>
+        <button class="btn-stop-gen" id="stopGenBtn" onclick="stopGeneration()">
+          <svg viewBox="0 0 24 24" fill="currentColor" width="14" height="14">
+            <rect x="4" y="4" width="16" height="16" rx="2" />
+          </svg>
+          Stop
+        </button>
+        <div class="progress-bar-wrap" id="progressWrap">
+          <div class="progress-bar-fill" id="progressFill"></div>
+        </div>
+        <span class="queue-status" id="queueStatus"></span>
+      </div>
+    </section>
+
+    <!-- ── Active Job Resume Banner ── -->
+    <div id="resumeBanner"
+      style="display:none;align-items:center;gap:14px;padding:12px 18px;margin-bottom:18px;background:var(--warning-soft);border:1px solid rgba(245,158,11,.35);border-radius:var(--radius-sm);flex-wrap:wrap">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="16" height="16"
+        style="color:var(--warning);flex-shrink:0">
+        <path
+          d="M12 2v4M12 18v4M4.93 4.93l2.83 2.83M16.24 16.24l2.83 2.83M2 12h4M18 12h4M4.93 19.07l2.83-2.83M16.24 7.76l2.83-2.83" />
+      </svg>
+      <span style="font-size:.82rem;color:var(--warning);font-weight:600">Generation in progress (job <code
+          id="resumeJobId" style="font-family:var(--font-mono);font-size:.78rem"></code>)</span>
+      <span id="resumeProgress" style="font-size:.78rem;color:var(--text-2)"></span>
+      <span style="font-size:.75rem;color:var(--text-3);flex:1">Results will appear below as each product finishes —
+        even if you had closed this tab.</span>
+      <button onclick="dismissResume()"
+        style="padding:4px 12px;background:none;border:1px solid rgba(245,158,11,.4);border-radius:6px;color:var(--warning);font-size:.75rem;cursor:pointer;white-space:nowrap">Dismiss</button>
+    </div>
+
+    <div class="results-area" id="resultsArea"></div>
+  </main>
+
+  <div class="modal-overlay" id="modalOverlay" onclick="closeModal()">
+    <div class="modal" onclick="event.stopPropagation()">
+      <div class="modal-header">
+        <h3 class="modal-title" id="modalTitle">Preview</h3><button class="modal-close"
+          onclick="closeModal()">✕</button>
+      </div>
+      <div class="modal-body" id="modalBody"></div>
+    </div>
+  </div>
+
+  <!-- Logout Button -->
+  <div style="position: fixed; top: 16px; right: 20px; z-index: 9999; display: flex; align-items: center; gap: 12px;">
+    <span style="font-size: 13px; color: #6b7280;">
+      👤 {{ session.get('username', '') }}
+      <span style="
+      display: inline-block;
+      margin-left: 6px;
+      padding: 2px 8px;
+      border-radius: 10px;
+      font-size: 11px;
+      font-weight: 600;
+      background: {{ '#dbeafe' if session.get('role') == 'reviewer' else '#f3f4f6' }};
+      color: {{ '#1d4ed8' if session.get('role') == 'reviewer' else '#374151' }};
+      text-transform: capitalize;
+    ">{{ session.get('role', '') }}</span>
+    </span>
+    <a href="{{ url_for('logout') }}" style="
+    padding: 7px 16px;
+    background: #ef4444;
+    color: #fff;
+    text-decoration: none;
+    border-radius: 7px;
+    font-size: 13px;
+    font-weight: 600;
+    transition: background 0.15s;
+  " onmouseover="this.style.background='#dc2626'" onmouseout="this.style.background='#ef4444'">
+      Logout
+    </a>
+  </div>
+
+  <script>
+    const API_BASE_URL = "{{ BASE_URL }}";
+    /* ── Theme ── */
+    (function () {
+      var root = document.documentElement, toggle = document.getElementById('themeToggle'), saved = localStorage.getItem('theme') || 'dark';
+      root.setAttribute('data-theme', saved);
+      toggle.addEventListener('click', function () { var n = root.getAttribute('data-theme') === 'dark' ? 'light' : 'dark'; root.setAttribute('data-theme', n); localStorage.setItem('theme', n); });
+    })();
+
+    /* ── Shop Selector ── */
+    var _selectedShopId = null;
+    var _shops = [];
+    // _shopSections: array of {name, metafield, namespace, key, target, prompt} from selected shop
+    var _shopSections = [];
+
+    (function initShopSelector() {
+      fetch(`${API_BASE_URL}/api/shops`).then(function (r) { return r.json(); }).then(function (d) {
+        _shops = d.shops || [];
+        var sel = document.getElementById('shopSelectDropdown');
+        sel.innerHTML = '<option value="">— Select a shop —</option>';
+        _shops.forEach(function (shop) {
+          var opt = document.createElement('option');
+          opt.value = shop.id;
+          opt.textContent = shop.name + ' (' + shop.domain + ')';
+          opt.title = shop.name + " (" + shop.domain + ")";
+          if (shop.is_active) { opt.selected = true; }
+          sel.appendChild(opt);
+        });
+        var activeShop = _shops.find(function (s) { return s.is_active; });
+        if (activeShop) { _selectedShopId = activeShop.id; updateShopBadge(activeShop); applyShopSections(activeShop); }
+        else { updateShopBadge(null); applyShopSections(null); }
+      }).catch(function () { applyShopSections(null); });
+    })();
+
+    function onShopSelectChange(sel) {
+      var id = parseInt(sel.value, 10) || null;
+      _selectedShopId = id;
+      var shop = _shops.find(function (s) { return s.id === id; }) || null;
+      updateShopBadge(shop);
+      applyShopSections(shop);
+      if (id) { fetch(`${API_BASE_URL}/api/shops/${id}/set-active`, { method: 'POST' }).catch(function () { }); }
+    }
+
+    // function updateShopBadge(shop){
+    //   var badge = document.getElementById('shopActiveBadge');
+    //   if(shop){ badge.style.display=''; badge.textContent = shop.domain; }
+    //   else { badge.style.display='none'; }
+    // }
+    function updateShopBadge(shop) {
+
+      var badge = document.getElementById("shopActiveBadge");
+
+      if (shop) {
+
+        badge.style.display = "";
+
+        badge.textContent = shop.website_domain || shop.domain;
+
+      } else {
+
+        badge.style.display = "none";
+
       }
 
+    }
+
+
+    function getSelectedShopId() { return _selectedShopId; }
+
+    /**
+     * Called whenever the active shop changes.
+     * Rebuilds SECTIONS, SECTION_LABELS, _shopSections, and the prompts panel
+     * from the shop's saved sections config. Falls back to defaults if no sections.
+     */
+    function applyShopSections(shop) {
+      var sections = (shop && shop.sections && shop.sections.length) ? shop.sections : null;
+
+      if (sections) {
+        // Use shop-configured sections
+        _shopSections = sections;
+        SECTIONS = sections.map(function (s) { return _sectionKey(s.name); });
+        SECTION_LABELS = {};
+        sections.forEach(function (s) { SECTION_LABELS[_sectionKey(s.name)] = s.name; });
+      } else {
+        // Fall back to hardcoded defaults
+        _shopSections = [];
+        SECTIONS = ['short_description', 'product_description', 'technical_specifications', 'common_problems', 'installation_guide'];
+        SECTION_LABELS = {
+          short_description: 'Short Product Description',
+          product_description: 'Product Description',
+          technical_specifications: 'Technical Specifications',
+          common_problems: 'Common Problems & Symptoms',
+          installation_guide: 'Installation Guide'
+        };
+      }
+
+      // Rebuild the global prompts panel UI
+      _rebuildPromptsPanel(sections);
+
+      // Load default prompts from server for sections that don't have a shop prompt
+      SECTIONS.forEach(function (s) {
+        var shopSection = _shopSections.find(function (ss) { return _sectionKey(ss.name) === s; });
+        var shopPrompt = shopSection && shopSection.prompt ? shopSection.prompt : '';
+        if (shopPrompt) {
+          _defaultPrompts[s] = shopPrompt;
+          var ta = document.getElementById('gpTA-' + s);
+          if (ta && !ta._userEdited) ta.value = shopPrompt;
+        } else {
+          // Fetch server default
+          fetch(`${API_BASE_URL}/api/default-prompt/${s}`).then(function (r) { return r.json(); }).then(function (d) {
+            _defaultPrompts[s] = d.prompt || '';
+            var ta = document.getElementById('gpTA-' + s);
+            if (ta && !ta._userEdited) ta.value = d.prompt || '';
+          }).catch(function () { });
+        }
+      });
+    }
+
+    /** Converts a section display name to a safe JS key (snake_case). */
+    function _sectionKey(name) {
+      return (name || '').toLowerCase().replace(/[^a-z0-9]+/g, '_').replace(/^_+|_+$/g, '');
+    }
+
+    /**
+     * Rebuilds the "Review & Edit Prompts" panel tabs + panes.
+     * sections: array of shop section objects, or null for defaults.
+     */
+    function _rebuildPromptsPanel(sections) {
+      var tabsEl = document.getElementById('gpTabs');
+      var bodyEl = tabsEl ? tabsEl.parentElement : null;
+      if (!tabsEl || !bodyEl) return;
+
+      // Remove all existing panes
+      bodyEl.querySelectorAll('.gp-pane').forEach(function (p) { p.remove(); });
+      tabsEl.innerHTML = '';
+
+      var sectionsToRender = sections && sections.length ? sections : [
+        { name: 'Short Product Description' }, { name: 'Product Description' },
+        { name: 'Technical Specifications' }, { name: 'Common Problems & Symptoms' }, { name: 'Installation Guide' }
+      ];
+
+      sectionsToRender.forEach(function (sec, i) {
+        var key = _sectionKey(sec.name);
+        var label = sec.name;
+        var shortLabel = label.length > 14 ? label.substring(0, 13) + '…' : label;
+
+        // Tab
+        var tab = document.createElement('button');
+        tab.className = 'gp-tab' + (i === 0 ? ' active' : '');
+        tab.setAttribute('data-section', key);
+        tab.onclick = (function (k, t) { return function () { switchGpTab(k, t); }; })(key, tab);
+        tab.innerHTML = '<span class="gp-dot"></span>' + esc(shortLabel);
+        tabsEl.appendChild(tab);
+
+        // Pane
+        var pane = document.createElement('div');
+        pane.className = 'gp-pane' + (i === 0 ? ' active' : '');
+        pane.id = 'gp-pane-' + key;
+        var shopPrompt = sec.prompt || '';
+        pane.innerHTML =
+          '<div class="gp-prompt-header">'
+          + '<span class="gp-prompt-label">' + esc(label) + ' prompt</span>'
+          + '<span class="gp-modified-badge" id="gpbadge-' + key + '">Modified</span>'
+          + '</div>'
+          + '<textarea class="gp-prompt-textarea" id="gpTA-' + key + '" placeholder="Loading…" oninput="onGpInput(\'' + key + '\')">' + esc(shopPrompt) + '</textarea>'
+          + '<div class="gp-prompt-footer">'
+          + '<span class="gp-prompt-hint">Use <code>{product_title}</code> and <code>{part_number}</code> as placeholders</span>'
+          + '<button class="btn-reset-gp" onclick="resetGpPrompt(\'' + key + '\')">↺ Reset</button>'
+          + '</div>';
+        bodyEl.appendChild(pane);
+
+        // Pre-populate _defaultPrompts with shop prompt if set
+        if (shopPrompt) _defaultPrompts[key] = shopPrompt;
+      });
+    }
+
+    /* ── Constants ── */
+    var partCounter = 1;
+    // SECTIONS and SECTION_LABELS are set dynamically by applyShopSections()
+    var SECTIONS = ['short_description', 'product_description', 'technical_specifications', 'common_problems', 'installation_guide'];
+    var SECTION_LABELS = { short_description: 'Short Product Description', product_description: 'Product Description', technical_specifications: 'Technical Specifications', common_problems: 'Common Problems & Symptoms', installation_guide: 'Installation Guide' };
+    var SECTION_COLORS = ['#a78bfa', '#6366f1', '#0ea5e9', '#f59e0b', '#10b981', '#ec4899', '#f97316', '#84cc16', '#06b6d4', '#8b5cf6'];
+    var _defaultPrompts = {};
+    var _editBackup = {};
+    var _csvSource = false;
+    var _activeJobId = null;   // tracks the running job for cancellation
+
+    /* ── Global prompts panel ── */
+    function toggleGlobalPrompts() {
+      document.getElementById('globalPromptsPanel').classList.toggle('open');
+    }
+
+    function switchGpTab(section, btn) {
+      document.querySelectorAll('.gp-tab').forEach(function (t) { t.classList.remove('active'); });
+      document.querySelectorAll('.gp-pane').forEach(function (p) { p.classList.remove('active'); });
+      btn.classList.add('active');
+      document.getElementById('gp-pane-' + section).classList.add('active');
+    }
+
+    function onGpInput(section) {
+      var ta = document.getElementById('gpTA-' + section);
+      if (!ta) return;
+      ta._userEdited = true;
+      var isModified = ta.value !== (_defaultPrompts[section] || '');
+      var badge = document.getElementById('gpbadge-' + section);
+      if (badge) badge.classList.toggle('visible', isModified);
+      // also mark the tab
+      var tab = document.querySelector('.gp-tab[data-section="' + section + '"]');
+      if (tab) tab.classList.toggle('modified', isModified);
+    }
+
+    function resetGpPrompt(section) {
+      var ta = document.getElementById('gpTA-' + section);
+      if (ta && _defaultPrompts[section]) {
+        ta.value = _defaultPrompts[section];
+        ta._userEdited = false;
+        var badge = document.getElementById('gpbadge-' + section);
+        if (badge) badge.classList.remove('visible');
+        var tab = document.querySelector('.gp-tab[data-section="' + section + '"]');
+        if (tab) tab.classList.remove('modified');
+      }
+    }
+
+    /* Read global prompts — returns object with only modified ones */
+    function getGlobalPrompts() {
+      var result = {};
+      SECTIONS.forEach(function (s) {
+        var ta = document.getElementById('gpTA-' + s);
+        if (ta && ta.value && ta.value !== (_defaultPrompts[s] || '')) result[s] = ta.value;
+      });
+      return result;
+    }
+
+    /* ── Part count badge ── */
+    function updatePartCount() {
+      var count = document.querySelectorAll('.part-row').length;
+      document.getElementById('partCountBadge').textContent = count === 1 ? '1 PART' : count + ' PARTS';
+      document.querySelectorAll('.btn-remove-part').forEach(function (b) { b.disabled = count === 1; });
+    }
+
+    /* ── Add / Remove / Reindex ── */
+    function addPart() {
+      partCounter++; var id = partCounter;
+      var list = document.getElementById('partsList');
+      var row = document.createElement('div');
+      row.className = 'part-row'; row.id = 'part-row-' + id;
+      row.innerHTML = '<div class="part-index">' + id + '</div>'
+        + '<input type="text" class="field-input part-title" placeholder="Part Title" data-part="' + id + '">'
+        + '<input type="text" class="field-input part-number" placeholder="Part Number" data-part="' + id + '">'
+        + '<input type="text" class="field-input part-appliance" placeholder="Appliance Type" data-part="' + id + '">'
+        + '<input type="text" class="field-input part-type" placeholder="Part Type" data-part="' + id + '">'
+        + '<input type="text" class="field-input part-brand" placeholder="Brand" data-part="' + id + '">'
+        + '<input type="url" class="field-input part-shopify-url" placeholder="https://admin.shopify.com/store/../products/ID" data-part="' + id + '" oninput="onShopifyUrlInput(this)">'
+        + '<div style="display:flex;align-items:center;gap:4px">'
+        + '<button class="btn-fetch-row" id="btn-fetch-' + id + '" onclick="fetchShopifyRowUrl(' + id + ')" title="Fetch from Shopify URL" disabled>'
+        + '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" width="12" height="12"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>'
+        + '</button>'
+        + '<button class="btn-remove-part" onclick="removePart(' + id + ')" title="Remove">✕</button>'
+        + '</div>';
+      list.appendChild(row);
+      row.style.opacity = '0'; row.style.transform = 'translateY(-6px)';
+      requestAnimationFrame(function () { row.style.transition = 'opacity .2s,transform .2s'; row.style.opacity = '1'; row.style.transform = 'translateY(0)'; });
+      updatePartCount(); row.querySelector('.part-title').focus();
+    }
+
+    function removePart(id) {
+      var row = document.getElementById('part-row-' + id); if (!row) return;
+      row.style.transition = 'opacity .15s,transform .15s'; row.style.opacity = '0'; row.style.transform = 'translateY(-4px)';
+      setTimeout(function () { row.remove(); reindexParts(); updatePartCount(); }, 160);
+    }
+
+    function reindexParts() {
+      document.querySelectorAll('.part-row').forEach(function (row, i) {
+        var idx = row.querySelector('.part-index'); if (idx) idx.textContent = i + 1;
+      });
+    }
+
+    function getPartsData() {
+      return Array.from(document.querySelectorAll('.part-row')).map(function (row, i) {
+        return {
+          index: i + 1, id: String(row.id.replace('part-row-', '')),
+          product_title: row.querySelector('.part-title').value.trim(),
+          part_number: row.querySelector('.part-number').value.trim(),
+          appliance_type: (row.querySelector('.part-appliance') || { value: '' }).value.trim(),
+          part_type: row.querySelector('.part-type').value.trim(),
+          brand: row.querySelector('.part-brand').value.trim(),
+          shopify_url: (row.querySelector('.part-shopify-url') || { value: '' }).value.trim()
+        };
+      });
+    }
+
+    /* ── Sample CSV Download ── */
+    function downloadSampleCsv() {
+      var headers = ['title', 'part_number', 'appliance_type', 'part_type', 'brand', 'shopify_url'];
+      var sample = [
+        ['LG Door Switch 6600JB2002A', '6600JB2002A', 'Refrigerator', 'Door Switch', 'LG', ''],
+        ['Whirlpool Water Filter W10295370A', 'W10295370A', 'Refrigerator', 'Water Filter', 'Whirlpool', '']
+      ];
+      var rows = [headers].concat(sample);
+      var csv = rows.map(function (r) {
+        return r.map(function (v) {
+          var s = String(v);
+          if (s.indexOf(',') > -1 || s.indexOf('"') > -1 || s.indexOf('\n') > -1) s = '"' + s.replace(/"/g, '""') + '"';
+          return s;
+        }).join(',');
+      }).join('\r\n');
+      var blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
+      var url = URL.createObjectURL(blob);
+      var a = document.createElement('a');
+      a.href = url; a.download = 'sample_products.csv';
+      document.body.appendChild(a); a.click();
+      document.body.removeChild(a); URL.revokeObjectURL(url);
+    }
+
+    /* ── CSV Import ── */
+    function handleCsvUpload(input) {
+      var file = input.files[0]; if (!file) return;
+      var reader = new FileReader();
+      reader.onload = function (e) {
+        var rows = parseCsv(e.target.result);
+        if (!rows || rows.length < 1) { alert('CSV appears empty or invalid.'); return; }
+        populatePartsFromCsv(rows, file.name);
+      };
+      reader.readAsText(file);
+      input.value = '';
+    }
+
+    function parseCsv(text) {
+      var lines = text.trim().split(/\r?\n/);
+      if (lines.length < 2) return [];
+      var headers = lines[0].split(',').map(function (h) { return h.trim().toLowerCase().replace(/^"|"$/g, ''); });
+      var rows = [];
+      for (var i = 1; i < lines.length; i++) {
+        var line = lines[i].trim(); if (!line) continue;
+        var cols = parseCsvLine(line);
+        var obj = {};
+        headers.forEach(function (h, hi) { obj[h] = (cols[hi] || '').trim().replace(/^"|"$/g, ''); });
+        rows.push(obj);
+      }
+      return rows;
+    }
+
+    function parseCsvLine(line) {
+      var result = [], cur = '', inQ = false;
+      for (var i = 0; i < line.length; i++) {
+        var c = line[i];
+        if (c === '"') { inQ = !inQ; }
+        else if (c === ',' && !inQ) { result.push(cur); cur = ''; }
+        else { cur += c; }
+      }
+      result.push(cur); return result;
+    }
+
+    function populatePartsFromCsv(rows, filename) {
+      // Check if any row has a shopify_url column
+      var hasShopifyUrl = rows.some(function (r) { return r['shopify_url'] || r['shopify url'] || r['url']; });
+      if (hasShopifyUrl) {
+        // Process with Shopify fetch inline (no tab switch)
+        _processShopifyCsvRows(rows, filename);
+        return;
+      }
+      function getVal(row, aliases) { for (var i = 0; i < aliases.length; i++) { if (row[aliases[i]] !== undefined) return row[aliases[i]] || ''; } return ''; }
+      var list = document.getElementById('partsList');
+      list.innerHTML = ''; partCounter = 0;
+      rows.forEach(function (row, i) {
+        partCounter++; var id = partCounter;
+        var title = getVal(row, ['title', 'product_title', 'product title', 'name']);
+        var partNum = getVal(row, ['part_number', 'part number', 'partno', 'part#', 'number']);
+        var appType = getVal(row, ['appliance_type', 'appliance type', 'appliance']);
+        var partType = getVal(row, ['part_type', 'part type', 'type', 'category']);
+        var brand = getVal(row, ['brand', 'make', 'manufacturer']);
+        var shopifyUrl = getVal(row, ['shopify_url', 'shopify url', 'shopify']);
+        var rowEl = document.createElement('div');
+        rowEl.className = 'part-row'; rowEl.id = 'part-row-' + id;
+        rowEl.innerHTML = '<div class="part-index">' + (i + 1) + '</div>'
+          + '<input type="text" class="field-input part-title" data-part="' + id + '" value="' + esc(title) + '" placeholder="Part Title">'
+          + '<input type="text" class="field-input part-number" data-part="' + id + '" value="' + esc(partNum) + '" placeholder="Part Number">'
+          + '<input type="text" class="field-input part-appliance" data-part="' + id + '" value="' + esc(appType) + '" placeholder="Appliance Type">'
+          + '<input type="text" class="field-input part-type" data-part="' + id + '" value="' + esc(partType) + '" placeholder="Part Type">'
+          + '<input type="text" class="field-input part-brand" data-part="' + id + '" value="' + esc(brand) + '" placeholder="Brand">'
+          + '<input type="url" class="field-input part-shopify-url" data-part="' + id + '" value="' + esc(shopifyUrl) + '" placeholder="https://admin.shopify.com/store/../products/ID" oninput="onShopifyUrlInput(this)">'
+          + '<div style="display:flex;align-items:center;gap:4px">'
+          + '<button class="btn-fetch-row' + (shopifyUrl ? ' ' : '') + '" id="btn-fetch-' + id + '" onclick="fetchShopifyRowUrl(' + id + ')" title="Fetch from Shopify URL"' + (shopifyUrl ? '' : ' disabled') + '>'
+          + '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" width="12" height="12"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>'
+          + '</button>'
+          + '<button class="btn-remove-part" onclick="removePart(' + id + ')" title="Remove">✕</button>'
+          + '</div>';
+        list.appendChild(rowEl);
+      });
+      _csvSource = true;
+      document.getElementById('csvPillText').textContent = rows.length + ' parts from ' + filename;
+      document.getElementById('csvLoadedPill').classList.add('visible');
+      updatePartCount();
+    }
+
+    function _rowsToCsvText(rows) {
+      if (!rows || !rows.length) return '';
+      var keys = Object.keys(rows[0]);
+      var lines = [keys.join(',')];
+      rows.forEach(function (r) { lines.push(keys.map(function (k) { var v = r[k] || ''; return v.indexOf(',') > -1 ? '"' + v + '"' : v; }).join(',')); });
+      return lines.join('\n');
+    }
+
+    async function _processShopifyCsvRows(rows, filename) {
+      var status = document.getElementById('shopifyFetchStatus');
+      var pill = document.getElementById('shopifyFetchedPill');
+      var pillText = document.getElementById('shopifyFetchedText');
+      var errContainer = document.getElementById('shopifyFetchErrors');
+      var errHeader = document.getElementById('shopifyFetchErrorsHeader');
+      var errList = document.getElementById('shopifyFetchErrorsList');
+
+      if (errContainer) errContainer.style.display = 'none';
+      if (errList) errList.innerHTML = '';
+
+      status.className = 'shopify-fetch-status visible loading';
+      status.textContent = '⏳ Fetching ' + rows.length + ' product' + (rows.length > 1 ? 's' : '') + ' from Shopify…';
+
+      var fetchedRows = [];
+      var failedDetails = [];
+      var errors = 0;
+
+      for (var i = 0; i < rows.length; i++) {
+        var r = rows[i];
+        var url = (r['shopify_url'] || r['shopify url'] || r['url'] || '').trim();
+        if (!url) {
+          errors++;
+          var reason = 'Missing shopify_url value in CSV row';
+          failedDetails.push({ row: i + 1, url: '(empty)', reason: reason });
+          console.warn('[CSV Shopify Fetch] Row ' + (i + 1) + ': ' + reason);
+          continue;
+        }
+        try {
+          var product = await _fetchShopifyProduct(url);
+          var base = _shopifyProductToRow(product);
+          function getVal2(row, aliases) { for (var k = 0; k < aliases.length; k++) { if (row[aliases[k]]) return row[aliases[k]]; } return ''; }
+          base.title = getVal2(r, ['title', 'product_title', 'name']) || base.title;
+          base.part_number = getVal2(r, ['part_number', 'sku', 'number']) || base.part_number;
+          base.brand = getVal2(r, ['brand', 'vendor']) || base.brand;
+          base.part_type = getVal2(r, ['part_type', 'type']) || base.part_type;
+          base.appliance_type = getVal2(r, ['appliance_type', 'appliance']) || base.appliance_type;
+          base.shopify_url = url;
+          fetchedRows.push(base);
+          status.textContent = '⏳ Fetched ' + (fetchedRows.length) + ' / ' + rows.length + '…';
+        } catch (err) {
+          errors++;
+          var reason = err.message || String(err);
+          failedDetails.push({ row: i + 1, url: url, reason: reason });
+          console.error('[CSV Shopify Fetch Failed] Row ' + (i + 1) + ' | URL: ' + url + ' | Error:', reason);
+        }
+      }
+
+      if (failedDetails.length > 0) {
+        console.group('[CSV Shopify Fetch Summary] ' + failedDetails.length + ' failed row(s) out of ' + rows.length);
+        console.table(failedDetails);
+        console.groupEnd();
+      }
+
+      if (fetchedRows.length === 0) {
+        status.className = 'shopify-fetch-status visible error';
+        status.textContent = '✗ Could not fetch any products. ' + (errors > 0 ? errors + ' rows failed.' : '');
+        if (errContainer && errList && failedDetails.length > 0) {
+          if (errHeader) errHeader.textContent = '⚠️ Failed Fetch Details (' + failedDetails.length + ' row' + (failedDetails.length > 1 ? 's' : '') + ' failed)';
+          errList.innerHTML = failedDetails.map(function (f) {
+            return '<div style="margin-bottom:4px;"><strong>Row ' + f.row + '</strong> (' + esc(f.url) + '): <span style="color:#f87171;">' + esc(f.reason) + '</span></div>';
+          }).join('');
+          errContainer.style.display = 'block';
+        }
+        return;
+      }
+      var list = document.getElementById('partsList');
+      list.innerHTML = ''; partCounter = 0;
+      fetchedRows.forEach(function (row, idx) {
+        partCounter++; var id = partCounter;
+        var rowEl = document.createElement('div');
+        rowEl.className = 'part-row'; rowEl.id = 'part-row-' + id;
+        rowEl.innerHTML = '<div class="part-index">' + (idx + 1) + '</div>'
+          + '<input type="text" class="field-input part-title" data-part="' + id + '" value="' + esc(row.title) + '" placeholder="Part Title">'
+          + '<input type="text" class="field-input part-number" data-part="' + id + '" value="' + esc(row.part_number) + '" placeholder="Part Number">'
+          + '<input type="text" class="field-input part-appliance" data-part="' + id + '" value="' + esc(row.appliance_type) + '" placeholder="Appliance Type">'
+          + '<input type="text" class="field-input part-type" data-part="' + id + '" value="' + esc(row.part_type) + '" placeholder="Part Type">'
+          + '<input type="text" class="field-input part-brand" data-part="' + id + '" value="' + esc(row.brand) + '" placeholder="Brand">'
+          + '<input type="url" class="field-input part-shopify-url" data-part="' + id + '" value="' + esc(row.shopify_url || '') + '" placeholder="https://admin.shopify.com/store/../products/ID" oninput="onShopifyUrlInput(this)">'
+          + '<div style="display:flex;align-items:center;gap:4px">'
+          + '<button class="btn-fetch-row fetched" id="btn-fetch-' + id + '" onclick="fetchShopifyRowUrl(' + id + ')" title="Re-fetch from Shopify URL">'
+          + '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" width="12" height="12"><path d="M20 6L9 17l-5-5"/></svg>'
+          + '</button>'
+          + '<button class="btn-remove-part" onclick="removePart(' + id + ')" title="Remove">✕</button>'
+          + '</div>';
+        list.appendChild(rowEl);
+      });
+      _csvSource = true;
+      updatePartCount();
+      var msg = fetchedRows.length + ' product' + (fetchedRows.length > 1 ? 's' : '') + ' fetched from Shopify';
+      if (errors > 0) msg += ' (' + errors + ' failed)';
+      pillText.textContent = msg;
+      pill.classList.add('visible');
+      status.className = 'shopify-fetch-status visible success';
+      status.textContent = '✓ ' + msg;
+
+      if (errContainer && errList && failedDetails.length > 0) {
+        if (errHeader) errHeader.textContent = '⚠️ Failed Fetch Details (' + failedDetails.length + ' row' + (failedDetails.length > 1 ? 's' : '') + ' failed)';
+        errList.innerHTML = failedDetails.map(function (f) {
+          return '<div style="margin-bottom:4px;"><strong>Row ' + f.row + '</strong> (' + esc(f.url) + '): <span style="color:#f87171;">' + esc(f.reason) + '</span></div>';
+        }).join('');
+        errContainer.style.display = 'block';
+      }
+    }
+
+    function clearShopifyFetched() {
+      document.getElementById('shopifyFetchedPill').classList.remove('visible');
+      document.getElementById('shopifyFetchedText').textContent = '';
+      var status = document.getElementById('shopifyFetchStatus');
+      status.className = 'shopify-fetch-status'; status.textContent = '';
+      var errContainer = document.getElementById('shopifyFetchErrors');
+      if (errContainer) errContainer.style.display = 'none';
+    }
+
+    /* Enable/disable per-row fetch button as user types */
+    function onShopifyUrlInput(input) {
+      var row = input.closest('.part-row'); if (!row) return;
+      var id = row.id.replace('part-row-', '');
+      var btn = document.getElementById('btn-fetch-' + id);
+      if (!btn) return;
+      var val = (input.value || '').trim();
+      btn.disabled = !val;
+      if (!val) btn.classList.remove('fetched');
+    }
+
+    /* Fetch Shopify data for a single row by its ID */
+    async function fetchShopifyRowUrl(id) {
+      var row = document.getElementById('part-row-' + id); if (!row) return;
+      var urlInput = row.querySelector('.part-shopify-url');
+      var btn = document.getElementById('btn-fetch-' + id);
+      var status = document.getElementById('shopifyFetchStatus');
+      var url = (urlInput ? urlInput.value : '').trim();
+      if (!url) return;
+
+      if (btn) { btn.disabled = true; btn.innerHTML = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" width="12" height="12"><path d="M12 2v4M12 18v4M4.93 4.93l2.83 2.83M16.24 16.24l2.83 2.83M2 12h4M18 12h4"/></svg>'; }
+      status.className = 'shopify-fetch-status visible loading';
+      status.textContent = '⏳ Fetching from Shopify…';
+
+      try {
+        var product = await _fetchShopifyProduct(url);
+        var data = _shopifyProductToRow(product);
+        var titleEl = row.querySelector('.part-title');
+        var numEl = row.querySelector('.part-number');
+        var appEl = row.querySelector('.part-appliance');
+        var typeEl = row.querySelector('.part-type');
+        var brandEl = row.querySelector('.part-brand');
+        // Only overwrite if field is empty
+        if (titleEl && !titleEl.value) titleEl.value = data.title;
+        if (numEl && !numEl.value) numEl.value = data.part_number;
+        if (appEl && !appEl.value) appEl.value = data.appliance_type;
+        if (typeEl && !typeEl.value) typeEl.value = data.part_type;
+        if (brandEl && !brandEl.value) brandEl.value = data.brand;
+        if (btn) { btn.disabled = false; btn.classList.add('fetched'); btn.title = 'Re-fetch from Shopify URL'; btn.innerHTML = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" width="12" height="12"><path d="M20 6L9 17l-5-5"/></svg>'; }
+        status.className = 'shopify-fetch-status visible success';
+        status.textContent = '✓ Fetched: ' + (data.title || url);
+        setTimeout(function () { status.className = 'shopify-fetch-status'; }, 4000);
+      } catch (err) {
+        if (btn) { btn.disabled = false; btn.innerHTML = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" width="12" height="12"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>'; }
+        status.className = 'shopify-fetch-status visible error';
+        status.textContent = '✗ ' + err.message;
+      }
+    }
+
+    async function handleShopifyCsvUpload(input) {
+      var file = input.files[0]; if (!file) return;
+      var reader = new FileReader();
+      reader.onload = async function (e) {
+        var rows = parseCsv(e.target.result);
+        if (!rows || rows.length < 1) { alert('CSV appears empty or invalid.'); return; }
+        var hasUrl = rows.some(function (r) { return r['shopify_url'] || r['shopify url'] || r['url']; });
+        // shopify_url column is optional — products publish via active shop config + SKU
+        _processShopifyCsvRows(rows, file.name);
+      };
+      reader.readAsText(file);
+      input.value = '';
+    }
+
+    /* ── Shopify URL helpers ── */
+
+    /**
+     * Detect if URL is a Shopify admin URL.
+     * e.g. https://admin.shopify.com/store/spark236/products/8988529557681
+     * Returns the numeric product ID string, or null.
+     */
+    function _extractAdminProductId(rawUrl) {
+      var m = rawUrl.trim().match(/admin\.shopify\.com\/store\/[^\/]+\/products\/(\d+)/);
+      return m ? m[1] : null;
+    }
+
+    async function _fetchShopifyProduct(rawUrl) {
+      // Always prefer server-side route (handles both admin IDs and storefront URLs)
+      var srvResp = await fetch(`${API_BASE_URL}/api/shopify-product`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ url: rawUrl })
+      });
+      var srvData = await srvResp.json();
+      if (!srvResp.ok) throw new Error(srvData.error || 'Server error (' + srvResp.status + ')');
+      if (!srvData.product) throw new Error('No product data returned from server.');
+      return srvData.product;
+    }
+
+    function _shopifyProductToRow(product) {
+      return {
+        title: product.title || '',
+        part_number: product.part_number || product.sku || String(product.id || ''),
+        brand: product.brand || product.vendor || '',
+        part_type: product.part_type || product.product_type || '',
+        appliance_type: product.appliance_type || ''
+      };
+    }
+
+    function clearCsv() { _csvSource = false; document.getElementById('csvLoadedPill').classList.remove('visible'); }
+
+    function _addPartRowFromData(data) {
+      partCounter++; var id = partCounter;
+      var list = document.getElementById('partsList');
+      var row = document.createElement('div');
+      row.className = 'part-row'; row.id = 'part-row-' + id;
+      var shopUrl = data.shopify_url || '';
+      row.innerHTML = '<div class="part-index">' + id + '</div>'
+        + '<input type="text" class="field-input part-title" data-part="' + id + '" value="' + esc(data.title || '') + '" placeholder="Part Title">'
+        + '<input type="text" class="field-input part-number" data-part="' + id + '" value="' + esc(data.part_number || '') + '" placeholder="Part Number">'
+        + '<input type="text" class="field-input part-appliance" data-part="' + id + '" value="' + esc(data.appliance_type || '') + '" placeholder="Appliance Type">'
+        + '<input type="text" class="field-input part-type" data-part="' + id + '" value="' + esc(data.part_type || '') + '" placeholder="Part Type">'
+        + '<input type="text" class="field-input part-brand" data-part="' + id + '" value="' + esc(data.brand || '') + '" placeholder="Brand">'
+        + '<input type="url" class="field-input part-shopify-url" data-part="' + id + '" value="' + esc(shopUrl) + '" placeholder="https://admin.shopify.com/store/../products/ID" oninput="onShopifyUrlInput(this)">'
+        + '<div style="display:flex;align-items:center;gap:4px">'
+        + '<button class="btn-fetch-row' + (shopUrl ? ' fetched' : '') + '" id="btn-fetch-' + id + '" onclick="fetchShopifyRowUrl(' + id + ')" title="Fetch from Shopify URL"' + (shopUrl ? '' : ' disabled') + '>'
+        + (shopUrl ? '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" width="12" height="12"><path d="M20 6L9 17l-5-5"/></svg>' : '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" width="12" height="12"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>')
+        + '</button>'
+        + '<button class="btn-remove-part" onclick="removePart(' + id + ')" title="Remove">✕</button>'
+        + '</div>';
+      list.appendChild(row);
+      row.style.opacity = '0'; row.style.transform = 'translateY(-6px)';
+      requestAnimationFrame(function () { row.style.transition = 'opacity .2s,transform .2s'; row.style.opacity = '1'; row.style.transform = 'translateY(0)'; });
+      updatePartCount();
+    }
+
+    /* ── Typewriter helper ── */
+    var _twQueues = {};  // partId -> queue of {ta, html, preview} targets
+
+    function _typewriterAnimate(partId, plainText, htmlText) {
+      // Animate plain textarea and html textarea simultaneously; update preview live
+      var plainTA = document.getElementById('plainTA-' + partId);
+      var htmlCodeTA = document.getElementById('htmlCodeTA-' + partId);
+      var htmlPreview = document.getElementById('htmlPreview-' + partId);
+
+      if (!plainTA || !htmlCodeTA) return Promise.resolve();
+
+      return new Promise(function (resolve) {
+        var pLen = plainText.length, hLen = htmlText.length;
+        var maxLen = Math.max(pLen, hLen);
+        // We step at ~12 chars per frame so large texts complete in ~0.5 seconds
+        var chunkSize = Math.max(12, Math.ceil(maxLen / 120));
+        var pos = 0;
+
+        function step() {
+          if (pos >= maxLen) {
+            plainTA.value = plainText;
+            htmlCodeTA.value = htmlText;
+            if (htmlPreview) htmlPreview.innerHTML = htmlText;
+            resolve();
+            return;
+          }
+          pos = Math.min(pos + chunkSize, maxLen);
+          if (pos <= pLen) plainTA.value = plainText.slice(0, pos);
+          if (pos <= hLen) {
+            htmlCodeTA.value = htmlText.slice(0, pos);
+            // Only update preview every 8 steps for performance
+            if (pos % 30 === 0 && htmlPreview) htmlPreview.innerHTML = htmlText.slice(0, pos);
+          }
+          requestAnimationFrame(step);
+        }
+        requestAnimationFrame(step);
+      });
+    }
+
+    /* ── Generate All — SSE streaming ── */
+    async function generateAll() {
+      var parts = getPartsData();
+      for (var i = 0; i < parts.length; i++) {
+        if (!parts[i].product_title || !parts[i].part_number) {
+          alert('Please fill in Part Title and Part Number for all parts.'); return;
+        }
+      }
+      var btn = document.getElementById('generateAllBtn');
+      var progressWrap = document.getElementById('progressWrap');
+      var progressFill = document.getElementById('progressFill');
+      var queueStatus = document.getElementById('queueStatus');
+      btn.disabled = true;
+      btn.innerHTML = '<svg viewBox="0 0 24 24" width="13" height="13"><circle cx="12" cy="12" r="10" stroke="currentColor" stroke-width="2" fill="none" stroke-dasharray="31.4"><animateTransform attributeName="transform" type="rotate" from="0 12 12" to="360 12 12" dur=".8s" repeatCount="indefinite"/></circle></svg> Generating…';
+      progressWrap.classList.add('visible'); queueStatus.classList.add('visible');
+      queueStatus.textContent = 'Sending ' + parts.length + ' part' + (parts.length > 1 ? 's' : '') + ' to API…';
+      progressFill.style.width = '8%';
+      document.getElementById('resultsArea').innerHTML = '';
+
+      var globalPrompts = getGlobalPrompts();
+
+      // Build sections_config for backend: merge shop sections with any UI overrides
+      var sectionsConfig = SECTIONS.map(function (s) {
+        var shopSec = _shopSections.find(function (ss) { return _sectionKey(ss.name) === s; }) || {};
+        var uiPrompt = globalPrompts[s] || '';
+        return {
+          key: s,
+          name: SECTION_LABELS[s] || s,
+          prompt: uiPrompt || shopSec.prompt || '',
+          metafield: shopSec.metafield || '',
+          namespace: shopSec.namespace || '',
+          metafield_key: shopSec.key || '',
+          target: shopSec.target || 'metafield'
+        };
+      });
+
+      // Create ALL skeleton cards immediately so user sees what's coming
+      parts.forEach(function (part) { createPartResultCard(part, globalPrompts); });
+      progressFill.style.width = '15%';
+
+      var payload = {
+        shop_id: _selectedShopId || null,
+        sections_config: sectionsConfig,
+        products: parts.map(function (p) {
+          return {
+            id: p.id, product_title: p.product_title, part_number: p.part_number,
+            part_type: p.part_type, brand: p.brand, appliance_type: p.appliance_type,
+            shopify_url: p.shopify_url || '',
+            source: _csvSource ? 'csv' : 'manual', prompts: globalPrompts
+          };
+        })
+      };
+
+      var doneCount = 0;
+
+      try {
+        // Step 1: launch the job server-side (returns immediately with job_id)
+        var res = await fetch(`${API_BASE_URL}/api/generate-stream`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(payload)
+        });
+
+        if (!res.ok) {
+          var errData = await res.json().catch(function () { return { error: 'Stream failed' }; });
+          throw new Error(errData.error || 'Stream failed');
+        }
+
+        var jobMeta = await res.json();
+        var activeJobId = jobMeta.job_id;
+        _activeJobId = activeJobId;
+        document.getElementById('stopGenBtn').classList.add('visible');
+
+        // Persist job so page-refresh / tab-close can resume
+        _saveActiveJob(activeJobId, jobMeta.batch_id, parts, sectionsConfig);
+
+        // Step 2: connect to the job stream endpoint
+        await _connectJobStream(activeJobId, parts, {
+          onBatchStart: function (evt) {
+            queueStatus.textContent = 'All ' + evt.total_products + ' product' + (evt.total_products > 1 ? 's' : '') + ' running in parallel…';
+          },
+          onProductDone: function (evt) {
+            doneCount++;
+            var pct = 15 + Math.round((doneCount / parts.length) * 75);
+            progressFill.style.width = pct + '%';
+            queueStatus.textContent = doneCount + ' / ' + parts.length + ' done…';
+          },
+          onBatchEnd: function (evt) {
+            progressFill.style.width = '100%';
+            var cancelled = (evt && evt.cancelled);
+            queueStatus.textContent = cancelled ? '⏹ Generation stopped' : '✓ All ' + parts.length + ' part' + (parts.length > 1 ? 's' : '') + ' done';
+            _activeJobId = null;
+            document.getElementById('stopGenBtn').classList.remove('visible');
+            _clearActiveJob();
+            _hideResumeBanner();
+          }
+        });
+
+        // Legacy dead-code guard — kept for fallback compatibility
+        var reader = null;
+        var decoder = new TextDecoder();
+        var buffer = '';
+        var currentEvent = '';
+
+      } catch (err) {
+        queueStatus.textContent = '✗ Error: ' + err.message;
+        parts.forEach(function (part) {
+          var block = document.getElementById('result-part-' + part.id);
+          if (block && block.classList.contains('is-loading')) {
+            block.classList.remove('is-loading'); block.classList.add('is-error');
+          }
+          var banner = document.getElementById('pbanner-' + part.id);
+          if (banner && !banner.classList.contains('visible')) {
+            banner.textContent = '⚠ ' + err.message; banner.classList.add('visible');
+          }
+          var lb = document.getElementById('ploadbanner-' + part.id); if (lb) lb.classList.remove('visible');
+        });
+      } finally {
+        btn.disabled = false;
+        btn.innerHTML = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" width="15" height="15"><path d="M13 2L3 14h7l-1 8 10-12h-7l1-8z"/></svg> Generate All Content';
+        _activeJobId = null;
+        document.getElementById('stopGenBtn').classList.remove('visible');
+        setTimeout(function () { progressWrap.classList.remove('visible'); progressFill.style.width = '0%'; queueStatus.classList.remove('visible'); }, 3500);
+      }
+    }
+
+    /* ── Build skeleton card with prompts-used panel (read-only after launch) ── */
+    function createPartResultCard(part, usedPrompts) {
+      usedPrompts = usedPrompts || {};
+      var ra = document.getElementById('resultsArea');
+      var existing = document.getElementById('result-part-' + part.id);
+      if (existing) existing.remove();
+
+      var block = document.createElement('div');
+      block.className = 'part-result is-loading'; block.id = 'result-part-' + part.id;
+
+      var sub = '';
+      if (part.part_number) sub += esc(part.part_number);
+      if (part.appliance_type) sub += (sub ? ' · ' : '') + esc(part.appliance_type);
+      if (part.part_type) sub += (sub ? ' · ' : '') + esc(part.part_type);
+      if (part.brand) sub += (sub ? ' · ' : '') + esc(part.brand);
+
+      // Build prompt blocks showing exactly what prompt was sent
+      var promptBlocksHtml = '';
+      SECTIONS.forEach(function (s, si) {
+        var color = SECTION_COLORS[si];
+        var promptVal = esc(usedPrompts[s] || _defaultPrompts[s] || '');
+        var isCustom = !!(usedPrompts[s] && usedPrompts[s] !== (_defaultPrompts[s] || ''));
+        promptBlocksHtml +=
+          '<div class="prompt-block">'
+          + '<div class="prompt-block-header">'
+          + '<div class="prompt-block-label">'
+          + '<span class="prompt-block-num" style="background:' + color + '22;color:' + color + '">0' + (si + 1) + '</span>'
+          + SECTION_LABELS[s]
+          + '</div>'
+          + (isCustom ? '<span class="prompt-modified-tag visible">Custom</span>' : '')
+          + '</div>'
+          + '<textarea class="prompt-textarea" id="promptTA-' + part.id + '-' + s + '" rows="4" disabled>' + promptVal + '</textarea>'
+          + '</div>';
+      });
+
+      block.innerHTML =
+        // Header
+        '<div class="part-result-header" onclick="toggleCardCollapse(\'' + part.id + '\')" style="cursor:pointer">'
+        + '<div class="part-result-meta">'
+        + '<span class="part-result-num">PART ' + part.index + '</span>'
+        + '<div><div class="part-result-title">' + esc(part.product_title) + '</div>' + (sub ? '<div class="part-result-sub">' + sub + '</div>' : '') + '</div>'
+        + '</div>'
+        + '<div class="part-result-right">'
+        + '<div class="part-result-status"><span class="status-dot"></span><span id="pstatus-' + part.id + '">Generating…</span></div>'
+        + '<button class="btn-collapse-card" id="collapseBtn-' + part.id + '" title="Collapse/Expand" onclick="event.stopPropagation();toggleCardCollapse(\'' + part.id + '\')">▲</button>'
+        + '</div>'
+        + '</div>'
+        // Collapsible body
+        + '<div class="part-result-body" id="prbody-' + part.id + '">'
+        // Prompts panel (collapsible, closed by default — shows what was sent)
+        + '<div class="prompts-panel" id="promptsPanel-' + part.id + '">'
+        + '<div class="prompts-panel-toggle" onclick="togglePromptsPanel(\'' + part.id + '\')">'
+        + '<div class="prompts-panel-label">'
+        + '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>'
+        + 'Prompts used for this generation'
+        + '</div>'
+        + '<span class="prompts-chevron">▼</span>'
+        + '</div>'
+        + '<div class="prompts-panel-body">'
+        + '<div class="prompts-locked-notice visible">🔒 These prompts were sent — edit prompts above and regenerate to change them.</div>'
+        + promptBlocksHtml
+        + '</div>'
+        + '</div>'
+        // Loading banner
+        + '<div class="part-loading-banner visible" id="ploadbanner-' + part.id + '">'
+        + '<svg viewBox="0 0 24 24" width="16" height="16"><circle cx="12" cy="12" r="10" stroke="currentColor" stroke-width="2" fill="none" stroke-dasharray="31.4"><animateTransform attributeName="transform" type="rotate" from="0 12 12" to="360 12 12" dur=".8s" repeatCount="indefinite"/></circle></svg>'
+        + 'Generating ' + SECTIONS.length + ' section' + (SECTIONS.length !== 1 ? 's' : '') + ' for this product…'
+        + '</div>'
+        + '<div class="part-error-banner" id="pbanner-' + part.id + '"></div>'
+        // Single merged output (hidden until done)
+        + '<div class="part-output" id="poutput-' + part.id + '">'
+        + '<div class="output-toolbar">'
+        + '<div class="output-tabs">'
+        + '<button class="output-tab" onclick="switchTab(\'' + part.id + '\',\'plain\')">Plain Text</button>'
+        + '<button class="output-tab" onclick="switchTab(\'' + part.id + '\',\'html-code\')">HTML Code</button>'
+        + '<button class="output-tab active" onclick="switchTab(\'' + part.id + '\',\'html-preview\')">HTML Preview</button>'
+        + '<span class="edit-indicator" id="editIndicator-' + part.id + '">✎ Editing</span>'
+        + '</div>'
+        + '<div class="output-actions">'
+        + '<button class="btn-sm btn-edit" id="editBtn-' + part.id + '" onclick="toggleEdit(\'' + part.id + '\')">✎ Edit</button>'
+        + '<button class="btn-sm btn-save" id="saveBtn-' + part.id + '" onclick="saveEdits(\'' + part.id + '\')">✓ Save</button>'
+        + '<button class="btn-sm btn-discard" id="discardBtn-' + part.id + '" onclick="discardEdits(\'' + part.id + '\')">✕ Discard</button>'
+        + '<button class="btn-sm btn-copy" id="copyBtn-' + part.id + '" onclick="copyOutput(\'' + part.id + '\')">Copy</button>'
+        + '</div>'
+        + '</div>'
+        // Plain text pane — merged all 4 sections
+        + '<div class="output-pane" id="pane-plain-' + part.id + '">'
+        + '<textarea class="output-textarea" id="plainTA-' + part.id + '" readonly></textarea>'
+        + '</div>'
+        // HTML code pane — merged (raw source editor)
+        + '<div class="output-pane" id="pane-html-code-' + part.id + '">'
+        + '<textarea class="output-textarea output-code" id="htmlCodeTA-' + part.id + '" readonly></textarea>'
+        + '</div>'
+        // HTML preview pane — single scrollable render of all 4 sections
+        + '<div class="output-pane active" id="pane-html-preview-' + part.id + '">'
+        // Rich editor toolbar — only visible in edit mode
+        + '<div class="rich-toolbar" id="richToolbar-' + part.id + '" style="display:none">'
+        + '<button class="rtb-btn" onclick="rfmt(\'' + part.id + '\',\'bold\')" title="Bold"><b>B</b></button>'
+        + '<button class="rtb-btn" onclick="rfmt(\'' + part.id + '\',\'underline\')" title="Underline"><u>U</u></button>'
+        + '<button class="rtb-btn" onclick="rfmt(\'' + part.id + '\',\'italic\')" title="Italic"><i>I</i></button>'
+        + '<span class="rtb-sep"></span>'
+        + '<button class="rtb-btn" onclick="rfmt(\'' + part.id + '\',\'insertUnorderedList\')" title="Bullet List">&#8226; UL</button>'
+        + '<button class="rtb-btn" onclick="rfmt(\'' + part.id + '\',\'insertOrderedList\')" title="Numbered List">1. OL</button>'
+        + '<span class="rtb-sep"></span>'
+        + '<button class="rtb-btn" onclick="rfmtBlock(\'' + part.id + '\',\'p\')" title="Paragraph &lt;p&gt;">P</button>'
+        + '<button class="rtb-btn" onclick="rfmtBlock(\'' + part.id + '\',\'h2\')" title="Heading &lt;h2&gt;">H2</button>'
+        + '<button class="rtb-btn" onclick="rfmtBlock(\'' + part.id + '\',\'h3\')" title="Sub-heading &lt;h3&gt;">H3</button>'
+        + '<span class="rtb-sep"></span>'
+        + '<button class="rtb-btn rtb-btn-src" id="srcToggle-' + part.id + '" onclick="toggleHtmlSource(\'' + part.id + '\')" title="Toggle HTML source view">&lt;/&gt; Source</button>'
+        + '</div>'
+        + '<div class="html-preview-pane" id="htmlPreview-' + part.id + '"></div>'
+        // Raw HTML source textarea (shown when source mode active)
+        + '<textarea class="output-textarea output-code html-src-editor" id="htmlSrcTA-' + part.id + '" style="display:none" spellcheck="false" oninput="syncSrcToPreview(\'' + part.id + '\')"></textarea>'
+        + '</div>'
+        // Meta footer
+        + '<div class="output-meta">'
+        + '<span class="meta-tag" style="background:rgba(45,212,191,.12);color:#2dd4bf" id="metaPromptType-' + part.id + '">◎ Default prompts</span>'
+        + '<span class="edited-tag" id="editedTag-' + part.id + '">✎ Edited</span>'
+        + '<span class="meta-date" id="metaDate-' + part.id + '"></span>'
+        + '</div>'
+        + '</div>'
+        // Cost strip
+        + '<div class="cost-strip" id="pcost-' + part.id + '">'
+        + '<span class="cost-item">↑ <span class="cost-val" id="pcin-' + part.id + '">0</span> in</span>'
+        + '<span class="cost-item">↓ <span class="cost-val" id="pcout-' + part.id + '">0</span> out</span>'
+        + '<span class="cost-item">Σ <span class="cost-val" id="pctot-' + part.id + '">0</span> tokens</span>'
+        + '<span class="cost-item">💵 <span class="cost-val green" id="pcusd-' + part.id + '">$0.000000</span></span>'
+        + '</div>'
+        + '</div>'; // close part-result-body
+
+      ra.appendChild(block);
+
+      return block;
+    }
+
+    function toggleCardCollapse(partId) {
+      var block = document.getElementById('result-part-' + partId);
+      var btn = document.getElementById('collapseBtn-' + partId);
+      if (!block) return;
+      var collapsed = block.classList.toggle('collapsed');
+      if (btn) btn.textContent = collapsed ? '▼' : '▲';
+    }
+
+    function togglePromptsPanel(partId) {
+      var panel = document.getElementById('promptsPanel-' + partId);
+      if (panel) panel.classList.toggle('open');
+    }
+
+    /* ── Match a product_done event to a part row (id type-safe + title/SKU fallback) ── */
+    function _matchPartForResult(parts, result) {
+      if (!result) return null;
+      var rid = result.id;
+      if (rid != null && rid !== '') {
+        var byId = parts.find(function (p) { return String(p.id) === String(rid); });
+        if (byId) return byId;
+      }
+      var pnum = (result.part_number || '').trim();
+      var ptitle = (result.product_title || '').trim();
+      if (!pnum && !ptitle) return null;
+      return parts.find(function (p) {
+        return (p.part_number || '').trim() === pnum
+          && (p.product_title || '').trim() === ptitle;
+      }) || null;
+    }
+
+    function _productEventKey(data) {
+      if (!data) return '';
+      if (data.id != null && data.id !== '') return String(data.id);
+      return ((data.product_title || '').trim() + '|' + (data.part_number || '').trim());
+    }
+
+    /* ── Populate card with SSE product_done result — async for typewriter ── */
+    async function populatePartResultCard(result, parts) {
+      var part = _matchPartForResult(parts, result);
+      if (!part) return false;
+      var partId = String(part.id);
+      var block = document.getElementById('result-part-' + partId);
+      if (!block) return false;
+
+      // Hide loading banner
+      var lb = document.getElementById('ploadbanner-' + partId);
+      if (lb) lb.classList.remove('visible');
+
+      if (result.error && (!result.sections || Object.keys(result.sections).length === 0)) {
+        block.classList.remove('is-loading'); block.classList.add('is-error');
+        document.getElementById('pstatus-' + partId).textContent = 'Error';
+        var banner = document.getElementById('pbanner-' + partId);
+        if (banner) { banner.textContent = '⚠ ' + result.error; banner.classList.add('visible'); }
+        return true;
+      }
+
+      // Merge all 4 sections
+      var mergedPlain = '';
+      var mergedHtml = '';
+      var hasCustomPrompt = false;
+      var hasError = false;
+
+      SECTIONS.forEach(function (s, si) {
+        var sdata = (result.sections || {})[s] || {};
+        var label = SECTION_LABELS[s];
+        if (si > 0) mergedPlain += '\n\n' + '─'.repeat(60) + '\n\n';
+        mergedPlain += label.toUpperCase() + '\n' + '─'.repeat(label.length) + '\n\n';
+        if (sdata.error) { mergedPlain += '[Error: ' + sdata.error + ']'; hasError = true; }
+        else { mergedPlain += (sdata.plain_text || ''); }
+        if (si > 0) mergedHtml += '<hr class="section-divider">\n';
+        mergedHtml += '<h2>' + label + '</h2>\n';
+        if (sdata.error) { mergedHtml += '<p style="color:var(--danger)">⚠ Error: ' + esc(sdata.error) + '</p>'; }
+        else { mergedHtml += (sdata.html_text || ''); }
+        mergedHtml += '\n';
+        if (sdata.prompt_type === 'user') hasCustomPrompt = true;
+      });
+
+      // Store per-section record ids
+      block._sectionRecordIds = {};
+      SECTIONS.forEach(function (s) {
+        var sdata = (result.sections || {})[s] || {};
+        if (sdata.record_id) block._sectionRecordIds[s] = sdata.record_id;
+      });
+
+      // Show output pane immediately (blank), then animate
+      var output = document.getElementById('poutput-' + partId);
+      var htmlCodeTA = document.getElementById('htmlCodeTA-' + partId);
+      var htmlPreview = document.getElementById('htmlPreview-' + partId);
+      if (output) output.classList.add('visible');
+
+      // Wire live preview for html code edits
+      if (htmlCodeTA && !htmlCodeTA._lpBound) {
+        htmlCodeTA.addEventListener('input', function () { if (htmlPreview) htmlPreview.innerHTML = htmlCodeTA.value; });
+        htmlCodeTA._lpBound = true;
+      }
+
+      // Meta
+      var metaPromptType = document.getElementById('metaPromptType-' + partId);
+      if (metaPromptType) {
+        if (hasCustomPrompt) { metaPromptType.textContent = '⚡ Custom prompts'; metaPromptType.style.background = 'rgba(245,158,11,.12)'; metaPromptType.style.color = '#f59e0b'; }
+        else { metaPromptType.textContent = '◎ Default prompts'; }
+      }
+      document.getElementById('metaDate-' + partId).textContent = new Date().toLocaleString();
+
+      // Mark status + styling as streaming
+      block.classList.remove('is-loading');
+      block.classList.add('is-streaming');
+      document.getElementById('pstatus-' + partId).textContent = 'Rendering…';
+
+      // Typewriter animation — await so progress counter is accurate
+      await _typewriterAnimate(partId, mergedPlain, mergedHtml);
+
+      // After animation: final state
+      block.classList.remove('is-streaming');
+      if (hasError) { block.classList.add('is-error'); document.getElementById('pstatus-' + partId).textContent = 'Done (with errors)'; }
+      else { block.classList.add('is-done'); document.getElementById('pstatus-' + partId).textContent = 'Done'; }
+
+      // Cost strip
+      if (result.total_tokens) {
+        document.getElementById('pcin-' + partId).textContent = result.total_input_tokens;
+        document.getElementById('pcout-' + partId).textContent = result.total_output_tokens;
+        document.getElementById('pctot-' + partId).textContent = result.total_tokens;
+        document.getElementById('pcusd-' + partId).textContent = '$' + (result.cost_usd || 0).toFixed(6);
+        document.getElementById('pcost-' + partId).classList.add('visible');
+      }
+      return true;
+    }
+
+    /* ── Tab switching (per-part merged output) ── */
+    function switchTab(partId, tab) {
+      var output = document.getElementById('poutput-' + partId); if (!output) return;
+      output.querySelectorAll('.output-tab').forEach(function (t) { t.classList.remove('active'); });
+      output.querySelectorAll('.output-pane').forEach(function (p) { p.classList.remove('active'); });
+      var tabs = Array.from(output.querySelectorAll('.output-tab'));
+      var match = tabs.find(function (t) { return t.getAttribute('onclick') && t.getAttribute('onclick').indexOf("'" + tab + "'") > -1; });
+      if (match) match.classList.add('active');
+      var pane = document.getElementById('pane-' + tab + '-' + partId);
+      if (pane) pane.classList.add('active');
+    }
+
+    /* ── Copy ── */
+    function copyOutput(partId) {
+      var output = document.getElementById('poutput-' + partId); if (!output) return;
+      var activePane = Array.from(output.querySelectorAll('.output-pane')).find(function (p) { return p.classList.contains('active'); });
+      var text = '';
+      if (activePane) {
+        if (activePane.id.indexOf('plain') > -1) { var ta = document.getElementById('plainTA-' + partId); if (ta) text = ta.value; }
+        else if (activePane.id.indexOf('html-code') > -1) { var ta = document.getElementById('htmlCodeTA-' + partId); if (ta) text = ta.value; }
+        else if (activePane.id.indexOf('html-preview') > -1) { var el = document.getElementById('htmlPreview-' + partId); if (el) text = el.innerHTML; }
+      }
+      if (!text) return;
+      navigator.clipboard.writeText(text).then(function () {
+        var btn = document.getElementById('copyBtn-' + partId); var orig = btn.textContent;
+        btn.textContent = '✓ Copied!'; btn.style.color = '#2dd4bf';
+        setTimeout(function () { btn.textContent = orig; btn.style.color = ''; }, 1500);
+      });
+    }
+
+    /* ── Rich editor helpers ── */
+    function rfmt(partId, cmd) {
+      var preview = document.getElementById('htmlPreview-' + partId);
+      if (!preview || preview.getAttribute('contenteditable') !== 'true') return;
+      preview.focus();
+      document.execCommand(cmd, false, null);
+    }
+    function rfmtBlock(partId, tag) {
+      var preview = document.getElementById('htmlPreview-' + partId);
+      if (!preview || preview.getAttribute('contenteditable') !== 'true') return;
+      preview.focus();
+      document.execCommand('formatBlock', false, tag);
+    }
+    function toggleHtmlSource(partId) {
+      var preview = document.getElementById('htmlPreview-' + partId);
+      var srcTA = document.getElementById('htmlSrcTA-' + partId);
+      var toolbar = document.getElementById('richToolbar-' + partId);
+      var srcBtn = document.getElementById('srcToggle-' + partId);
+      if (!preview || !srcTA) return;
+      var srcMode = srcTA.style.display !== 'none';
+      if (!srcMode) {
+        // Switch to source mode: copy innerHTML into textarea
+        srcTA.value = preview.innerHTML;
+        preview.style.display = 'none';
+        srcTA.style.display = 'block';
+        if (srcBtn) srcBtn.classList.add('active');
+      } else {
+        // Switch back to visual mode: apply textarea content to preview
+        preview.innerHTML = srcTA.value;
+        srcTA.style.display = 'none';
+        preview.style.display = '';
+        if (srcBtn) srcBtn.classList.remove('active');
+      }
+    }
+    function syncSrcToPreview(partId) {
+      // real-time: src textarea -> preview div (while src mode is active)
+      var srcTA = document.getElementById('htmlSrcTA-' + partId);
+      var preview = document.getElementById('htmlPreview-' + partId);
+      if (!preview || !srcTA) return;
+      // Don't overwrite preview while it's hidden — just keep in sync on save
+    }
+    /* Ensure source mode is synced back to preview before saving */
+    function _flushSrcMode(partId) {
+      var srcTA = document.getElementById('htmlSrcTA-' + partId);
+      var preview = document.getElementById('htmlPreview-' + partId);
+      var srcBtn = document.getElementById('srcToggle-' + partId);
+      if (!srcTA || srcTA.style.display === 'none') return;
+      // Source is visible: apply to preview and close source mode
+      if (preview) preview.innerHTML = srcTA.value;
+      srcTA.style.display = 'none';
+      preview.style.display = '';
+      if (srcBtn) srcBtn.classList.remove('active');
+    }
+
+    /* ── Edit mode ── */
+    function toggleEdit(partId) {
+      var editBtn = document.getElementById('editBtn-' + partId);
+      if (!editBtn) return;
+      var isActive = editBtn.classList.contains('active');
+      if (isActive) { commitEdit_index(partId); return; }
+
+      var saveBtn = document.getElementById('saveBtn-' + partId);
+      var discardBtn = document.getElementById('discardBtn-' + partId);
+      var indicator = document.getElementById('editIndicator-' + partId);
+      var plainTA = document.getElementById('plainTA-' + partId);
+      var htmlTA = document.getElementById('htmlCodeTA-' + partId);
+      var preview = document.getElementById('htmlPreview-' + partId);
+      var toolbar = document.getElementById('richToolbar-' + partId);
+
+      // Backup current state (html from the live preview div)
+      var currentHtml = preview ? preview.innerHTML : '';
+      _editBackup[partId] = { plain: plainTA ? plainTA.value : '', html: currentHtml };
+
+      // Make preview contenteditable (rich WYSIWYG)
+      if (preview) { preview.setAttribute('contenteditable', 'true'); preview.classList.add('editable'); }
+      if (toolbar) toolbar.style.display = '';
+
+      editBtn.classList.add('active'); editBtn.textContent = '✎ Editing';
+      if (saveBtn) saveBtn.classList.add('visible');
+      if (discardBtn) discardBtn.classList.add('visible');
+      if (indicator) indicator.classList.add('visible');
+
+      // Switch to HTML Preview pane so the rich editor is visible
+      switchTab(partId, 'html-preview');
+      if (preview) preview.focus();
+    }
+
+    function commitEdit_index(partId) {
+      var editBtn = document.getElementById('editBtn-' + partId);
+      var saveBtn = document.getElementById('saveBtn-' + partId);
+      var discardBtn = document.getElementById('discardBtn-' + partId);
+      var indicator = document.getElementById('editIndicator-' + partId);
+      var preview = document.getElementById('htmlPreview-' + partId);
+      var toolbar = document.getElementById('richToolbar-' + partId);
+      var htmlTA = document.getElementById('htmlCodeTA-' + partId);
+      if (preview) { preview.removeAttribute('contenteditable'); preview.classList.remove('editable'); }
+      if (toolbar) toolbar.style.display = 'none';
+      // Sync updated HTML back to htmlCodeTA for consistency
+      if (htmlTA && preview) htmlTA.value = preview.innerHTML;
+      if (editBtn) { editBtn.classList.remove('active'); editBtn.textContent = '✎ Edit'; }
+      if (saveBtn) saveBtn.classList.remove('visible');
+      if (discardBtn) discardBtn.classList.remove('visible');
+      if (indicator) indicator.classList.remove('visible');
+      // Ensure source editor is closed
+      var srcTA = document.getElementById('htmlSrcTA-' + partId);
+      if (srcTA) srcTA.style.display = 'none';
+      if (preview) preview.style.display = '';
+    }
+
+    /* ── Extract one section plain chunk from merged plain textarea ─────────── */
+    function extractPlainChunk(plainFull, label) {
+      var SEP = '─'.repeat(60);
+      var needle = label.toUpperCase() + '\n';
+      var idx = plainFull.indexOf(needle);
+      if (idx === -1) return '';
+      var afterLabel = idx + needle.length;
+      var nl1 = plainFull.indexOf('\n', afterLabel);
+      var start = nl1 > -1 ? nl1 + 1 : afterLabel;
+      var sepIdx = plainFull.indexOf(SEP, start);
+      return (sepIdx > -1 ? plainFull.slice(start, sepIdx) : plainFull.slice(start)).trim();
+    }
+
+    /* ── Extract one section HTML chunk from merged HTML textarea ────────────── */
+    function extractHtmlChunk(htmlFull, label) {
+      var open = '<h2>' + label + '</h2>';
+      var h2Start = htmlFull.indexOf(open);
+      if (h2Start === -1) return '';
+      var contentStart = h2Start + open.length;
+      var nextHr = htmlFull.indexOf('<hr class="section-divider">', contentStart);
+      var nextH2 = htmlFull.indexOf('<h2>', contentStart);
+      var end = -1;
+      if (nextHr > -1 && nextH2 > -1) end = Math.min(nextHr, nextH2);
+      else if (nextHr > -1) end = nextHr;
+      else if (nextH2 > -1) end = nextH2;
+      return (end > -1 ? htmlFull.slice(contentStart, end) : htmlFull.slice(contentStart)).trim();
+    }
+
+    /* ── Convert plain text chunk → basic HTML ───────────────────────────────── */
+    function plainChunkToHtml(chunk) {
+      if (!chunk) return '';
+      var html = '', listType = null;
+      function closeList() { if (listType) { html += '</' + listType + '>\n'; listType = null; } }
+      chunk.split('\n').forEach(function (line) {
+        var l = line.trim();
+        if (!l) { closeList(); return; }
+        if (/^[-•*]\s+/.test(l)) {
+          if (listType === 'ol') closeList();
+          if (!listType) { html += '<ul>\n'; listType = 'ul'; }
+          html += '  <li>' + escHtml(l.replace(/^[-•*]\s+/, '')) + '</li>\n';
+        } else if (/^\d+\.\s+/.test(l)) {
+          if (listType === 'ul') closeList();
+          if (!listType) { html += '<ol>\n'; listType = 'ol'; }
+          html += '  <li>' + escHtml(l.replace(/^\d+\.\s+/, '')) + '</li>\n';
+        } else {
+          closeList();
+          html += '<p>' + escHtml(l) + '</p>\n';
+        }
+      });
+      closeList();
+      return html.trim();
+    }
+
+    /* ── Rebuild full merged HTML from edited plain text ─────────────────────── */
+    function rebuildHtmlFromPlain(plainFull) {
+      var out = '';
+      SECTIONS.forEach(function (s, si) {
+        var label = SECTION_LABELS[s];
+        var chunk = extractPlainChunk(plainFull, label);
+        if (si > 0) out += '<hr class="section-divider">\n';
+        out += '<h2>' + label + '</h2>\n' + plainChunkToHtml(chunk) + '\n';
+      });
+      return out;
+    }
+
+    function escHtml(s) { if (!s) return ''; return String(s).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;'); }
+
+    async function saveEdits(partId) {
+      var saveBtn = document.getElementById('saveBtn-' + partId);
+      var plainTA = document.getElementById('plainTA-' + partId);
+      var htmlTA = document.getElementById('htmlCodeTA-' + partId);
+      var htmlPreview = document.getElementById('htmlPreview-' + partId);
+      var editedTag = document.getElementById('editedTag-' + partId);
+      var block = document.getElementById('result-part-' + partId);
+      var recordIds = block ? block._sectionRecordIds : {};
+
+      if (!recordIds || Object.keys(recordIds).length === 0) {
+        alert('Cannot save: no record IDs found. Please regenerate first.'); return;
+      }
+      if (saveBtn) { saveBtn.disabled = true; saveBtn.textContent = '⏳ Saving…'; }
+
+      // Flush any open source-mode editor first
+      _flushSrcMode(partId);
+
+      // Get the edited HTML directly from the contenteditable preview div
+      var htmlFull = htmlPreview ? htmlPreview.innerHTML : (htmlTA ? htmlTA.value : '');
+      // Sync htmlCodeTA for consistency
+      if (htmlTA) htmlTA.value = htmlFull;
+
+      // Build per-section save payload from the merged HTML
+      var sectionsPayload = {};
+      SECTIONS.forEach(function (s) {
+        var rid = recordIds[s];
+        if (!rid) return;
+        var label = SECTION_LABELS[s];
+        var plainChunk = plainTA ? extractPlainChunk(plainTA.value, label) : '';
+        var htmlChunk = extractHtmlChunk(htmlFull, label);
+        sectionsPayload[s] = {
+          record_id: rid,
+          plain_text: plainChunk,
+          html_text: htmlChunk
+        };
+      });
+
+      try {
+        var res = await fetch(`${API_BASE_URL}/api/update-bulk`, {
+          method: 'PUT', headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ sections: sectionsPayload })
+        });
+        var data = await res.json();
+        if (!res.ok || !data.success) throw new Error((data.errors || []).join('; ') || 'Save failed.');
+        commitEdit_index(partId);
+        if (editedTag) editedTag.classList.add('visible');
+        var metaDate = document.getElementById('metaDate-' + partId);
+        if (metaDate) metaDate.textContent = data.updated_at + ' (edited)';
+        if (data.errors && data.errors.length) console.warn('Partial save errors:', data.errors);
+      } catch (err) { alert('Save failed: ' + err.message); }
+      finally { if (saveBtn) { saveBtn.disabled = false; saveBtn.textContent = '✓ Save'; } }
+    }
+
+    function discardEdits(partId) {
+      var backup = _editBackup[partId];
+      if (backup) {
+        var pt = document.getElementById('plainTA-' + partId); if (pt) pt.value = backup.plain;
+        var ht = document.getElementById('htmlCodeTA-' + partId); if (ht) ht.value = backup.html;
+        var prev = document.getElementById('htmlPreview-' + partId);
+        if (prev) prev.innerHTML = backup.html;
+>>>>>>> added repaior image pages
+      }
+      commitEdit_index(partId);
+    }
+
+<<<<<<< HEAD
       async function _processShopifyCsvRows(rows, filename) {
         var status = document.getElementById("shopifyFetchStatus");
         var pill = document.getElementById("shopifyFetchedPill");
@@ -5156,3 +8904,292 @@
     </script>
   </body>
 </html>
+=======
+    /* ── Stop / Cancel generation ── */
+    async function stopGeneration() {
+      if (!_activeJobId) return;
+      var stopBtn = document.getElementById('stopGenBtn');
+      var queueStatus = document.getElementById('queueStatus');
+      if (stopBtn) { stopBtn.disabled = true; stopBtn.innerHTML = '<svg viewBox="0 0 24 24" fill="currentColor" width="13" height="13"><circle cx="12" cy="12" r="10" stroke="currentColor" stroke-width="2" fill="none" stroke-dasharray="31.4"><animateTransform attributeName="transform" type="rotate" from="0 12 12" to="360 12 12" dur=".8s" repeatCount="indefinite"/></circle></svg> Stopping…'; }
+      try {
+        var res = await fetch(`${API_BASE_URL}/api/jobs/${_activeJobId}/cancel`, { method: 'POST' });
+        var data = await res.json();
+        if (res.ok) {
+          if (queueStatus) { queueStatus.textContent = '⏹ Stopping — finishing current batch…'; }
+        } else {
+          if (queueStatus) { queueStatus.textContent = '⚠ ' + (data.error || 'Could not cancel job'); }
+        }
+      } catch (err) {
+        if (queueStatus) { queueStatus.textContent = '⚠ Cancel request failed: ' + err.message; }
+      } finally {
+        if (stopBtn) { stopBtn.disabled = false; }
+      }
+    }
+
+    function esc(s) { if (!s) return ''; return String(s).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;'); }
+    function closeModal() { document.getElementById('modalOverlay').classList.remove('active'); }
+
+    /* ── Sidebar collapse ── */
+    (function () {
+      var saved = localStorage.getItem('sidebarCollapsed') === '1';
+      if (saved) {
+        document.getElementById('sidebar').classList.add('collapsed');
+        document.querySelector('.main').classList.add('collapsed');
+      }
+    })();
+    function toggleSidebar() {
+      var sb = document.getElementById('sidebar');
+      var mn = document.querySelector('.main');
+      var isCollapsed = sb.classList.toggle('collapsed');
+      mn.classList.toggle('collapsed', isCollapsed);
+      localStorage.setItem('sidebarCollapsed', isCollapsed ? '1' : '0');
+    }
+
+    /* ══════════════════════════════════════════════════════════════════════════
+       SERVER-SIDE JOB RESUMPTION
+       Persists the active job_id to localStorage so that if the user closes the
+       tab, refreshes, or navigates away, the generation keeps running on the
+       server and the page reconnects on return to show live progress.
+       ══════════════════════════════════════════════════════════════════════════ */
+
+    var _JOB_KEY = 'grp_active_job';
+
+    function _saveActiveJob(jobId, batchId, parts, sectionsConfig) {
+      try {
+        localStorage.setItem(_JOB_KEY, JSON.stringify({
+          jobId: jobId,
+          batchId: batchId || '',
+          parts: parts,
+          sectionsConfig: sectionsConfig,
+          savedAt: Date.now()
+        }));
+      } catch (e) { }
+    }
+
+    function _loadActiveJob() {
+      try {
+        var raw = localStorage.getItem(_JOB_KEY);
+        if (!raw) return null;
+        var d = JSON.parse(raw);
+        // Discard jobs older than 2 hours
+        if (Date.now() - (d.savedAt || 0) > 7200000) { _clearActiveJob(); return null; }
+        return d;
+      } catch (e) { return null; }
+    }
+
+    function _clearActiveJob() {
+      try { localStorage.removeItem(_JOB_KEY); } catch (e) { }
+    }
+
+    /* ── Resume banner ── */
+    function _showResumeBanner(jobId, totalProducts, doneProducts) {
+      var banner = document.getElementById('resumeBanner');
+      if (!banner) return;
+      var pct = totalProducts > 0 ? Math.round((doneProducts / totalProducts) * 100) : 0;
+      banner.querySelector('#resumeJobId').textContent = jobId.slice(0, 8) + '…';
+      banner.querySelector('#resumeProgress').textContent = doneProducts + ' / ' + totalProducts + ' done (' + pct + '%)';
+      banner.style.display = 'flex';
+    }
+
+    function _hideResumeBanner() {
+      var banner = document.getElementById('resumeBanner');
+      if (banner) banner.style.display = 'none';
+    }
+
+    function dismissResume() {
+      _clearActiveJob();
+      _hideResumeBanner();
+    }
+
+    /**
+     * Connects to /api/jobs/<jobId>/stream via EventSource and drives the UI.
+     * A parallel poll every 2.5s fetches missed events from the DB so the UI
+     * keeps updating even when SSE is buffered or dropped (ngrok / Passenger).
+     * Returns a Promise that resolves when the job reaches done/error.
+     * Callbacks: onBatchStart, onProductDone, onBatchEnd (all optional)
+     */
+    function _connectJobStream(jobId, parts, callbacks) {
+      callbacks = callbacks || {};
+      return new Promise(function (resolve, reject) {
+        var lastSeq = 0;
+        var renderedIds = {};
+        var batchEnded = false;
+        var finished = false;
+        var es = null;
+
+        function finishJob(success, errMsg) {
+          if (finished) return;
+          finished = true;
+          clearInterval(pollTimer);
+          if (es) { es.close(); es = null; }
+          if (success) resolve();
+          else reject(new Error(errMsg || 'Job failed on server'));
+        }
+
+        function handleEvent(type, data, seq) {
+          if (seq) lastSeq = Math.max(lastSeq, seq);
+          if (type === 'batch_start') {
+            try { if (callbacks.onBatchStart) callbacks.onBatchStart(data); } catch (ex) { }
+          } else if (type === 'product_done') {
+            var key = _productEventKey(data);
+            if (key && renderedIds[key]) return;
+            populatePartResultCard(data, parts).then(function (ok) {
+              if (!ok) return;
+              if (key) renderedIds[key] = true;
+              try { if (callbacks.onProductDone) callbacks.onProductDone(data); } catch (ex) { }
+            });
+          } else if (type === 'batch_end') {
+            if (batchEnded) return;
+            batchEnded = true;
+            try { if (callbacks.onBatchEnd) callbacks.onBatchEnd(data); } catch (ex) { }
+            finishJob(true);
+          }
+        }
+
+        function fetchMissedEvents() {
+          return fetch(`${API_BASE_URL}/api/jobs/${jobId}/events?after=${lastSeq}`)
+            .then(function (r) { return r.json(); })
+            .then(function (d) {
+              (d.events || []).forEach(function (ev) {
+                handleEvent(ev.type, ev.data, ev.seq);
+              });
+              return d;
+            })
+            .catch(function () { return null; });
+        }
+
+        function finalizeIfDone(st) {
+          if (!st || finished) return;
+          if (st.status === 'error') {
+            finishJob(false, st.error_message);
+          } else if (st.status === 'done') {
+            fetchMissedEvents().then(function () {
+              if (!batchEnded && callbacks.onBatchEnd) {
+                batchEnded = true;
+                try { callbacks.onBatchEnd({}); } catch (ex) { }
+              }
+              finishJob(true);
+            });
+          }
+        }
+
+        var pollTimer = setInterval(function () {
+          fetchMissedEvents().then(function () {
+            if (finished) return;
+            return fetch(`${API_BASE_URL}/api/jobs/${jobId}/status`)
+              .then(function (r) { return r.json(); })
+              .then(finalizeIfDone);
+          });
+        }, 2500);
+
+        es = new EventSource('/api/jobs/' + jobId + '/stream');
+
+        es.addEventListener('batch_start', function (e) {
+          try {
+            handleEvent('batch_start', JSON.parse(e.data), parseInt(e.lastEventId || 0, 10));
+          } catch (ex) { }
+        });
+
+        es.addEventListener('product_done', function (e) {
+          try {
+            handleEvent('product_done', JSON.parse(e.data), parseInt(e.lastEventId || 0, 10));
+          } catch (ex) { }
+        });
+
+        es.addEventListener('batch_end', function (e) {
+          try {
+            handleEvent('batch_end', JSON.parse(e.data), parseInt(e.lastEventId || 0, 10));
+          } catch (ex) { }
+        });
+
+        es.onerror = function () {
+          fetch(`${API_BASE_URL}/api/jobs/${jobId}/status`)
+            .then(function (r) { return r.json(); })
+            .then(finalizeIfDone)
+            .catch(function () { });
+        };
+      });
+    }
+
+    /* ── On page load: check for an in-progress job and reconnect ── */
+    (function checkForActiveJob() {
+      var saved = _loadActiveJob();
+      if (!saved || !saved.jobId) return;
+
+      var jobId = saved.jobId;
+      var savedParts = saved.parts || [];
+
+      // Poll status first to decide what to show
+      fetch(`${API_BASE_URL}/api/jobs/${jobId}/status`)
+        .then(function (r) { return r.json(); })
+        .then(function (status) {
+          if (!status || status.error) { _clearActiveJob(); return; }
+
+          // Rebuild skeleton cards for all parts from saved data
+          var ra = document.getElementById('resultsArea');
+          if (ra && savedParts.length) {
+            ra.innerHTML = '';
+            savedParts.forEach(function (part) { createPartResultCard(part, {}); });
+          }
+
+          if (status.status === 'done') {
+            _connectJobStream(jobId, savedParts, {}).then(function () {
+              _clearActiveJob();
+              _hideResumeBanner();
+            });
+            return;
+          }
+
+          if (status.status === 'error') {
+            _clearActiveJob();
+            return;
+          }
+
+          // Job is still running (pending or running) — show resume banner
+          _showResumeBanner(jobId, status.total_products, status.done_products);
+
+          // Show progress UI
+          var progressWrap = document.getElementById('progressWrap');
+          var progressFill = document.getElementById('progressFill');
+          var queueStatus = document.getElementById('queueStatus');
+          if (progressWrap) progressWrap.classList.add('visible');
+          if (queueStatus) queueStatus.classList.add('visible');
+          var pct = status.total_products > 0
+            ? Math.round((status.done_products / status.total_products) * 75)
+            : 8;
+          if (progressFill) progressFill.style.width = Math.max(pct, 8) + '%';
+          if (queueStatus) queueStatus.textContent = status.done_products + ' / ' + status.total_products + ' done…';
+
+          // Reconnect the stream
+          var doneCount = 0;
+          _connectJobStream(jobId, savedParts, {
+            onProductDone: function (evt) {
+              doneCount++;
+              var pct2 = 15 + Math.round((doneCount / status.total_products) * 75);
+              if (progressFill) progressFill.style.width = pct2 + '%';
+              if (queueStatus) queueStatus.textContent = doneCount + ' / ' + status.total_products + ' done…';
+              _showResumeBanner(jobId, status.total_products, doneCount);
+            },
+            onBatchEnd: function () {
+              if (progressFill) progressFill.style.width = '100%';
+              if (queueStatus) queueStatus.textContent = '✓ All ' + status.total_products + ' part' + (status.total_products !== 1 ? 's' : '') + ' done';
+              _clearActiveJob();
+              _hideResumeBanner();
+              setTimeout(function () {
+                if (progressWrap) progressWrap.classList.remove('visible');
+                if (queueStatus) queueStatus.classList.remove('visible');
+              }, 3500);
+            }
+          }).catch(function (err) {
+            if (queueStatus) queueStatus.textContent = '✗ ' + err.message;
+            _clearActiveJob();
+            _hideResumeBanner();
+          });
+        })
+        .catch(function () { _clearActiveJob(); });
+    })();
+  </script>
+</body>
+
+</html>
+>>>>>>> added repaior image pages

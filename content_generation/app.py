@@ -9,6 +9,7 @@ Importing this module registers its routes on the shared Flask `app`.
 from shared import (
     app, db, login_required, reviewer_required, _get_active_shop, _shopify_base_url, _utc_now,
     GeneratedContent, ProductHistory, BatchHistory, ReviewStatus, GenerationJob, JobEvent, ShopConfig,
+    RepairImageGeneration,
     SHOPIFY_METAFIELD_TYPES, SEO_SECTIONS, COST_PER_INPUT_TOKEN, COST_PER_OUTPUT_TOKEN,
     MAX_FORMAT_WORKERS, DEFAULT_PROMPTS, SECTION_LABELS, SECTIONS,
     _GQL_PRODUCT, _GQL_PRODUCT_BY_SKU, _GQL_PRODUCT_UPDATE, _GQL_METAFIELDS_SET, _GQL_PRODUCT_BY_HANDLE,
@@ -1868,7 +1869,11 @@ def _run_generation_job(job_id: str, batch_id: str, products: list, active_secti
                 grand_total_in  += total_in
                 grand_total_out += total_out
                 completed_client_ids.add(client_id)
+<<<<<<< HEAD
                 done_count      = len(completed_client_ids) 
+=======
+                done_count      = len(completed_client_ids)
+>>>>>>> added repaior image pages
 
                 event_payload = {
                     'id': client_id,
@@ -2840,8 +2845,6 @@ def backfill_shop_ids():
                 gj.shop_id = sid
                 updated_gj += 1
 
-    db.session.commit()
-
     return jsonify({
         'success': True,
         'updated': {
@@ -2852,3 +2855,807 @@ def backfill_shop_ids():
             'generation_job': updated_gj,
         }
     })
+
+
+# ─── REPAIR IMAGE GENERATION & REVIEW ROUTES ───────────────────────────────
+
+@app.route('/generate-repair')
+@login_required
+def generate_repair_page():
+    return render_template('generate_repair.html', BASE_URL=BASE_URL)
+
+
+@app.route('/review-repair')
+@reviewer_required
+def review_repair_page():
+    return render_template('review_repair.html', BASE_URL=BASE_URL)
+
+
+def _find_partselect_url(part_number, brand='', product_title='', shopify_url=''):
+    if shopify_url and ('partselect.com' in shopify_url.lower() or 'partselect.ca' in shopify_url.lower()):
+        logger.info("[PARTSELECT-SEARCH] Direct PartSelect URL provided: %s", shopify_url)
+        return shopify_url
+
+    if not part_number:
+        return None
+
+    queries = [
+        f"site:partselect.com {part_number}",
+        f"partselect.com {part_number}",
+        f"{brand} {part_number} partselect".strip()
+    ]
+    pattern = re.compile(r"partselect\.(?:com|ca)/PS\d+-", re.I)
+
+    try:
+        from ddgs import DDGS
+        with DDGS() as ddgs:
+            for q in queries:
+                try:
+                    logger.info("[PARTSELECT-SEARCH] Searching DDG for: '%s'", q)
+                    results = list(ddgs.text(q, max_results=6))
+                    for r in results:
+                        href = r.get('href', '')
+                        if pattern.search(href):
+                            logger.info("[PARTSELECT-SEARCH] Found PartSelect product URL: %s", href)
+                            return href
+                except Exception as e:
+                    logger.warning("[PARTSELECT-SEARCH] DDG query '%s' error: %s", q, e)
+                    continue
+    except Exception as e:
+        logger.warning("[PARTSELECT-SEARCH] DDGS module search failed: %s", e)
+
+    return None
+
+
+def _scrape_partselect_repair_data(url):
+    logger.info("[PARTSELECT-SCRAPER] Scraping PartSelect page: %s", url)
+    difficulty = None
+    duration = None
+    try:
+        from playwright.sync_api import sync_playwright
+        from bs4 import BeautifulSoup
+
+        with sync_playwright() as p:
+            browser = p.chromium.launch(headless=True)
+            context = browser.new_context(
+                viewport={'width': 1400, 'height': 900},
+                user_agent='Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/137.0.0.0 Safari/537.36'
+            )
+            page = context.new_page()
+            page.add_init_script("Object.defineProperty(navigator,'webdriver',{get:()=>undefined});")
+            page.goto(url, wait_until='domcontentloaded', timeout=30000)
+            try:
+                page.wait_for_selector('text=Difficulty', timeout=5000)
+            except Exception:
+                page.wait_for_timeout(3000)
+            html = page.content()
+            browser.close()
+
+        soup = BeautifulSoup(html, 'html.parser')
+        text = soup.get_text(' ', strip=True)
+
+        review_marker = re.search(r'\d+\s+Reviews?', text)
+        price_match_idx = text.find('Price Match', review_marker.end()) if review_marker else -1
+
+        if review_marker and price_match_idx != -1:
+            badge_text = text[review_marker.end():price_match_idx]
+        else:
+            badge_text = text
+
+        levels = ['Very Difficult', 'Really Easy', 'Very Easy', 'Difficult', 'Medium', 'Easy']
+        for level in levels:
+            if level in badge_text:
+                difficulty = level
+                break
+
+        duration_pattern = re.compile(
+            r'(Less than \d+\s*(?:mins?|minutes?|hours?|hrs?)'
+            r'|\d+\s*-\s*\d+\s*(?:mins?|minutes?|hours?|hrs?)'
+            r'|\d+\s*(?:mins?|minutes?|hours?|hrs?))',
+            re.I
+        )
+        match = duration_pattern.search(badge_text)
+        if match:
+            duration = match.group(1)
+
+    except Exception as e:
+        logger.error("[PARTSELECT-SCRAPER] Error scraping %s: %s", url, e)
+
+    return difficulty, duration
+
+
+def _generate_repair_details_from_ai(product_title, part_number, brand='', appliance_type='', part_type='', shopify_url=''):
+    ps_difficulty = None
+    ps_duration = None
+    ps_url = _find_partselect_url(part_number, brand, product_title, shopify_url)
+    if ps_url:
+        ps_difficulty, ps_duration = _scrape_partselect_repair_data(ps_url)
+
+    if ps_difficulty and ps_duration:
+        logger.info("[PARTSELECT-SCRAPER] [SOURCE: REAL PARTSELECT SCRAPED DATA] Difficulty: '%s', Repair Time: '%s' from URL: %s", ps_difficulty, ps_duration, ps_url)
+    else:
+        logger.info("[PARTSELECT-SCRAPER] PartSelect scraped badge data not found for '%s'. Fallback to AI.", part_number)
+
+    client = get_openai_client()
+    logger.info("[REPAIR-AI] Requesting features & safety details from OpenAI for product='%s', part_number='%s'...", product_title, part_number)
+    prompt = f"""You are an expert electronics and appliance repair technician.
+
+Given the following appliance part:
+- Title: {product_title}
+- Part Number: {part_number}
+- Brand: {brand}
+- Appliance Type: {appliance_type}
+- Part Type: {part_type}
+
+Provide accurate repair details, difficulty, safety tip, and 4 key features in JSON format matching this exact schema:
+
+{{
+  "product_name": "{product_title}",
+  "part_number": "{part_number}",
+  "repair_difficulty": "{ps_difficulty.upper() if ps_difficulty else 'EASY'}",
+  "estimated_time": "{ps_duration if ps_duration else '15–30 Minutes'}",
+  "diy": "YES",
+  "safety_tip": "A single clear safety warning (15-25 words) for replacing this component safely (e.g. disconnect power, wear gloves, discharge capacitors).",
+  "features": [
+    {{
+      "title": "OEM QUALITY",
+      "description": "Short 1-sentence bullet point describing OEM quality."
+    }},
+    {{
+      "title": "RELIABLE PERFORMANCE",
+      "description": "Short 1-sentence bullet point describing reliable performance."
+    }},
+    {{
+      "title": "DURABLE CONSTRUCTION",
+      "description": "Short 1-sentence bullet point describing durable construction."
+    }},
+    {{
+      "title": "PERFECT FIT",
+      "description": "Short 1-sentence bullet point describing perfect fit and compatibility."
+    }}
+  ]
+}}
+
+Return ONLY valid raw JSON.
+"""
+    try:
+        response = client.chat.completions.create(
+            model=model,
+            messages=[{"role": "user", "content": prompt}],
+            response_format={"type": "json_object"},
+            temperature=0.4,
+            max_tokens=500
+        )
+        content = response.choices[0].message.content.strip()
+        logger.info("[REPAIR-AI] Raw OpenAI JSON Response for '%s': %s", part_number, content)
+        data = json.loads(content)
+
+        if ps_duration:
+            repair_time = ps_duration
+            logger.info("[REPAIR-AI] [SOURCE: REAL PARTSELECT SCRAPED] repair_time = '%s'", repair_time)
+        else:
+            ai_estimated_time = data.get('estimated_time') or data.get('repair_time')
+            if ai_estimated_time:
+                repair_time = str(ai_estimated_time).strip()
+                logger.info("[REPAIR-AI] [SOURCE: AI GENERATED FALLBACK] repair_time = '%s'", repair_time)
+            else:
+                repair_time = '15–30 Minutes'
+                logger.warning("[REPAIR-AI] [SOURCE: SCRIPT FALLBACK DEFAULT] repair_time missing! Defaulting to '%s'", repair_time)
+
+        if ps_difficulty:
+            repair_difficulty = ps_difficulty.upper()
+            logger.info("[REPAIR-AI] [SOURCE: REAL PARTSELECT SCRAPED] repair_difficulty = '%s'", repair_difficulty)
+        else:
+            ai_difficulty = data.get('repair_difficulty')
+            if ai_difficulty:
+                repair_difficulty = str(ai_difficulty).strip().upper()
+                logger.info("[REPAIR-AI] [SOURCE: AI GENERATED FALLBACK] repair_difficulty = '%s'", repair_difficulty)
+            else:
+                repair_difficulty = 'EASY'
+                logger.warning("[REPAIR-AI] [SOURCE: SCRIPT FALLBACK DEFAULT] repair_difficulty missing! Defaulting to '%s'", repair_difficulty)
+
+        ai_safety = data.get('safety_tip')
+        if ai_safety:
+            safety_tip = str(ai_safety).strip()
+            logger.info("[REPAIR-AI] [SOURCE: AI GENERATED] safety_tip = '%s'", safety_tip)
+        else:
+            safety_tip = 'Always disconnect power supply and discharge capacitors before starting installation.'
+            logger.warning("[REPAIR-AI] [SOURCE: SCRIPT FALLBACK DEFAULT] safety_tip missing! Defaulting to script fallback.")
+
+        features_list = data.get('features', [])
+        feat_map = {}
+        if isinstance(features_list, list):
+            for f in features_list:
+                if isinstance(f, dict) and f.get('title'):
+                    t = f['title'].strip().upper()
+                    feat_map[t] = f.get('description', '')
+
+        oem = feat_map.get('OEM QUALITY') or data.get('oem_quality') or 'Build to meet original equipment standards'
+        reliable = feat_map.get('RELIABLE PERFORMANCE') or data.get('reliable_performance') or 'Featuring a simple design, you can easily install this part.'
+        durable = feat_map.get('DURABLE CONSTRUCTION') or data.get('durable_construction') or 'Built with robust materials, it offers excellent resistance to wear.'
+        fit = feat_map.get('PERFECT FIT') or data.get('perfect_fit') or 'Tailored to fit your specific model, this part integrates seamlessly.'
+
+        logger.info("[REPAIR-AI] Key Features:\n  - OEM QUALITY: %s\n  - RELIABLE PERFORMANCE: %s\n  - DURABLE CONSTRUCTION: %s\n  - PERFECT FIT: %s", oem, reliable, durable, fit)
+
+        return {
+            'repair_time': repair_time,
+            'repair_difficulty': repair_difficulty,
+            'oem_quality': oem,
+            'reliable_performance': reliable,
+            'durable_construction': durable,
+            'perfect_fit': fit,
+            'safety_tip': safety_tip,
+            'diy': data.get('diy', 'YES'),
+            'features': features_list if features_list else [
+                {"title": "OEM QUALITY", "description": oem},
+                {"title": "RELIABLE PERFORMANCE", "description": reliable},
+                {"title": "DURABLE CONSTRUCTION", "description": durable},
+                {"title": "PERFECT FIT", "description": fit}
+            ]
+        }
+    except Exception as e:
+        logger.error("[REPAIR-AI] [SOURCE: SCRIPT FALLBACK EXECUTED] Error generating repair details for part '%s': %s. Using scraped or default values!", part_number, e)
+        final_diff = ps_difficulty.upper() if ps_difficulty else 'EASY'
+        final_dur = ps_duration if ps_duration else '15–30 Minutes'
+        return {
+            'repair_time': final_dur,
+            'repair_difficulty': final_diff,
+            'oem_quality': 'Build to meet original equipment standards',
+            'reliable_performance': 'Featuring a simple design, you can easily install this part.',
+            'durable_construction': 'Built with robust materials, it offers excellent resistance to wear.',
+            'perfect_fit': 'Tailored to fit your specific model, this part integrates seamlessly.',
+            'safety_tip': 'Always disconnect power supply and discharge capacitors before starting installation.',
+            'diy': 'YES',
+            'features': [
+                {"title": "OEM QUALITY", "description": "Build to meet original equipment standards"},
+                {"title": "RELIABLE PERFORMANCE", "description": "Featuring a simple design, you can easily install this part."},
+                {"title": "DURABLE CONSTRUCTION", "description": "Built with robust materials, it offers excellent resistance to wear."},
+                {"title": "PERFECT FIT", "description": "Tailored to fit your specific model, this part integrates seamlessly."}
+            ]
+        }
+
+
+@app.route('/api/generate-repair', methods=['POST'])
+@login_required
+def generate_repair_api():
+    data = request.json or {}
+    products = data.get('products', [])
+    shop_id = data.get('shop_id') or None
+    
+    if not products or not isinstance(products, list):
+        return jsonify({'error': 'Products list is required.'}), 400
+
+    active_shop = _get_active_shop()
+    if not shop_id and active_shop:
+        shop_id = active_shop.id
+
+    batch_id = str(uuid.uuid4())
+    results = []
+
+    for item in products:
+        p_title = (item.get('product_title') or '').strip()
+        p_number = (item.get('part_number') or '').strip()
+        if not p_title or not p_number:
+            continue
+
+        brand = (item.get('brand') or '').strip()
+        appliance_type = (item.get('appliance_type') or '').strip()
+        part_type = (item.get('part_type') or '').strip()
+        shopify_url = (item.get('shopify_url') or '').strip()
+        product_image_url = (item.get('product_image_url') or '').strip()
+
+        if not product_image_url and shopify_url:
+            product_image_url = fetch_shopify_image_by_product_url(shopify_url)
+        if not product_image_url and p_number:
+            product_image_url = fetch_shopify_image_by_sku(p_number)
+
+        ai_details = _generate_repair_details_from_ai(p_title, p_number, brand, appliance_type, part_type, shopify_url)
+
+        rec = RepairImageGeneration(
+            batch_id=batch_id,
+            shop_id=shop_id,
+            product_title=p_title,
+            part_number=p_number,
+            brand=brand,
+            appliance_type=appliance_type,
+            part_type=part_type,
+            shopify_url=shopify_url,
+            product_image_url=product_image_url,
+            repair_time=ai_details['repair_time'],
+            repair_difficulty=ai_details['repair_difficulty'],
+            oem_quality=ai_details['oem_quality'],
+            reliable_performance=ai_details['reliable_performance'],
+            durable_construction=ai_details['durable_construction'],
+            perfect_fit=ai_details['perfect_fit'],
+            safety_tip=ai_details['safety_tip'],
+            review_status='pending'
+        )
+        db.session.add(rec)
+        db.session.commit()
+
+        results.append({
+            'id': rec.id,
+            'generation_id': rec.generation_id,
+            'batch_id': rec.batch_id,
+            'product_title': rec.product_title,
+            'part_number': rec.part_number,
+            'brand': rec.brand,
+            'appliance_type': rec.appliance_type,
+            'part_type': rec.part_type,
+            'shopify_url': rec.shopify_url,
+            'product_image_url': rec.product_image_url,
+            'repair_time': rec.repair_time,
+            'repair_difficulty': rec.repair_difficulty,
+            'oem_quality': rec.oem_quality,
+            'reliable_performance': rec.reliable_performance,
+            'durable_construction': rec.durable_construction,
+            'perfect_fit': rec.perfect_fit,
+            'safety_tip': rec.safety_tip,
+            'review_status': rec.review_status,
+            'created_at': rec.created_at.strftime('%Y-%m-%d %H:%M:%S') if rec.created_at else ''
+        })
+
+    return jsonify({
+        'success': True,
+        'batch_id': batch_id,
+        'count': len(results),
+        'results': results
+    })
+
+
+@app.route('/api/review-repair/products', methods=['GET'])
+@reviewer_required
+def get_review_repair_products():
+    shop_id = request.args.get('shop_id', type=int)
+    batch_id = request.args.get('batch_id', type=str)
+    status = request.args.get('status', default='all', type=str)
+    search = request.args.get('search', default='', type=str).strip().lower()
+
+    query = RepairImageGeneration.query
+
+    if shop_id:
+        query = query.filter(RepairImageGeneration.shop_id == shop_id)
+    if batch_id and batch_id != 'all':
+        query = query.filter(RepairImageGeneration.batch_id == batch_id)
+    if status and status != 'all':
+        query = query.filter(RepairImageGeneration.review_status == status)
+
+    records = query.order_by(RepairImageGeneration.created_at.desc()).all()
+
+    if search:
+        records = [
+            r for r in records
+            if (r.product_title and search in r.product_title.lower()) or
+               (r.part_number and search in r.part_number.lower()) or
+               (r.brand and search in r.brand.lower())
+        ]
+
+    out = []
+    for r in records:
+        out.append({
+            'id': r.id,
+            'generation_id': r.generation_id,
+            'batch_id': r.batch_id,
+            'shop_id': r.shop_id,
+            'product_title': r.product_title,
+            'part_number': r.part_number,
+            'brand': r.brand,
+            'appliance_type': r.appliance_type,
+            'part_type': r.part_type,
+            'shopify_url': r.shopify_url,
+            'product_image_url': r.product_image_url,
+            'generated_image_url': r.generated_image_url,
+            'repair_time': r.repair_time,
+            'repair_difficulty': r.repair_difficulty,
+            'oem_quality': r.oem_quality,
+            'reliable_performance': r.reliable_performance,
+            'durable_construction': r.durable_construction,
+            'perfect_fit': r.perfect_fit,
+            'safety_tip': r.safety_tip,
+            'review_status': r.review_status,
+            'created_at': r.created_at.strftime('%Y-%m-%d %H:%M:%S') if r.created_at else ''
+        })
+
+    return jsonify({'products': out})
+
+
+@app.route('/api/review-repair/batches', methods=['GET'])
+@reviewer_required
+def get_review_repair_batches():
+    shop_id = request.args.get('shop_id', type=int)
+    query = RepairImageGeneration.query
+    if shop_id:
+        query = query.filter(RepairImageGeneration.shop_id == shop_id)
+
+    records = query.all()
+    batch_map = {}
+    for r in records:
+        bid = r.batch_id or 'single'
+        if bid not in batch_map:
+            batch_map[bid] = {
+                'batch_id': bid,
+                'count': 0,
+                'latest_created_at': r.created_at,
+                'products': []
+            }
+        batch_map[bid]['count'] += 1
+        batch_map[bid]['products'].append({
+            'id': r.id,
+            'product_title': r.product_title,
+            'part_number': r.part_number,
+            'review_status': r.review_status,
+            'generated_image_url': r.generated_image_url
+        })
+        if r.created_at and (not batch_map[bid]['latest_created_at'] or r.created_at > batch_map[bid]['latest_created_at']):
+            batch_map[bid]['latest_created_at'] = r.created_at
+
+    batches = list(batch_map.values())
+    batches.sort(key=lambda x: x['latest_created_at'] or datetime.min, reverse=True)
+
+    out = []
+    for b in batches:
+        out.append({
+            'batch_id': b['batch_id'],
+            'count': b['count'],
+            'created_at': b['latest_created_at'].strftime('%Y-%m-%d %H:%M:%S') if b['latest_created_at'] else '',
+            'products': b['products']
+        })
+
+    return jsonify({'batches': out})
+
+
+@app.route('/api/review-repair/update', methods=['POST', 'PUT'])
+@reviewer_required
+def update_review_repair():
+    data = request.json or {}
+    record_id = data.get('id')
+    if not record_id:
+        return jsonify({'error': 'ID is required.'}), 400
+
+    rec = RepairImageGeneration.query.get(record_id)
+    if not rec:
+        return jsonify({'error': 'Record not found.'}), 404
+
+    if 'product_title' in data: rec.product_title = data['product_title']
+    if 'part_number' in data: rec.part_number = data['part_number']
+    if 'brand' in data: rec.brand = data['brand']
+    if 'appliance_type' in data: rec.appliance_type = data['appliance_type']
+    if 'part_type' in data: rec.part_type = data['part_type']
+    if 'shopify_url' in data: rec.shopify_url = data['shopify_url']
+    if 'product_image_url' in data: rec.product_image_url = data['product_image_url']
+    if 'generated_image_url' in data:
+        g_url = data['generated_image_url'] or ''
+        b_url = (os.getenv("BASE_URL") or BASE_URL or "").strip().rstrip('/')
+        if b_url and g_url.startswith('/static/') and not g_url.startswith(b_url):
+            g_url = f"{b_url}{g_url}"
+        rec.generated_image_url = g_url
+    if 'repair_time' in data: rec.repair_time = data['repair_time']
+    if 'repair_difficulty' in data: rec.repair_difficulty = data['repair_difficulty']
+    if 'oem_quality' in data: rec.oem_quality = data['oem_quality']
+    if 'reliable_performance' in data: rec.reliable_performance = data['reliable_performance']
+    if 'durable_construction' in data: rec.durable_construction = data['durable_construction']
+    if 'perfect_fit' in data: rec.perfect_fit = data['perfect_fit']
+    if 'safety_tip' in data: rec.safety_tip = data['safety_tip']
+    if 'review_status' in data: rec.review_status = data['review_status']
+
+    db.session.commit()
+    return jsonify({'success': True, 'product': rec.to_dict()})
+
+
+@app.route('/api/review-repair/generate-image/<int:record_id>', methods=['POST'])
+@reviewer_required
+def generate_review_repair_image(record_id):
+    rec = RepairImageGeneration.query.get(record_id)
+    if not rec:
+        return jsonify({'error': 'Record not found.'}), 404
+
+    try:
+        gen_url = _generate_repair_infographic_image(rec)
+        return jsonify({
+            'success': True,
+            'generated_image_url': gen_url,
+            'product': rec.to_dict()
+        })
+    except Exception as e:
+        logger.error("[GENERATE-IMAGE-API] Failed to generate image for id %s: %s", record_id, e)
+        return jsonify({'error': f'Image generation failed: {str(e)}'}), 500
+
+
+@app.route('/api/review-repair/publish/<int:record_id>', methods=['POST'])
+@reviewer_required
+def publish_review_repair_image(record_id):
+    rec = RepairImageGeneration.query.get(record_id)
+    if not rec:
+        return jsonify({'error': 'Record not found.'}), 404
+
+    try:
+        published_src = _publish_repair_image_to_shopify(rec)
+        return jsonify({
+            'success': True,
+            'message': 'Image published to Shopify successfully!',
+            'image_src': published_src,
+            'product': rec.to_dict()
+        })
+    except Exception as e:
+        logger.error("[PUBLISH-REPAIR-API] Failed to publish for id %s: %s", record_id, e)
+        return jsonify({'error': f'Publishing to Shopify failed: {str(e)}'}), 500
+
+
+def _generate_repair_infographic_image(rec: RepairImageGeneration) -> str:
+    base_dir = os.path.dirname(os.path.abspath(__file__))
+    
+    product_data = {
+        "product_name": rec.product_title or "Appliance Part",
+        "part_number": rec.part_number or "",
+        "product_image": rec.product_image_url or "",
+        "repair_difficulty": rec.repair_difficulty or "EASY",
+        "estimated_time": rec.repair_time or "15–30 Minutes",
+        "diy": "YES",
+        "safety_tip": rec.safety_tip or "Always disconnect power supply before replacing part.",
+        "features": [
+            {"title": "OEM QUALITY", "description": rec.oem_quality or "Build to meet original equipment standards"},
+            {"title": "RELIABLE PERFORMANCE", "description": rec.reliable_performance or "Featuring a simple design, you can easily install this part."},
+            {"title": "DURABLE CONSTRUCTION", "description": rec.durable_construction or "Built with robust materials, it offers excellent resistance to wear."},
+            {"title": "PERFECT FIT", "description": rec.perfect_fit or "Tailored to fit your specific model, this part integrates seamlessly."}
+        ]
+    }
+
+    out_dir = os.path.join(base_dir, "..", "static", "generated_images")
+    os.makedirs(out_dir, exist_ok=True)
+
+    out_filename = f"repair_{rec.id}_{int(time.time())}.png"
+    out_path = os.path.join(out_dir, out_filename)
+
+    app_root = os.path.abspath(os.path.join(base_dir, ".."))
+    template_path = os.path.join(app_root, "template.png")
+    if not os.path.exists(template_path):
+        template_path = os.path.join(os.getcwd(), "template.png")
+
+    from PIL import Image, ImageDraw, ImageFont
+    import io
+
+    # Generate poster using Pillow layout from test.py
+    base = Image.open(template_path).convert("RGB")
+    draw = ImageDraw.Draw(base)
+    W, H = base.size
+
+    # Fonts setup with safe fallback checking
+    def get_valid_fnt(preferred_path, fallback_path, size):
+        if preferred_path and os.path.exists(preferred_path):
+            try:
+                return ImageFont.truetype(preferred_path, size)
+            except Exception:
+                pass
+        if fallback_path and os.path.exists(fallback_path):
+            try:
+                return ImageFont.truetype(fallback_path, size)
+            except Exception:
+                pass
+        return ImageFont.load_default()
+
+    font_bold_path = "/home/tis-lap-22/.local/share/fonts/montserrat/Montserrat-Bold.ttf"
+    fallback_bold_path = "/usr/share/fonts/truetype/dejavu/DejaVuSans-Bold.ttf"
+    font_reg_path = "/home/tis-lap-22/.local/share/fonts/montserrat/Montserrat-Regular.ttf"
+    fallback_reg_path = "/usr/share/fonts/truetype/dejavu/DejaVuSans.ttf"
+
+    def fnt_bold(s): return get_valid_fnt(font_bold_path, fallback_bold_path, s)
+    def fnt_reg(s): return get_valid_fnt(font_reg_path, fallback_reg_path, s)
+
+    def draw_ct(d, cx, y, txt, f, fill): d.text((cx, y), txt, font=f, fill=fill, anchor="mm")
+    def draw_wt(d, box, txt, f, fill, line_spacing=8, align="center"):
+        x0, y0, x1, y1 = box
+        mw = x1 - x0
+        words = str(txt).split()
+        lines, current = [], ""
+        for w in words:
+            trial = (current + " " + w).strip()
+            bbox = d.textbbox((0, 0), trial, font=f)
+            if bbox[2] - bbox[0] <= mw or not current:
+                current = trial
+            else:
+                lines.append(current)
+                current = w
+        if current: lines.append(current)
+        y = y0
+        for line in lines:
+            bbox = d.textbbox((0, 0), line, font=f)
+            w, h = bbox[2] - bbox[0], bbox[3] - bbox[1]
+            x = x0 + (mw - w) / 2 if align == "center" else x0
+            d.text((x, y), line, font=f, fill=fill)
+            y += h + line_spacing
+        return y
+
+    # Draw Text Elements
+    p_name = product_data["product_name"]
+    p_num = product_data["part_number"]
+    subtitle = f"{p_name} ({p_num})" if p_num else p_name
+
+    draw_ct(draw, W / 2, 82, "Repair Information", fnt_bold(68), (2, 55, 150))
+
+    # Badge
+    b_font = fnt_bold(26)
+    bbox = draw.textbbox((0, 0), subtitle, font=b_font)
+    tw = bbox[2] - bbox[0]
+    bw, bh = max(tw + 80, 200), 56
+    bx0, by0 = (W - bw) / 2, 165
+    draw.rounded_rectangle((bx0, by0, bx0 + bw, by0 + bh), radius=28, fill=(3, 30, 110))
+    draw_ct(draw, W / 2, by0 + bh / 2, subtitle, b_font, (255, 255, 255))
+
+    # Cards
+    h_font, p_font, b_font_reg = fnt_bold(21), fnt_bold(34), fnt_reg(18)
+    big_f, unit_f = fnt_bold(62), fnt_bold(30)
+
+    # Top Left
+    draw_ct(draw, 168, 412, "REPAIR DIFFICULTY", h_font, (0, 43, 148))
+    draw.rounded_rectangle((83, 464, 253, 521), radius=16, fill=(33, 160, 55))
+    draw_ct(draw, 168, 492, str(product_data["repair_difficulty"]).upper(), p_font, (255, 255, 255))
+    draw_wt(draw, (48, 545, 288, 650), "Designed for Best Fit: Engineered for proper alignment and seamless integration.", b_font_reg, (70, 82, 130), line_spacing=5)
+
+    # Bottom Left
+    draw_ct(draw, 168, 820, "DIY FRIENDLY", h_font, (0, 43, 148))
+    draw.rounded_rectangle((83, 872, 240, 928), radius=16, fill=(33, 160, 55))
+    draw_ct(draw, 168, 900, "YES", p_font, (255, 255, 255))
+    draw_wt(draw, (48, 950, 288, 1050), "Easy DIY Installation: Features a straightforward replacement process for quick restoration.", b_font_reg, (70, 82, 130), line_spacing=5)
+
+    # Top Right
+    est_time = str(product_data["estimated_time"]).strip()
+    time_big = est_time.split(" ", 1)[0] if " " in est_time else est_time
+    time_unit = est_time.split(" ", 1)[1].upper() if " " in est_time else "MINUTES"
+    draw_ct(draw, 1063, 412, "ESTIMATED REPAIR TIME", h_font, (0, 43, 148))
+    draw_ct(draw, 1063, 495, time_big, big_f, (0, 43, 148))
+    draw_ct(draw, 1063, 553, time_unit, unit_f, (0, 43, 148))
+    draw_wt(draw, (943, 590, 1183, 650), "Approximate time for most installations.", b_font_reg, (70, 82, 130), line_spacing=5)
+
+    # Bottom Right
+    draw_ct(draw, 1063, 817, "SAFETY TIP", h_font, (0, 43, 148))
+    draw_wt(draw, (943, 862, 1183, 1050), product_data["safety_tip"], b_font_reg, (70, 82, 130), line_spacing=5)
+
+    # Center Circle Fill (Solid White) & Product Paste
+    cx, cy, radius = 617, 580, 280
+    draw.ellipse((cx - radius + 8, cy - radius + 8, cx + radius - 8, cy + radius - 8), fill=(255, 255, 255))
+
+    if product_data["product_image"]:
+        try:
+            resp = requests.get(product_data["product_image"], headers={"User-Agent": "Mozilla/5.0"}, timeout=15)
+            if resp.status_code == 200:
+                p_img = Image.open(io.BytesIO(resp.content)).convert("RGBA")
+                try:
+                    import rembg
+                    p_img = rembg.remove(p_img)
+                except Exception:
+                    pass
+
+                if p_img.mode != 'RGBA':
+                    p_img = p_img.convert('RGBA')
+
+                # Make near-white pixels transparent so no square box artifacts remain
+                datas = p_img.getdata()
+                newData = []
+                for item in datas:
+                    r, g, b = item[0], item[1], item[2]
+                    a = item[3] if len(item) == 4 else 255
+                    if r > 240 and g > 240 and b > 240:
+                        newData.append((255, 255, 255, 0))
+                    else:
+                        newData.append((r, g, b, a))
+                p_img.putdata(newData)
+
+                bbox = p_img.getbbox()
+                if bbox:
+                    p_img = p_img.crop(bbox)
+
+                rad = radius - 30
+                w, h = p_img.size
+                if w > 0 and h > 0:
+                    import math
+                    scale = (2 * rad) / math.sqrt(w * w + h * h)
+                    nw, nh = int(w * scale), int(h * scale)
+                    p_img_resized = p_img.resize((nw, nh), Image.LANCZOS)
+                    px, py = int(cx - nw / 2), int(cy - nh / 2)
+                    base.paste(p_img_resized, (px, py), p_img_resized)
+        except Exception as e:
+            logger.warning("[GENERATE-POSTER] Center product paste failed: %s", e)
+
+    draw = ImageDraw.Draw(base)
+
+    # Bottom bar features
+    bar_h_font, bar_b_font = fnt_bold(13), fnt_reg(13)
+    sections_x = [(146, 325), (435, 645), (751, 945), (1060, 1228)]
+    feats = product_data["features"]
+    for (tx0, tx1), item in zip(sections_x, feats[:4]):
+        hdr = item.get("title", "")
+        desc = item.get("description", "")
+        draw.text((tx0, 1095), hdr, font=bar_h_font, fill=(255, 255, 255))
+        hb = draw.textbbox((0, 0), hdr, font=bar_h_font)
+        hh = hb[3] - hb[1]
+        draw_wt(draw, (tx0, 1095 + hh + 9, tx1, 1235), desc, bar_b_font, (215, 225, 245), align="left", line_spacing=3)
+
+    base = base.resize((1024, 1024), Image.LANCZOS)
+    base.save(out_path)
+
+    rel_path = f"/static/generated_images/{out_filename}"
+    base_url = (os.getenv("BASE_URL") or BASE_URL or "").strip().rstrip('/')
+    if base_url:
+        full_url = f"{base_url}{rel_path}" if not rel_path.startswith(base_url) else rel_path
+    else:
+        full_url = rel_path
+
+    rec.generated_image_url = full_url
+    if rec.review_status == 'pending':
+        rec.review_status = 'reviewed'
+    db.session.commit()
+
+    return full_url
+
+
+def _publish_repair_image_to_shopify(rec: RepairImageGeneration):
+    import base64
+    effective_url = rec.shopify_url or ''
+    part_number = rec.part_number or ''
+
+    gid = None
+    if effective_url:
+        try:
+            gid = _shopify_product_gid_from_product_url(effective_url)
+        except Exception as e:
+            logger.warning("[PUBLISH-REPAIR] GID from URL failed: %s", e)
+    if not gid and part_number:
+        try:
+            gid = _shopify_product_gid_from_sku(part_number)
+        except Exception as e:
+            logger.warning("[PUBLISH-REPAIR] GID from SKU failed: %s", e)
+
+    if not gid:
+        raise ValueError("Could not resolve Shopify product. Make sure the Shop URL or Part Number matches a product in your active shop.")
+
+    numeric_id = gid.split('/')[-1]
+
+    shop = None
+    if getattr(rec, 'shop_id', None):
+        shop = ShopConfig.query.get(rec.shop_id)
+    if not shop:
+        shop = _get_active_shop()
+    if not shop:
+        raise ValueError("No active Shopify shop configured")
+
+    domain = shop.domain.strip()
+    token = shop.access_token.strip()
+    api_version = (shop.api_version or '2024-01').strip()
+
+    endpoint = f"{_shopify_base_url(domain)}/admin/api/{api_version}/products/{numeric_id}/images.json"
+    headers = {
+        'Content-Type': 'application/json',
+        'X-Shopify-Access-Token': token,
+    }
+
+    img_url = rec.generated_image_url or rec.product_image_url
+    if not img_url:
+        raise ValueError("No generated image or product image available to publish.")
+
+    base_dir = os.path.dirname(os.path.abspath(__file__))
+    if '/static/' in img_url:
+        static_rel = img_url[img_url.find('/static/'):].lstrip('/')
+        local_path = os.path.join(base_dir, "..", static_rel)
+        if not os.path.exists(local_path):
+            local_path = static_rel
+        if os.path.exists(local_path):
+            with open(local_path, "rb") as f:
+                b64_str = base64.b64encode(f.read()).decode('utf-8')
+            payload = {'image': {'attachment': b64_str}}
+        else:
+            payload = {'image': {'src': img_url}}
+    elif img_url.startswith('http'):
+        payload = {'image': {'src': img_url}}
+    else:
+        with open(img_url, "rb") as f:
+            b64_str = base64.b64encode(f.read()).decode('utf-8')
+        payload = {'image': {'attachment': b64_str}}
+
+    resp = requests.post(endpoint, json=payload, headers=headers, timeout=25)
+    if not resp.ok:
+        raise ValueError(f"Shopify returned HTTP {resp.status_code}: {resp.text[:300]}")
+
+    created_img = resp.json().get('image', {})
+    rec.review_status = 'published'
+    db.session.commit()
+    return created_img.get('src', img_url)

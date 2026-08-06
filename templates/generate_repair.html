@@ -1,0 +1,1775 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Generate Repair Image - AI Content Generator</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link
+    href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;600;700&family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap"
+    rel="stylesheet">
+  <style>
+    :root,
+    [data-theme="dark"] {
+      --bg: #080c0d;
+      --bg-elev: #0e1416;
+      --surface: #121a1d;
+      --surface2: #1a2528;
+      --surface3: #232f34;
+      --border: #223135;
+      --border2: #2d4147;
+      --text: #e0f2f1;
+      --text-2: #94a9ad;
+      --text-3: #60787e;
+      --accent: #22d3ee;
+      --accent-soft: rgba(34, 211, 238, 0.14);
+      --accent2: #14b8a6;
+      --accent2-soft: rgba(20, 184, 166, 0.12);
+      --accent3: #5eead4;
+      --accent3-soft: rgba(94, 234, 212, 0.14);
+      --danger: #f87171;
+      --danger-soft: rgba(248, 113, 113, 0.12);
+      --success: #34d399;
+      --warning: #f59e0b;
+      --warning-soft: rgba(245, 158, 11, 0.12);
+      --shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.4);
+      --shadow-md: 0 8px 24px -8px rgba(0, 0, 0, 0.6);
+      --gradient-accent: linear-gradient(135deg, #22d3ee 0%, #0d9488 100%)
+    }
+
+    [data-theme="light"] {
+      --bg: #f0f9fa;
+      --bg-elev: #ffffff;
+      --surface: #ffffff;
+      --surface2: #e6f2f3;
+      --surface3: #d1e7e9;
+      --border: #cfe1e2;
+      --border2: #b4d3d6;
+      --text: #0f172a;
+      --text-2: #334155;
+      --text-3: #64748b;
+      --accent: #0891b2;
+      --accent-soft: rgba(8, 145, 178, 0.10);
+      --accent2: #0f766e;
+      --accent2-soft: rgba(15, 118, 110, 0.10);
+      --accent3: #0d9488;
+      --accent3-soft: rgba(13, 148, 136, 0.12);
+      --danger: #e11d48;
+      --danger-soft: rgba(225, 29, 72, 0.08);
+      --success: #059669;
+      --warning: #d97706;
+      --warning-soft: rgba(217, 119, 6, 0.10);
+      --shadow-sm: 0 1px 2px rgba(8, 145, 178, 0.06);
+      --shadow-md: 0 10px 30px -12px rgba(8, 145, 178, 0.18);
+      --gradient-accent: linear-gradient(135deg, #0891b2 0%, #0f766e 100%)
+    }
+
+    :root {
+      --radius: 14px;
+      --radius-sm: 10px;
+      --font-head: 'Space Grotesk', system-ui, sans-serif;
+      --font-body: 'Inter', system-ui, -apple-system, sans-serif;
+      --font-mono: 'JetBrains Mono', ui-monospace, Menlo, monospace
+    }
+
+    *,
+    *::before,
+    *::after {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0
+    }
+
+    html {
+      font-size: 15px
+    }
+
+    body {
+      font-family: var(--font-body);
+      background: var(--bg);
+      color: var(--text);
+      display: flex;
+      min-height: 100vh;
+      overflow-x: hidden;
+      -webkit-font-smoothing: antialiased;
+      transition: background .25s, color .25s
+    }
+
+    textarea,
+    input,
+    button,
+    select {
+      font-family: inherit
+    }
+
+    /* ── Sidebar ── */
+    :root {
+      --sidebar-expanded: 188px;
+      --sidebar-collapsed: 55px
+    }
+
+    .sidebar {
+      width: var(--sidebar-expanded);
+      min-height: 100vh;
+      background: var(--bg-elev);
+      border-right: 1px solid var(--border);
+      display: flex;
+      flex-direction: column;
+      position: fixed;
+      left: 0;
+      top: 0;
+      z-index: 100;
+      padding: 12px 0 14px;
+      overflow: hidden;
+      transition: width .22s cubic-bezier(.4, 0, .2, 1);
+    }
+
+    .sidebar.collapsed {
+      width: var(--sidebar-collapsed)
+    }
+
+    /* Logo row */
+    .sidebar-logo-row {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      padding: 0 10px 16px;
+      border-bottom: 1px solid var(--border);
+      margin-bottom: 8px;
+      flex-shrink: 0;
+      white-space: nowrap;
+      overflow: hidden
+    }
+
+    .sidebar-logo-icon {
+      width: 28px;
+      height: 28px;
+      min-width: 28px;
+      background: var(--gradient-accent);
+      border-radius: 7px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: #fff;
+      flex-shrink: 0
+    }
+
+    .sidebar-logo-icon svg {
+      width: 14px;
+      height: 14px
+    }
+
+    .sidebar-logo-text {
+      font-family: var(--font-head);
+      font-size: .95rem;
+      font-weight: 700;
+      letter-spacing: -.02em;
+      color: var(--text);
+      opacity: 1;
+      transition: opacity .15s
+    }
+
+    .sidebar.collapsed .sidebar-logo-text {
+      opacity: 0;
+      pointer-events: none
+    }
+
+    /* Nav */
+    .sidebar-nav {
+      flex: 1;
+      padding: 0 6px;
+      display: flex;
+      flex-direction: column;
+      gap: 2px;
+      overflow: hidden
+    }
+
+    .nav-item {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      padding: 8px;
+      border-radius: 9px;
+      color: var(--text-3);
+      text-decoration: none;
+      transition: background .15s, color .15s;
+      cursor: pointer;
+      border: none;
+      background: none;
+      white-space: nowrap;
+      overflow: hidden;
+      width: 100%;
+      position: relative;
+    }
+
+    .nav-item:hover {
+      background: var(--surface2);
+      color: var(--text)
+    }
+
+    .nav-item.active {
+      background: var(--accent-soft);
+      color: var(--accent)
+    }
+
+    .nav-item svg {
+      width: 16px;
+      height: 16px;
+      flex-shrink: 0
+    }
+
+    .nav-label {
+      font-size: .82rem;
+      font-weight: 500;
+      opacity: 1;
+      transition: opacity .15s
+    }
+
+    .sidebar.collapsed .nav-label {
+      opacity: 0;
+      pointer-events: none
+    }
+
+    /* Tooltip only visible when collapsed */
+    .nav-item .tooltip {
+      position: absolute;
+      left: calc(var(--sidebar-collapsed) + 8px);
+      top: 50%;
+      transform: translateY(-50%);
+      background: var(--surface3);
+      border: 1px solid var(--border2);
+      color: var(--text);
+      font-size: .72rem;
+      font-weight: 600;
+      white-space: nowrap;
+      padding: 4px 9px;
+      border-radius: 6px;
+      pointer-events: none;
+      opacity: 0;
+      transition: opacity .15s;
+      z-index: 200;
+      box-shadow: var(--shadow-md)
+    }
+
+    .sidebar.collapsed .nav-item:hover .tooltip {
+      opacity: 1
+    }
+
+    /* Bottom controls */
+    .sidebar-bottom {
+      margin-top: auto;
+      padding: 0 6px;
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+      overflow: hidden
+    }
+
+    .sidebar-toggle-btn {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      padding: 7px 8px;
+      border-radius: 9px;
+      background: none;
+      border: none;
+      cursor: pointer;
+      color: var(--text-3);
+      width: 100%;
+      white-space: nowrap;
+      overflow: hidden;
+      transition: background .15s, color .15s;
+    }
+
+    .sidebar-toggle-btn:hover {
+      background: var(--surface2);
+      color: var(--text)
+    }
+
+    .sidebar-toggle-btn svg {
+      width: 15px;
+      height: 15px;
+      flex-shrink: 0;
+      transition: transform .22s
+    }
+
+    .sidebar.collapsed .sidebar-toggle-btn svg {
+      transform: rotate(180deg)
+    }
+
+    .sidebar-toggle-label {
+      font-size: .78rem;
+      font-weight: 500;
+      opacity: 1;
+      transition: opacity .15s
+    }
+
+    .sidebar.collapsed .sidebar-toggle-label {
+      opacity: 0;
+      pointer-events: none
+    }
+
+    .theme-row {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      padding: 6px 8px;
+      white-space: nowrap;
+      overflow: hidden
+    }
+
+    .theme-row-label {
+      font-size: .75rem;
+      color: var(--text-3);
+      font-weight: 500;
+      opacity: 1;
+      transition: opacity .15s
+    }
+
+    .sidebar.collapsed .theme-row-label {
+      opacity: 0;
+      pointer-events: none
+    }
+
+    .theme-toggle {
+      width: 32px;
+      height: 18px;
+      min-width: 32px;
+      background: var(--surface2);
+      border: 1px solid var(--border);
+      border-radius: 999px;
+      position: relative;
+      cursor: pointer;
+      transition: background .2s;
+      flex-shrink: 0
+    }
+
+    .theme-toggle::after {
+      content: '';
+      position: absolute;
+      top: 2px;
+      left: 2px;
+      width: 12px;
+      height: 12px;
+      background: var(--text-3);
+      border-radius: 50%;
+      transition: transform .25s cubic-bezier(.4, 0, .2, 1)
+    }
+
+    [data-theme="light"] .theme-toggle::after {
+      transform: translateX(14px);
+      background: var(--accent)
+    }
+
+    /* Main Container */
+    .main {
+      margin-left: var(--sidebar-expanded);
+      flex: 1;
+      padding: 24px 32px 60px;
+      max-width: 1240px;
+      transition: margin-left .22s cubic-bezier(.4, 0, .2, 1);
+    }
+
+    .sidebar.collapsed~.main {
+      margin-left: var(--sidebar-collapsed)
+    }
+
+    .page-header {
+      margin-bottom: 20px
+    }
+
+    .page-title {
+      font-family: var(--font-head);
+      font-size: 1.6rem;
+      font-weight: 700;
+      color: var(--text)
+    }
+
+    .page-subtitle {
+      font-size: .88rem;
+      color: var(--text-2);
+      margin-top: 4px
+    }
+
+    /* Shop selector */
+    .shop-selector-bar {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      padding: 12px 18px;
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      margin-bottom: 20px;
+      box-shadow: var(--shadow-sm);
+    }
+
+    .shop-selector-label {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      font-size: .82rem;
+      font-weight: 600;
+      color: var(--text-2);
+      white-space: nowrap
+    }
+
+    .shop-selector-label svg {
+      width: 15px;
+      height: 15px;
+      color: var(--accent)
+    }
+
+    .shop-select {
+      flex: 1;
+      max-width: 320px;
+      padding: 7px 12px;
+      background: var(--surface2);
+      border: 1px solid var(--border);
+      border-radius: var(--radius-sm);
+      color: var(--text);
+      font-size: .84rem;
+      cursor: pointer;
+      outline: none;
+      transition: border-color .15s;
+    }
+
+    .shop-select:focus {
+      border-color: var(--accent)
+    }
+
+    .shop-active-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      padding: 4px 10px;
+      border-radius: 20px;
+      background: rgba(34, 211, 238, 0.12);
+      border: 1px solid rgba(34, 211, 238, 0.3);
+      color: var(--accent);
+      font-size: .76rem;
+      font-weight: 600
+    }
+
+    .shop-config-link {
+      margin-left: auto;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      font-size: .8rem;
+      color: var(--text-2);
+      text-decoration: none;
+      transition: color .15s
+    }
+
+    .shop-config-link:hover {
+      color: var(--accent)
+    }
+
+    .shop-config-link svg {
+      width: 14px;
+      height: 14px
+    }
+
+    /* Input Card */
+    .card {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 20px;
+      margin-bottom: 24px;
+      box-shadow: var(--shadow-sm);
+    }
+
+    .input-card-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 16px;
+    }
+
+    .input-card-title {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      font-family: var(--font-head);
+      font-size: 1.05rem;
+      font-weight: 600;
+      color: var(--text)
+    }
+
+    .part-count-badge {
+      padding: 3px 9px;
+      border-radius: 12px;
+      background: var(--surface2);
+      border: 1px solid var(--border);
+      color: var(--accent);
+      font-size: .72rem;
+      font-weight: 700;
+      font-family: var(--font-mono)
+    }
+
+    .csv-loaded-pill,
+    .shopify-fetched-pill {
+      display: none;
+      align-items: center;
+      gap: 6px;
+      padding: 3px 10px;
+      border-radius: 12px;
+      background: rgba(52, 211, 153, 0.12);
+      border: 1px solid rgba(52, 211, 153, 0.3);
+      color: var(--success);
+      font-size: .75rem;
+      font-weight: 600
+    }
+
+    .btn-clear-csv {
+      background: none;
+      border: none;
+      color: var(--text-3);
+      cursor: pointer;
+      font-size: .8rem;
+      margin-left: 4px
+    }
+
+    .btn-clear-csv:hover {
+      color: var(--danger)
+    }
+
+    .btn-csv-import,
+    .btn-csv-sample {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      padding: 7px 12px;
+      border-radius: var(--radius-sm);
+      font-size: .78rem;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all .15s
+    }
+
+    .btn-csv-sample {
+      background: var(--surface2);
+      border: 1px solid var(--border);
+      color: var(--text-2)
+    }
+
+    .btn-csv-sample:hover {
+      color: var(--text);
+      background: var(--surface3)
+    }
+
+    .btn-csv-import {
+      background: var(--accent-soft);
+      border: 1px solid rgba(34, 211, 238, 0.3);
+      color: var(--accent)
+    }
+
+    .btn-csv-import:hover {
+      background: rgba(34, 211, 238, 0.22)
+    }
+
+    .csv-hint {
+      font-size: .78rem;
+      color: var(--text-3);
+      margin-bottom: 14px
+    }
+
+    /* Shopify inline fetch status */
+    .shopify-fetch-status {
+      margin-top: 12px;
+      font-size: .78rem;
+      display: none;
+    }
+
+    .shopify-fetch-status.visible {
+      display: block;
+    }
+
+    .shopify-fetch-status.loading {
+      color: var(--accent);
+    }
+
+    .shopify-fetch-status.success {
+      color: var(--success);
+    }
+
+    .shopify-fetch-status.error {
+      color: var(--danger);
+    }
+
+    .shopify-fetched-pill {
+      display: none;
+      align-items: center;
+      gap: 8px;
+      padding: 5px 12px;
+      background: var(--accent2-soft, rgba(20, 184, 166, 0.12));
+      border: 1px solid rgba(20, 184, 166, .3);
+      border-radius: 20px;
+      font-size: .77rem;
+      color: var(--accent2, #14b8a6);
+      font-weight: 600;
+      margin-top: 8px;
+    }
+
+    .shopify-fetched-pill.visible {
+      display: inline-flex;
+    }
+
+    .btn-fetch-row {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      width: 28px;
+      height: 28px;
+      background: var(--accent-soft, rgba(34, 211, 238, 0.12));
+      border: 1px solid rgba(34, 211, 238, .3);
+      border-radius: 7px;
+      color: var(--accent, #22d3ee);
+      cursor: pointer;
+      transition: all .15s;
+      flex-shrink: 0;
+      font-size: .78rem;
+    }
+
+    .btn-fetch-row:hover {
+      background: rgba(34, 211, 238, .22);
+    }
+
+    .btn-fetch-row:disabled {
+      opacity: .4;
+      cursor: not-allowed;
+    }
+
+    .btn-fetch-row.fetched {
+      background: var(--accent2-soft, rgba(20, 184, 166, 0.12));
+      border-color: rgba(20, 184, 166, .3);
+      color: var(--accent2, #14b8a6);
+    }
+
+    /* Part row grid */
+    .col-headers {
+      display: grid;
+      grid-template-columns: 28px 2fr 1.5fr 1.2fr 1.2fr 1fr 2fr 64px;
+      gap: 8px;
+      padding: 0 4px 8px;
+      border-bottom: 1px solid var(--border);
+      margin-bottom: 10px;
+    }
+
+    .field-label-sm {
+      font-size: .74rem;
+      font-weight: 600;
+      color: var(--text-3);
+      text-transform: uppercase;
+      letter-spacing: .04em
+    }
+
+    .req {
+      color: var(--danger)
+    }
+
+    .parts-list {
+      display: flex;
+      flex-direction: column;
+      gap: 8px
+    }
+
+    .part-row {
+      display: grid;
+      grid-template-columns: 28px 2fr 1.5fr 1.2fr 1.2fr 1fr 2fr 64px;
+      gap: 8px;
+      align-items: center;
+    }
+
+    .part-index {
+      font-family: var(--font-mono);
+      font-size: .76rem;
+      color: var(--text-3);
+      text-align: center
+    }
+
+    .field-input {
+      width: 100%;
+      padding: 7px 10px;
+      background: var(--surface2);
+      border: 1px solid var(--border);
+      border-radius: var(--radius-sm);
+      color: var(--text);
+      font-size: .82rem;
+      outline: none;
+      transition: border-color .15s;
+    }
+
+    .field-input:focus {
+      border-color: var(--accent);
+      box-shadow: 0 0 0 3px var(--accent-soft);
+    }
+
+    .btn-remove-part {
+      width: 28px;
+      height: 28px;
+      border-radius: 6px;
+      border: 1px solid var(--border);
+      background: var(--surface2);
+      color: var(--text-3);
+      font-size: .8rem;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      transition: all .15s
+    }
+
+    .btn-remove-part:hover:not(:disabled) {
+      color: var(--danger);
+      border-color: var(--danger-soft);
+      background: var(--danger-soft)
+    }
+
+    .add-part-row {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      margin-top: 14px;
+      padding-top: 12px;
+      border-top: 1px dashed var(--border);
+    }
+
+    .btn-add-part {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      padding: 7px 14px;
+      background: var(--surface2);
+      border: 1px solid var(--border);
+      border-radius: var(--radius-sm);
+      color: var(--text-2);
+      font-size: .8rem;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all .15s
+    }
+
+    .btn-add-part:hover {
+      color: var(--text);
+      background: var(--surface3)
+    }
+
+    .parts-hint {
+      font-size: .76rem;
+      color: var(--text-3)
+    }
+
+    /* Generate Bar */
+    .generate-bar {
+      display: flex;
+      align-items: center;
+      gap: 14px;
+      margin-top: 18px;
+      padding-top: 16px;
+      border-top: 1px solid var(--border);
+    }
+
+    .btn-generate-all {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      padding: 10px 22px;
+      background: var(--gradient-accent);
+      border: none;
+      border-radius: var(--radius-sm);
+      color: #fff;
+      font-size: .88rem;
+      font-weight: 700;
+      cursor: pointer;
+      box-shadow: 0 4px 14px rgba(34, 211, 238, 0.35);
+      transition: transform .15s, box-shadow .15s;
+    }
+
+    .btn-generate-all:hover {
+      transform: translateY(-1px);
+      box-shadow: 0 6px 18px rgba(34, 211, 238, 0.45)
+    }
+
+    /* Results Area */
+    .results-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 16px;
+    }
+
+    .results-title {
+      font-family: var(--font-head);
+      font-size: 1.15rem;
+      font-weight: 700;
+      color: var(--text)
+    }
+
+    .repair-cards-list {
+      display: flex;
+      flex-direction: column;
+      gap: 20px;
+    }
+
+    /* Product Card Displayed Stacked Below Each Other */
+    .repair-card {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 22px;
+      box-shadow: var(--shadow-md);
+      transition: border-color .2s;
+    }
+
+    .repair-card:hover {
+      border-color: var(--border2)
+    }
+
+    .repair-card-header {
+      display: flex;
+      gap: 18px;
+      padding-bottom: 16px;
+      border-bottom: 1px solid var(--border);
+      margin-bottom: 16px;
+    }
+
+    .repair-card-img {
+      width: 100px;
+      height: 100px;
+      border-radius: var(--radius-sm);
+      object-fit: cover;
+      background: var(--surface2);
+      border: 1px solid var(--border);
+      flex-shrink: 0;
+    }
+
+    .repair-card-img-placeholder {
+      width: 100px;
+      height: 100px;
+      border-radius: var(--radius-sm);
+      background: var(--surface2);
+      border: 1px dashed var(--border);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: var(--text-3);
+      font-size: .75rem;
+      flex-shrink: 0;
+    }
+
+    .repair-card-info {
+      flex: 1
+    }
+
+    .repair-card-prod-title {
+      font-family: var(--font-head);
+      font-size: 1.1rem;
+      font-weight: 700;
+      color: var(--text);
+      margin-bottom: 6px;
+    }
+
+    .repair-card-meta-row {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 10px;
+      font-size: .8rem;
+      color: var(--text-2);
+      margin-bottom: 12px;
+    }
+
+    .repair-card-meta-tag {
+      padding: 2px 8px;
+      border-radius: 6px;
+      background: var(--surface2);
+      border: 1px solid var(--border);
+      font-family: var(--font-mono);
+      font-size: .76rem;
+    }
+
+    .repair-badges-row {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      flex-wrap: wrap;
+    }
+
+    .repair-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      padding: 5px 12px;
+      border-radius: 20px;
+      font-size: .8rem;
+      font-weight: 600;
+    }
+
+    .badge-time {
+      background: rgba(34, 211, 238, 0.12);
+      border: 1px solid rgba(34, 211, 238, 0.3);
+      color: var(--accent);
+    }
+
+    .badge-diff-easy {
+      background: rgba(52, 211, 153, 0.12);
+      border: 1px solid rgba(52, 211, 153, 0.3);
+      color: var(--success);
+    }
+
+    .badge-diff-moderate {
+      background: rgba(245, 158, 11, 0.12);
+      border: 1px solid rgba(245, 158, 11, 0.3);
+      color: var(--warning);
+    }
+
+    .badge-diff-advanced {
+      background: rgba(248, 113, 113, 0.12);
+      border: 1px solid rgba(248, 113, 113, 0.3);
+      color: var(--danger);
+    }
+
+    /* Bullet Points Section */
+    .repair-bullets-list {
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+      margin-top: 14px;
+    }
+
+    .repair-bullet-item {
+      display: flex;
+      align-items: flex-start;
+      gap: 10px;
+      padding: 10px 14px;
+      background: var(--surface2);
+      border: 1px solid var(--border);
+      border-radius: var(--radius-sm);
+      font-size: .85rem;
+      line-height: 1.45;
+    }
+
+    .bullet-icon {
+      font-size: 1rem;
+      flex-shrink: 0;
+      margin-top: 1px;
+    }
+
+    .bullet-label {
+      font-weight: 700;
+      color: var(--text);
+      margin-right: 6px;
+      white-space: nowrap;
+    }
+
+    .bullet-text {
+      color: var(--text-2);
+    }
+
+    /* Spinner */
+    .spinner {
+      width: 18px;
+      height: 18px;
+      border: 2px solid rgba(255, 255, 255, 0.3);
+      border-top-color: #fff;
+      border-radius: 50%;
+      animation: spin .8s linear infinite;
+    }
+
+    @keyframes spin {
+      to {
+        transform: rotate(360deg)
+      }
+    }
+  </style>
+</head>
+
+<body>
+  <!-- Sidebar -->
+  <aside class="sidebar" id="sidebar">
+    <div class="sidebar-logo-row">
+      <div class="sidebar-logo-icon">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"
+          stroke-linejoin="round">
+          <path d="M13 2L3 14h7l-1 8 10-12h-7l1-8z" />
+        </svg>
+      </div>
+      <span class="sidebar-logo-text">ContentAI</span>
+    </div>
+    <nav class="sidebar-nav">
+      <a href="{{ BASE_URL }}/" class="nav-item">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"
+          stroke-linejoin="round">
+          <path
+            d="M12 2v4M12 18v4M4.93 4.93l2.83 2.83M16.24 16.24l2.83 2.83M2 12h4M18 12h4M4.93 19.07l2.83-2.83M16.24 7.76l2.83-2.83" />
+        </svg>
+        <span class="nav-label">Generator</span>
+        <span class="tooltip">Generator</span>
+      </a>
+      <a href="{{ BASE_URL }}/generate-repair" class="nav-item active">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"
+          stroke-linejoin="round">
+          <path
+            d="M14.7 6.3a1 1 0 0 0 0 1.4l1.6 1.6a1 1 0 0 0 1.4 0l3.77-3.77a6 6 0 0 1-7.94 7.94l-6.91 6.91a2.12 2.12 0 0 1-3-3l6.91-6.91a6 6 0 0 1 7.94-7.94l-3.76 3.76z" />
+        </svg>
+        <span class="nav-label">Generate Repair</span>
+        <span class="tooltip">Generate Repair</span>
+      </a>
+      <a href="{{ BASE_URL }}/image-search" class="nav-item">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"
+          stroke-linejoin="round">
+          <circle cx="12" cy="12" r="9" />
+          <path d="M12 7v5l3 2" />
+        </svg>
+        <span class="nav-label">Image Search</span>
+        <span class="tooltip">Image Search</span>
+      </a>
+      <a href="{{ BASE_URL }}/history" class="nav-item">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"
+          stroke-linejoin="round">
+          <circle cx="12" cy="12" r="9" />
+          <path d="M12 7v5l3 2" />
+        </svg>
+        <span class="nav-label">History</span>
+        <span class="tooltip">History</span>
+      </a>
+      <a href="{{ BASE_URL }}/history-image-search" class="nav-item">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"
+          stroke-linejoin="round">
+          <circle cx="12" cy="12" r="9" />
+          <path d="M12 7v5l3 2" />
+        </svg>
+        <span class="nav-label">History Image</span>
+        <span class="tooltip">History Image</span>
+      </a>
+      <a href="{{ BASE_URL }}/review" class="nav-item">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"
+          stroke-linejoin="round">
+          <path d="M9 11l3 3L22 4" />
+          <path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11" />
+        </svg>
+        <span class="nav-label">Review</span>
+        <span class="tooltip">Review</span>
+      </a>
+      <a href="{{ BASE_URL }}/review-repair" class="nav-item">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"
+          stroke-linejoin="round">
+          <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7" />
+          <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z" />
+        </svg>
+        <span class="nav-label">Review Repair</span>
+        <span class="tooltip">Review Repair</span>
+      </a>
+      <a href="{{ BASE_URL }}/review-image-search" class="nav-item">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"
+          stroke-linejoin="round">
+          <circle cx="12" cy="12" r="9" />
+          <path d="M12 7v5l3 2" />
+        </svg>
+        <span class="nav-label">Review Images</span>
+        <span class="tooltip">Review Images</span>
+      </a>
+      <a href="{{ BASE_URL }}/shop-config" class="nav-item">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"
+          stroke-linejoin="round">
+          <circle cx="12" cy="12" r="3" />
+          <path d="M19.07 4.93a10 10 0 0 1 0 14.14M4.93 4.93a10 10 0 0 0 0 14.14" />
+        </svg>
+        <span class="nav-label">Shop Config</span>
+        <span class="tooltip">Shop Config</span>
+      </a>
+    </nav>
+    <div class="sidebar-bottom">
+      <button class="sidebar-toggle-btn" id="sidebarToggleBtn" onclick="toggleSidebar()">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"
+          stroke-linejoin="round">
+          <polyline points="15 18 9 12 15 6" />
+        </svg>
+        <span class="sidebar-toggle-label">Collapse</span>
+      </button>
+      <div class="theme-row">
+        <div class="theme-toggle" id="themeToggle" role="switch" aria-label="Toggle theme"></div>
+        <span class="theme-row-label">Appearance</span>
+      </div>
+    </div>
+  </aside>
+
+  <main class="main">
+    <header class="page-header">
+      <h1 class="page-title">Generate Repair Image &amp; Details</h1>
+      <p class="page-subtitle">Add parts or import CSV to fetch repair difficulty, repair time, and key features from AI
+      </p>
+    </header>
+
+    <!-- Shop Selector -->
+    <div class="shop-selector-bar" id="shopSelectorBar">
+      <span class="shop-selector-label">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"
+          stroke-linejoin="round">
+          <path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z" />
+          <polyline points="9 22 9 12 15 12 15 22" />
+        </svg>
+        Active Shop
+      </span>
+      <select class="shop-select" id="shopSelectDropdown" onchange="onShopSelectChange(this)">
+        <option value="">— Select a shop —</option>
+      </select>
+      <span class="shop-active-badge" id="shopActiveBadge" style="display:none"></span>
+      <a href="{{ BASE_URL }}/shop-config" class="shop-config-link" title="Manage shops">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"
+          stroke-linejoin="round">
+          <circle cx="12" cy="12" r="3" />
+          <path d="M19.07 4.93a10 10 0 0 1 0 14.14M4.93 4.93a10 10 0 0 0 0 14.14" />
+        </svg>
+        Manage Shops
+      </a>
+    </div>
+
+    <!-- Input Card -->
+    <section class="card input-card">
+      <div class="input-card-header">
+        <div class="input-card-title">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"
+            stroke-linejoin="round" width="17" height="17">
+            <rect x="3" y="3" width="18" height="18" rx="3" />
+            <path d="M9 9h6M9 12h6M9 15h4" />
+          </svg>
+          Parts to Process
+          <span class="part-count-badge" id="partCountBadge">1 PART</span>
+          <span class="csv-loaded-pill" id="csvLoadedPill">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="12" height="12">
+              <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z" />
+              <polyline points="14,2 14,8 20,8" />
+            </svg>
+            <span id="csvPillText">CSV Loaded</span>
+            <button class="btn-clear-csv" onclick="clearCsv()" title="Clear">✕</button>
+          </span>
+        </div>
+        <div style="display:flex;align-items:center;gap:10px">
+          <button class="btn-csv-sample" onclick="downloadSampleCsv()">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="13" height="13">
+              <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4" />
+              <polyline points="7,10 12,15 17,10" />
+              <line x1="12" y1="3" x2="12" y2="15" />
+            </svg>
+            Sample CSV
+          </button>
+          <button class="btn-csv-import" id="importCsvBtn" onclick="document.getElementById('csvFileInput').click()">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="13" height="13">
+              <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4" />
+              <polyline points="17,8 12,3 7,8" />
+              <line x1="12" y1="3" x2="12" y2="15" />
+            </svg>
+            Import CSV
+          </button>
+          <input type="file" id="csvFileInput" accept=".csv" style="display:none" onchange="handleCsvUpload(this)">
+        </div>
+      </div>
+
+      <!-- Shopify fetch status bar (shared across all rows) -->
+      <div class="shopify-fetch-status" id="shopifyFetchStatus" style="margin-bottom:10px"></div>
+      <div class="shopify-fetched-pill" id="shopifyFetchedPill" style="margin-bottom:10px">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="12" height="12">
+          <path d="M20 6L9 17l-5-5" />
+        </svg>
+        <span id="shopifyFetchedText"></span>
+        <button class="btn-clear-csv" onclick="clearShopifyFetched()" title="Clear">✕</button>
+      </div>
+
+      <!-- Container for failed product details during CSV upload -->
+      <div class="shopify-fetch-errors" id="shopifyFetchErrors"
+        style="display:none;margin-bottom:12px;padding:12px 14px;background:rgba(239,68,68,0.1);border:1px solid rgba(239,68,68,0.3);border-radius:8px;font-size:0.85rem;color:#ef4444;">
+        <div
+          style="display:flex;justify-content:space-between;align-items:center;font-weight:600;margin-bottom:8px;border-bottom:1px solid rgba(239,68,68,0.2);padding-bottom:6px;">
+          <span id="shopifyFetchErrorsHeader">⚠️ Failed Fetch Details</span>
+          <button onclick="document.getElementById('shopifyFetchErrors').style.display='none'"
+            style="background:none;border:none;color:inherit;cursor:pointer;font-size:0.9rem;padding:0 4px;">✕</button>
+        </div>
+        <div id="shopifyFetchErrorsList"
+          style="max-height:180px;overflow-y:auto;font-family:var(--font-mono);font-size:0.8rem;white-space:pre-wrap;word-break:break-all;line-height:1.4">
+        </div>
+      </div>
+
+      <div class="csv-hint">CSV columns: <strong>title</strong>, <strong>part_number</strong>,
+        <strong>appliance_type</strong>, <strong>part_type</strong>, <strong>brand</strong>,
+        <strong>shopify_url</strong> — adding a <strong style="color:var(--accent2)">shopify_url</strong> column
+        auto-fills fields from Shopify
+      </div>
+
+      <div class="col-headers">
+        <div></div>
+        <div class="field-label-sm">Part Title <span class="req">*</span></div>
+        <div class="field-label-sm">Part Number <span class="req">*</span></div>
+        <div class="field-label-sm">Appliance Type</div>
+        <div class="field-label-sm">Part Type</div>
+        <div class="field-label-sm">Brand</div>
+        <div class="field-label-sm">Shop URL</div>
+        <div></div>
+      </div>
+
+      <div class="parts-list" id="partsList">
+        <div class="part-row" id="part-row-1">
+          <div class="part-index">1</div>
+          <input type="text" class="field-input part-title" placeholder="e.g. LG Refrigerator Filter" data-part="1">
+          <input type="text" class="field-input part-number" placeholder="e.g. ADQ36006107" data-part="1">
+          <input type="text" class="field-input part-appliance" placeholder="e.g. Refrigerator" data-part="1">
+          <input type="text" class="field-input part-type" placeholder="e.g. Water Filter" data-part="1">
+          <input type="text" class="field-input part-brand" placeholder="e.g. LG" data-part="1">
+          <input type="url" class="field-input part-shopify-url"
+            placeholder="https://spark236.myshopify.com/products/abcd" data-part="1" oninput="onShopifyUrlInput(this)">
+          <div style="display:flex;align-items:center;gap:4px">
+            <button class="btn-fetch-row" id="btn-fetch-1" onclick="fetchShopifyRowUrl(1)"
+              title="Fetch from Shopify URL" disabled>
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" width="12" height="12">
+                <path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4" />
+                <polyline points="17 8 12 3 7 8" />
+                <line x1="12" y1="3" x2="12" y2="15" />
+              </svg>
+            </button>
+            <button class="btn-remove-part" onclick="removePart(1)" disabled title="Cannot remove only part">✕</button>
+          </div>
+        </div>
+      </div>
+
+      <div class="add-part-row">
+        <button class="btn-add-part" onclick="addPart()">
+          <span style="font-size:1.1rem;line-height:1">＋</span> Add Part
+        </button>
+        <span class="parts-hint">Or import CSV to batch-fill rows</span>
+      </div>
+
+      <div class="generate-bar">
+        <button class="btn-generate-all" id="generateBtn" onclick="generateRepairDetails()">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" width="15" height="15">
+            <path d="M13 2L3 14h7l-1 8 10-12h-7l1-8z" />
+          </svg>
+          <span id="genBtnText">Generate Repair Details</span>
+        </button>
+      </div>
+    </section>
+
+    <!-- Results Area -->
+    <div class="results-area" id="resultsArea" style="display:none">
+      <div class="results-header">
+        <h2 class="results-title">Generated Repair Cards</h2>
+        <a href="{{ BASE_URL }}/review-repair"
+          style="font-size:.85rem;color:var(--accent);text-decoration:none;font-weight:600">View in Review Repair →</a>
+      </div>
+      <div class="repair-cards-list" id="repairCardsList"></div>
+    </div>
+  </main>
+
+  <script>
+    const API_BASE_URL = "{{ BASE_URL }}";
+    let partRowCount = 1;
+
+    /* Theme Init */
+    (function () {
+      var root = document.documentElement, toggle = document.getElementById('themeToggle'), saved = localStorage.getItem('theme') || 'dark';
+      root.setAttribute('data-theme', saved);
+      if (toggle) {
+        toggle.addEventListener('click', function () {
+          var n = root.getAttribute('data-theme') === 'dark' ? 'light' : 'dark';
+          root.setAttribute('data-theme', n);
+          localStorage.setItem('theme', n);
+        });
+      }
+    })();
+
+    // Load active shops on load
+    document.addEventListener('DOMContentLoaded', function () {
+      loadShops();
+    });
+
+    function toggleSidebar() {
+      document.getElementById('sidebar').classList.toggle('collapsed');
+    }
+
+    async function loadShops() {
+      try {
+        const res = await fetch(`${API_BASE_URL}/api/shops`);
+        if (!res.ok) return;
+        const data = await res.json();
+        const shops = Array.isArray(data) ? data : (data.shops || []);
+        const select = document.getElementById('shopSelectDropdown');
+        if (!select) return;
+        select.innerHTML = '<option value="">— Select a shop —</option>';
+        shops.forEach(s => {
+          const opt = document.createElement('option');
+          opt.value = s.id;
+          opt.textContent = s.name + (s.is_active ? ' (Active)' : '');
+          if (s.is_active) opt.selected = true;
+          select.appendChild(opt);
+        });
+      } catch (e) {
+        console.error('Error loading shops:', e);
+      }
+    }
+
+    function onShopSelectChange(select) {
+      if (!select.value) return;
+      fetch(`${API_BASE_URL}/api/shops/${select.value}/set-active`, {
+        method: 'POST'
+      }).then(() => loadShops()).catch(e => console.error(e));
+    }
+
+    function updatePartCount() {
+      const rows = document.querySelectorAll('.part-row');
+      document.getElementById('partCountBadge').textContent = `${rows.length} ${rows.length === 1 ? 'PART' : 'PARTS'}`;
+      rows.forEach((r, idx) => {
+        r.querySelector('.part-index').textContent = idx + 1;
+        const btnRem = r.querySelector('.btn-remove-part');
+        if (btnRem) btnRem.disabled = (rows.length === 1);
+      });
+    }
+
+    function addPart(title = '', number = '', appliance = '', type = '', brand = '', url = '') {
+      partRowCount++;
+      const id = partRowCount;
+      const list = document.getElementById('partsList');
+      const div = document.createElement('div');
+      div.className = 'part-row';
+      div.id = `part-row-${id}`;
+      const shopUrl = url || '';
+      div.innerHTML = `
+        <div class="part-index">${id}</div>
+        <input type="text" class="field-input part-title" placeholder="e.g. LG Refrigerator Filter" data-part="${id}" value="${escapeHtml(title)}">
+        <input type="text" class="field-input part-number" placeholder="e.g. ADQ36006107" data-part="${id}" value="${escapeHtml(number)}">
+        <input type="text" class="field-input part-appliance" placeholder="e.g. Refrigerator" data-part="${id}" value="${escapeHtml(appliance)}">
+        <input type="text" class="field-input part-type" placeholder="e.g. Water Filter" data-part="${id}" value="${escapeHtml(type)}">
+        <input type="text" class="field-input part-brand" placeholder="e.g. LG" data-part="${id}" value="${escapeHtml(brand)}">
+        <input type="url" class="field-input part-shopify-url" placeholder="https://spark236.myshopify.com/products/abcd" data-part="${id}" value="${escapeHtml(shopUrl)}" oninput="onShopifyUrlInput(this)">
+        <div style="display:flex;align-items:center;gap:4px">
+          <button class="btn-fetch-row${shopUrl ? ' fetched' : ''}" id="btn-fetch-${id}" onclick="fetchShopifyRowUrl(${id})" title="Fetch from Shopify URL"${shopUrl ? '' : ' disabled'}>
+            ${shopUrl ? '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" width="12" height="12"><path d="M20 6L9 17l-5-5"/></svg>' : '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" width="12" height="12"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>'}
+          </button>
+          <button class="btn-remove-part" onclick="removePart(${id})" title="Remove">✕</button>
+        </div>
+      `;
+      list.appendChild(div);
+      updatePartCount();
+    }
+
+    function removePart(id) {
+      const rows = document.querySelectorAll('.part-row');
+      if (rows.length <= 1) return;
+      const r = document.getElementById(`part-row-${id}`);
+      if (r) r.remove();
+      updatePartCount();
+    }
+
+    function downloadSampleCsv() {
+      const sample = "title,part_number,appliance_type,part_type,brand,shopify_url\n" +
+        "GE Refrigerator Filter,WR17X11600,Refrigerator,Water Filter,GE,https://example.com/products/wr17x11600\n" +
+        "Whirlpool Dryer Belt,WP341241,Dryer,Belt,Whirlpool,\n";
+      const blob = new Blob([sample], { type: 'text/csv' });
+      const a = document.createElement('a');
+      a.href = URL.createObjectURL(blob);
+      a.download = 'sample_repair_parts.csv';
+      a.click();
+    }
+
+    function handleCsvUpload(input) {
+      const file = input.files[0];
+      if (!file) return;
+      const reader = new FileReader();
+      reader.onload = function (e) {
+        const text = e.target.result;
+        parseAndPopulateCsv(text, file.name);
+      };
+      reader.readAsText(file);
+      input.value = '';
+    }
+
+    function parseAndPopulateCsv(text, filename) {
+      const lines = text.split(/\r?\n/).map(l => l.trim()).filter(l => l);
+      if (lines.length < 2) return;
+      const headers = lines[0].split(',').map(h => h.trim().toLowerCase().replace(/^"|"$/g, ''));
+
+      const titleIdx = headers.indexOf('title');
+      const numIdx = headers.indexOf('part_number');
+      const appIdx = headers.indexOf('appliance_type');
+      const typeIdx = headers.indexOf('part_type');
+      const brandIdx = headers.indexOf('brand');
+      const urlIdx = headers.indexOf('shopify_url');
+
+      const rows = [];
+      for (let i = 1; i < lines.length; i++) {
+        const cols = parseCsvLine(lines[i]);
+        if (!cols.length) continue;
+        const rObj = {};
+        if (titleIdx >= 0) rObj['title'] = cols[titleIdx] || '';
+        if (numIdx >= 0) rObj['part_number'] = cols[numIdx] || '';
+        if (appIdx >= 0) rObj['appliance_type'] = cols[appIdx] || '';
+        if (typeIdx >= 0) rObj['part_type'] = cols[typeIdx] || '';
+        if (brandIdx >= 0) rObj['brand'] = cols[brandIdx] || '';
+        if (urlIdx >= 0) rObj['shopify_url'] = cols[urlIdx] || '';
+        rows.push(rObj);
+      }
+
+      const hasShopifyUrl = rows.some(r => r['shopify_url']);
+      if (hasShopifyUrl) {
+        _processShopifyCsvRows(rows, filename);
+        return;
+      }
+
+      const list = document.getElementById('partsList');
+      list.innerHTML = '';
+      partRowCount = 0;
+
+      rows.forEach(r => {
+        if (r.title || r.part_number || r.shopify_url) {
+          addPart(r.title || '', r.part_number || '', r.appliance_type || '', r.part_type || '', r.brand || '', r.shopify_url || '');
+        }
+      });
+      if (document.querySelectorAll('.part-row').length === 0) {
+        addPart();
+      }
+      document.getElementById('csvPillText').textContent = filename || 'CSV Loaded';
+      document.getElementById('csvLoadedPill').style.display = 'inline-flex';
+    }
+
+    async function _processShopifyCsvRows(rows, filename) {
+      const status = document.getElementById('shopifyFetchStatus');
+      const pill = document.getElementById('shopifyFetchedPill');
+      const pillText = document.getElementById('shopifyFetchedText');
+      const errContainer = document.getElementById('shopifyFetchErrors');
+      const errHeader = document.getElementById('shopifyFetchErrorsHeader');
+      const errList = document.getElementById('shopifyFetchErrorsList');
+
+      if (errContainer) errContainer.style.display = 'none';
+      if (errList) errList.innerHTML = '';
+
+      if (status) {
+        status.className = 'shopify-fetch-status visible loading';
+        status.textContent = '⏳ Fetching ' + rows.length + ' product' + (rows.length > 1 ? 's' : '') + ' from Shopify…';
+      }
+
+      const fetchedRows = [];
+      const failedDetails = [];
+      let errors = 0;
+
+      for (let i = 0; i < rows.length; i++) {
+        const r = rows[i];
+        const url = (r['shopify_url'] || r['shopify url'] || r['url'] || '').trim();
+        if (!url) {
+          errors++;
+          const reason = 'Missing shopify_url value in CSV row';
+          failedDetails.push({ row: i + 1, url: '(empty)', reason: reason });
+          console.warn('[CSV Shopify Fetch] Row ' + (i + 1) + ': ' + reason);
+          continue;
+        }
+        try {
+          const product = await _fetchShopifyProduct(url);
+          const base = _shopifyProductToRow(product);
+          function getVal2(row, aliases) { for (let k = 0; k < aliases.length; k++) { if (row[aliases[k]]) return row[aliases[k]]; } return ''; }
+          base.title = getVal2(r, ['title', 'product_title', 'name']) || base.title;
+          base.part_number = getVal2(r, ['part_number', 'sku', 'number']) || base.part_number;
+          base.brand = getVal2(r, ['brand', 'vendor']) || base.brand;
+          base.part_type = getVal2(r, ['part_type', 'type']) || base.part_type;
+          base.appliance_type = getVal2(r, ['appliance_type', 'appliance']) || base.appliance_type;
+          base.shopify_url = url;
+          fetchedRows.push(base);
+          if (status) status.textContent = '⏳ Fetched ' + (fetchedRows.length) + ' / ' + rows.length + '…';
+        } catch (err) {
+          errors++;
+          const reason = err.message || String(err);
+          failedDetails.push({ row: i + 1, url: url, reason: reason });
+          console.error('[CSV Shopify Fetch Failed] Row ' + (i + 1) + ' | URL: ' + url + ' | Error:', reason);
+        }
+      }
+
+      if (fetchedRows.length === 0) {
+        if (status) {
+          status.className = 'shopify-fetch-status visible error';
+          status.textContent = '✗ Could not fetch any products. ' + (errors > 0 ? errors + ' rows failed.' : '');
+        }
+        if (errContainer && errList && failedDetails.length > 0) {
+          if (errHeader) errHeader.textContent = '⚠️ Failed Fetch Details (' + failedDetails.length + ' row' + (failedDetails.length > 1 ? 's' : '') + ' failed)';
+          errList.innerHTML = failedDetails.map(function (f) {
+            return '<div style="margin-bottom:4px;"><strong>Row ' + f.row + '</strong> (' + escapeHtml(f.url) + '): <span style="color:#f87171;">' + escapeHtml(f.reason) + '</span></div>';
+          }).join('');
+          errContainer.style.display = 'block';
+        }
+        return;
+      }
+      const list = document.getElementById('partsList');
+      list.innerHTML = ''; partRowCount = 0;
+      fetchedRows.forEach(function (row) {
+        addPart(row.title, row.part_number, row.appliance_type, row.part_type, row.brand, row.shopify_url);
+        const btn = document.getElementById('btn-fetch-' + partRowCount);
+        if (btn) {
+          btn.disabled = false;
+          btn.classList.add('fetched');
+          btn.title = 'Re-fetch from Shopify URL';
+          btn.innerHTML = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" width="12" height="12"><path d="M20 6L9 17l-5-5"/></svg>';
+        }
+      });
+      updatePartCount();
+      let msg = fetchedRows.length + ' product' + (fetchedRows.length > 1 ? 's' : '') + ' fetched from Shopify';
+      if (errors > 0) msg += ' (' + errors + ' failed)';
+      if (pillText) pillText.textContent = msg;
+      if (pill) pill.classList.add('visible');
+      if (status) {
+        status.className = 'shopify-fetch-status visible success';
+        status.textContent = '✓ ' + msg;
+      }
+
+      if (errContainer && errList && failedDetails.length > 0) {
+        if (errHeader) errHeader.textContent = '⚠️ Failed Fetch Details (' + failedDetails.length + ' row' + (failedDetails.length > 1 ? 's' : '') + ' failed)';
+        errList.innerHTML = failedDetails.map(function (f) {
+          return '<div style="margin-bottom:4px;"><strong>Row ' + f.row + '</strong> (' + escapeHtml(f.url) + '): <span style="color:#f87171;">' + escapeHtml(f.reason) + '</span></div>';
+        }).join('');
+        errContainer.style.display = 'block';
+      }
+    }
+
+    function onShopifyUrlInput(input) {
+      const row = input.closest('.part-row'); if (!row) return;
+      const id = row.id.replace('part-row-', '');
+      const btn = document.getElementById('btn-fetch-' + id);
+      if (!btn) return;
+      const val = (input.value || '').trim();
+      btn.disabled = !val;
+      if (!val) btn.classList.remove('fetched');
+    }
+
+    async function fetchShopifyRowUrl(id) {
+      const row = document.getElementById('part-row-' + id); if (!row) return;
+      const urlInput = row.querySelector('.part-shopify-url');
+      const btn = document.getElementById('btn-fetch-' + id);
+      const status = document.getElementById('shopifyFetchStatus');
+      const url = (urlInput ? urlInput.value : '').trim();
+      if (!url) return;
+
+      if (btn) {
+        btn.disabled = true;
+        btn.innerHTML = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" width="12" height="12"><path d="M12 2v4M12 18v4M4.93 4.93l2.83 2.83M16.24 16.24l2.83 2.83M2 12h4M18 12h4"/></svg>';
+      }
+      if (status) {
+        status.className = 'shopify-fetch-status visible loading';
+        status.textContent = '⏳ Fetching from Shopify…';
+      }
+
+      try {
+        const product = await _fetchShopifyProduct(url);
+        const data = _shopifyProductToRow(product);
+        const titleEl = row.querySelector('.part-title');
+        const numEl = row.querySelector('.part-number');
+        const appEl = row.querySelector('.part-appliance');
+        const typeEl = row.querySelector('.part-type');
+        const brandEl = row.querySelector('.part-brand');
+        if (titleEl && !titleEl.value) titleEl.value = data.title;
+        if (numEl && !numEl.value) numEl.value = data.part_number;
+        if (appEl && !appEl.value) appEl.value = data.appliance_type;
+        if (typeEl && !typeEl.value) typeEl.value = data.part_type;
+        if (brandEl && !brandEl.value) brandEl.value = data.brand;
+
+        if (btn) {
+          btn.disabled = false;
+          btn.classList.add('fetched');
+          btn.title = 'Re-fetch from Shopify URL';
+          btn.innerHTML = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" width="12" height="12"><path d="M20 6L9 17l-5-5"/></svg>';
+        }
+        if (status) {
+          status.className = 'shopify-fetch-status visible success';
+          status.textContent = '✓ Fetched: ' + (data.title || url);
+          setTimeout(function () { status.className = 'shopify-fetch-status'; }, 4000);
+        }
+      } catch (err) {
+        if (btn) {
+          btn.disabled = false;
+          btn.innerHTML = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" width="12" height="12"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>';
+        }
+        if (status) {
+          status.className = 'shopify-fetch-status visible error';
+          status.textContent = '✗ ' + err.message;
+        }
+      }
+    }
+
+    async function _fetchShopifyProduct(rawUrl) {
+      const srvResp = await fetch(`${API_BASE_URL}/api/shopify-product`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ url: rawUrl })
+      });
+      const srvData = await srvResp.json();
+      if (!srvResp.ok) throw new Error(srvData.error || 'Server error (' + srvResp.status + ')');
+      if (!srvData.product) throw new Error('No product data returned from server.');
+      return srvData.product;
+    }
+
+    function _shopifyProductToRow(product) {
+      return {
+        title: product.title || '',
+        part_number: product.part_number || product.sku || String(product.id || ''),
+        brand: product.brand || product.vendor || '',
+        part_type: product.part_type || product.product_type || '',
+        appliance_type: product.appliance_type || ''
+      };
+    }
+
+    function parseCsvLine(line) {
+      const result = [];
+      let cur = '';
+      let inQuote = false;
+      for (let i = 0; i < line.length; i++) {
+        const char = line[i];
+        if (char === '"') {
+          inQuote = !inQuote;
+        } else if (char === ',' && !inQuote) {
+          result.push(cur.trim().replace(/^"|"$/g, ''));
+          cur = '';
+        } else {
+          cur += char;
+        }
+      }
+      result.push(cur.trim().replace(/^"|"$/g, ''));
+      return result;
+    }
+
+    function clearShopifyFetched() {
+      const pill = document.getElementById('shopifyFetchedPill');
+      if (pill) pill.classList.remove('visible');
+      const text = document.getElementById('shopifyFetchedText');
+      if (text) text.textContent = '';
+      const status = document.getElementById('shopifyFetchStatus');
+      if (status) { status.className = 'shopify-fetch-status'; status.textContent = ''; }
+      const errContainer = document.getElementById('shopifyFetchErrors');
+      if (errContainer) errContainer.style.display = 'none';
+    }
+
+    function clearCsv() {
+      document.getElementById('csvLoadedPill').style.display = 'none';
+      clearShopifyFetched();
+    }
+
+    async function generateRepairDetails() {
+      const rows = document.querySelectorAll('.part-row');
+      const products = [];
+      rows.forEach(r => {
+        const title = r.querySelector('.part-title').value.trim();
+        const number = r.querySelector('.part-number').value.trim();
+        const appliance = r.querySelector('.part-appliance').value.trim();
+        const pType = r.querySelector('.part-type').value.trim();
+        const brand = r.querySelector('.part-brand').value.trim();
+        const url = r.querySelector('.part-shopify-url').value.trim();
+        if (title && number) {
+          products.push({
+            product_title: title,
+            part_number: number,
+            appliance_type: appliance,
+            part_type: pType,
+            brand: brand,
+            shopify_url: url
+          });
+        }
+      });
+
+      if (!products.length) {
+        alert('Please enter at least one product title and part number.');
+        return;
+      }
+
+      const btn = document.getElementById('generateBtn');
+      const btnText = document.getElementById('genBtnText');
+      btn.disabled = true;
+      btnText.innerHTML = '<span class="spinner"></span> Generating Details...';
+
+      try {
+        const shopId = document.getElementById('shopSelectDropdown').value;
+        const res = await fetch(`${API_BASE_URL}/api/generate-repair`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ products, shop_id: shopId ? parseInt(shopId) : null })
+        });
+        const data = await res.json();
+        if (!res.ok || data.error) {
+          alert(data.error || 'Failed to generate repair details.');
+          return;
+        }
+
+        renderRepairCards(data.results || []);
+      } catch (e) {
+        console.error(e);
+        alert('An error occurred during generation.');
+      } finally {
+        btn.disabled = false;
+        btnText.textContent = 'Generate Repair Details';
+      }
+    }
+
+    function renderRepairCards(results) {
+      const container = document.getElementById('repairCardsList');
+      container.innerHTML = '';
+
+      results.forEach(item => {
+        const card = document.createElement('div');
+        card.className = 'repair-card';
+
+        const diffClass = item.repair_difficulty && item.repair_difficulty.toLowerCase().includes('easy') ? 'badge-diff-easy' :
+          item.repair_difficulty && item.repair_difficulty.toLowerCase().includes('mod') ? 'badge-diff-moderate' : 'badge-diff-advanced';
+
+        const imgHtml = item.product_image_url ?
+          `<img src="${escapeHtml(item.product_image_url)}" class="repair-card-img" alt="Product Image">` :
+          `<div class="repair-card-img-placeholder">No Image</div>`;
+
+        card.innerHTML = `
+          <div class="repair-card-header">
+            ${imgHtml}
+            <div class="repair-card-info">
+              <h3 class="repair-card-prod-title">${escapeHtml(item.product_title)}</h3>
+              <div class="repair-card-meta-row">
+                <span class="repair-card-meta-tag">Part #: ${escapeHtml(item.part_number)}</span>
+                ${item.brand ? `<span class="repair-card-meta-tag">Brand: ${escapeHtml(item.brand)}</span>` : ''}
+                ${item.appliance_type ? `<span class="repair-card-meta-tag">Appliance: ${escapeHtml(item.appliance_type)}</span>` : ''}
+              </div>
+              <div class="repair-badges-row">
+                <span class="repair-badge badge-time">⏱️ Repair Time: ${escapeHtml(item.repair_time || '15-30 mins')}</span>
+                <span class="repair-badge ${diffClass}">🛠️ Difficulty: ${escapeHtml(item.repair_difficulty || 'Easy')}</span>
+              </div>
+            </div>
+          </div>
+          <div class="repair-bullets-list">
+            <div class="repair-bullet-item">
+              <span class="bullet-icon">🛡️</span>
+              <div><span class="bullet-label">OEM Quality:</span><span class="bullet-text">${escapeHtml(item.oem_quality || '')}</span></div>
+            </div>
+            <div class="repair-bullet-item">
+              <span class="bullet-icon">⚡</span>
+              <div><span class="bullet-label">Reliable Performance:</span><span class="bullet-text">${escapeHtml(item.reliable_performance || '')}</span></div>
+            </div>
+            <div class="repair-bullet-item">
+              <span class="bullet-icon">🏗️</span>
+              <div><span class="bullet-label">Durable Construction:</span><span class="bullet-text">${escapeHtml(item.durable_construction || '')}</span></div>
+            </div>
+            <div class="repair-bullet-item">
+              <span class="bullet-icon">🎯</span>
+              <div><span class="bullet-label">Perfect Fit:</span><span class="bullet-text">${escapeHtml(item.perfect_fit || '')}</span></div>
+            </div>
+            <div class="repair-bullet-item">
+              <span class="bullet-icon">⚠️</span>
+              <div><span class="bullet-label">Safety Tip:</span><span class="bullet-text">${escapeHtml(item.safety_tip || '')}</span></div>
+            </div>
+          </div>
+        `;
+        container.appendChild(card);
+      });
+
+      document.getElementById('resultsArea').style.display = 'block';
+      document.getElementById('resultsArea').scrollIntoView({ behavior: 'smooth' });
+    }
+
+    function escapeHtml(str) {
+      if (!str) return '';
+      return String(str).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
+    }
+  </script>
+</body>
+
+</html>

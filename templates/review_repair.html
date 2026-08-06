@@ -1,0 +1,1406 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Review Repair Infographics — ContentAI</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link
+    href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;600;700&family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap"
+    rel="stylesheet">
+  <style>
+    :root,
+    [data-theme="dark"] {
+      --bg: #080c0d;
+      --bg-elev: #0e1416;
+      --surface: #121a1d;
+      --surface2: #1a2528;
+      --surface3: #232f34;
+      --border: #223135;
+      --border2: #2d4147;
+      --text: #e0f2f1;
+      --text-2: #94a9ad;
+      --text-3: #60787e;
+      --accent: #22d3ee;
+      --accent-soft: rgba(34, 211, 238, 0.14);
+      --accent2: #14b8a6;
+      --accent2-soft: rgba(20, 184, 166, 0.12);
+      --accent3: #5eead4;
+      --accent3-soft: rgba(94, 234, 212, 0.14);
+      --danger: #f87171;
+      --danger-soft: rgba(248, 113, 113, 0.12);
+      --success: #34d399;
+      --warning: #f59e0b;
+      --warning-soft: rgba(245, 158, 11, 0.12);
+      --shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.4);
+      --shadow-md: 0 8px 24px -8px rgba(0, 0, 0, 0.6);
+      --gradient-accent: linear-gradient(135deg, #22d3ee 0%, #0d9488 100%);
+    }
+
+    [data-theme="light"] {
+      --bg: #f0f9fa;
+      --bg-elev: #ffffff;
+      --surface: #ffffff;
+      --surface2: #e6f2f3;
+      --surface3: #d1e7e9;
+      --border: #cfe1e2;
+      --border2: #b4d3d6;
+      --text: #0f172a;
+      --text-2: #334155;
+      --text-3: #64748b;
+      --accent: #0891b2;
+      --accent-soft: rgba(8, 145, 178, 0.10);
+      --accent2: #0f766e;
+      --accent2-soft: rgba(15, 118, 110, 0.10);
+      --accent3: #0d9488;
+      --accent3-soft: rgba(13, 148, 136, 0.12);
+      --danger: #e11d48;
+      --danger-soft: rgba(225, 29, 72, 0.08);
+      --success: #059669;
+      --warning: #d97706;
+      --warning-soft: rgba(217, 119, 6, 0.10);
+      --shadow-sm: 0 1px 2px rgba(8, 145, 178, 0.06);
+      --shadow-md: 0 10px 30px -12px rgba(8, 145, 178, 0.18);
+      --gradient-accent: linear-gradient(135deg, #0891b2 0%, #0f766e 100%);
+    }
+
+    :root {
+      --radius: 14px;
+      --radius-sm: 10px;
+      --font-head: 'Space Grotesk', system-ui, sans-serif;
+      --font-body: 'Inter', system-ui, -apple-system, sans-serif;
+      --font-mono: 'JetBrains Mono', ui-monospace, Menlo, monospace;
+    }
+
+    /* ── Sidebar ── */
+    :root {
+      --sidebar-expanded: 188px;
+      --sidebar-collapsed: 55px
+    }
+
+    *,
+    *::before,
+    *::after {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    html {
+      font-size: 15px;
+    }
+
+    body {
+      font-family: var(--font-body);
+      background: var(--bg);
+      color: var(--text);
+      display: flex;
+      min-height: 100vh;
+      overflow-x: hidden;
+      -webkit-font-smoothing: antialiased;
+      transition: background .25s, color .25s;
+    }
+
+    textarea,
+    input,
+    button,
+    select {
+      font-family: inherit;
+    }
+
+
+
+
+    .sidebar {
+      width: var(--sidebar-expanded);
+      min-height: 100vh;
+      background: var(--bg-elev);
+      border-right: 1px solid var(--border);
+      display: flex;
+      flex-direction: column;
+      position: fixed;
+      left: 0;
+      top: 0;
+      z-index: 100;
+      padding: 12px 0 14px;
+      overflow: hidden;
+      transition: width .22s cubic-bezier(.4, 0, .2, 1);
+    }
+
+    .sidebar.collapsed {
+      width: var(--sidebar-collapsed)
+    }
+
+    /* Logo row */
+    .sidebar-logo-row {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      padding: 0 10px 16px;
+      border-bottom: 1px solid var(--border);
+      margin-bottom: 8px;
+      flex-shrink: 0;
+      white-space: nowrap;
+      overflow: hidden
+    }
+
+    .sidebar-logo-icon {
+      width: 28px;
+      height: 28px;
+      min-width: 28px;
+      background: var(--gradient-accent);
+      border-radius: 7px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: #fff;
+      flex-shrink: 0
+    }
+
+    .sidebar-logo-icon svg {
+      width: 14px;
+      height: 14px
+    }
+
+    .sidebar-logo-text {
+      font-family: var(--font-head);
+      font-size: .95rem;
+      font-weight: 700;
+      letter-spacing: -.02em;
+      color: var(--text);
+      opacity: 1;
+      transition: opacity .15s
+    }
+
+    .sidebar.collapsed .sidebar-logo-text {
+      opacity: 0;
+      pointer-events: none
+    }
+
+    /* Nav */
+    .sidebar-nav {
+      flex: 1;
+      padding: 0 6px;
+      display: flex;
+      flex-direction: column;
+      gap: 2px;
+      overflow: hidden
+    }
+
+    .nav-item {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      padding: 8px;
+      border-radius: 9px;
+      color: var(--text-3);
+      text-decoration: none;
+      transition: background .15s, color .15s;
+      cursor: pointer;
+      border: none;
+      background: none;
+      white-space: nowrap;
+      overflow: hidden;
+      width: 100%;
+      position: relative;
+    }
+
+    .nav-item:hover {
+      background: var(--surface2);
+      color: var(--text)
+    }
+
+    .nav-item.active {
+      background: var(--accent-soft);
+      color: var(--accent)
+    }
+
+    .nav-item svg {
+      width: 16px;
+      height: 16px;
+      flex-shrink: 0
+    }
+
+    .nav-label {
+      font-size: .82rem;
+      font-weight: 500;
+      opacity: 1;
+      transition: opacity .15s
+    }
+
+    .sidebar.collapsed .nav-label {
+      opacity: 0;
+      pointer-events: none
+    }
+
+    /* Tooltip only visible when collapsed */
+    .nav-item .tooltip {
+      position: absolute;
+      left: calc(var(--sidebar-collapsed) + 8px);
+      top: 50%;
+      transform: translateY(-50%);
+      background: var(--surface3);
+      border: 1px solid var(--border2);
+      color: var(--text);
+      font-size: .72rem;
+      font-weight: 600;
+      white-space: nowrap;
+      padding: 4px 9px;
+      border-radius: 6px;
+      pointer-events: none;
+      opacity: 0;
+      transition: opacity .15s;
+      z-index: 200;
+      box-shadow: var(--shadow-md)
+    }
+
+    .sidebar.collapsed .nav-item:hover .tooltip {
+      opacity: 1
+    }
+
+    /* Bottom controls */
+    .sidebar-bottom {
+      margin-top: auto;
+      padding: 0 6px;
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+      overflow: hidden
+    }
+
+    .sidebar-toggle-btn {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      padding: 7px 8px;
+      border-radius: 9px;
+      background: none;
+      border: none;
+      cursor: pointer;
+      color: var(--text-3);
+      width: 100%;
+      white-space: nowrap;
+      overflow: hidden;
+      transition: background .15s, color .15s;
+    }
+
+    .sidebar-toggle-btn:hover {
+      background: var(--surface2);
+      color: var(--text)
+    }
+
+    .sidebar-toggle-btn svg {
+      width: 15px;
+      height: 15px;
+      flex-shrink: 0;
+      transition: transform .22s
+    }
+
+    .sidebar.collapsed .sidebar-toggle-btn svg {
+      transform: rotate(180deg)
+    }
+
+    .sidebar-toggle-label {
+      font-size: .78rem;
+      font-weight: 500;
+      opacity: 1;
+      transition: opacity .15s
+    }
+
+    .sidebar.collapsed .sidebar-toggle-label {
+      opacity: 0;
+      pointer-events: none
+    }
+
+    .theme-row {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      padding: 6px 8px;
+      white-space: nowrap;
+      overflow: hidden
+    }
+
+    .theme-row-label {
+      font-size: .75rem;
+      color: var(--text-3);
+      font-weight: 500;
+      opacity: 1;
+      transition: opacity .15s
+    }
+
+    .sidebar.collapsed .theme-row-label {
+      opacity: 0;
+      pointer-events: none
+    }
+
+    .theme-toggle {
+      width: 32px;
+      height: 18px;
+      min-width: 32px;
+      background: var(--surface2);
+      border: 1px solid var(--border);
+      border-radius: 999px;
+      position: relative;
+      cursor: pointer;
+      transition: background .2s;
+      flex-shrink: 0
+    }
+
+    .theme-toggle::after {
+      content: '';
+      position: absolute;
+      top: 2px;
+      left: 2px;
+      width: 12px;
+      height: 12px;
+      background: var(--text-3);
+      border-radius: 50%;
+      transition: transform .25s cubic-bezier(.4, 0, .2, 1)
+    }
+
+    [data-theme="light"] .theme-toggle::after {
+      transform: translateX(14px);
+      background: var(--accent)
+    }
+
+    /* ── Main Layout & Typography ── */
+    .main {
+      margin-left: var(--sidebar-expanded);
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      height: 100vh;
+      overflow: hidden;
+      transition: margin-left .22s cubic-bezier(.4, 0, .2, 1);
+      background: var(--bg);
+    }
+
+    .sidebar.collapsed+.main {
+      margin-left: var(--sidebar-collapsed);
+    }
+
+    .page-header {
+      padding: 14px 24px;
+      background: var(--surface);
+      border-bottom: 1px solid var(--border);
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      flex-shrink: 0;
+    }
+
+    .page-title {
+      font-family: var(--font-head);
+      font-size: 1.6rem;
+      font-weight: 700;
+      color: var(--text);
+    }
+
+    .page-subtitle {
+      font-size: .88rem;
+      color: var(--text-2);
+      margin-top: 4px;
+    }
+
+    /* Split Workspace */
+    .workspace-wrapper {
+      display: flex;
+      flex: 1;
+      height: calc(100vh - 65px);
+      overflow: hidden;
+    }
+
+    /* Left Batch Panel */
+    .batch-panel {
+      width: 320px;
+      background: var(--bg-elev);
+      border-right: 1px solid var(--border);
+      display: flex;
+      flex-direction: column;
+      flex-shrink: 0;
+    }
+
+    .batch-header {
+      padding: 12px 16px;
+      border-bottom: 1px solid var(--border);
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+    }
+
+    .batch-title-row {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+
+    .batch-panel-title {
+      font-family: var(--font-head);
+      font-size: 0.95rem;
+      font-weight: 700;
+      color: var(--text);
+      letter-spacing: -0.01em;
+    }
+
+    .batch-filter-bar {
+      display: flex;
+      gap: 6px;
+    }
+
+    .batch-tab {
+      padding: 4px 10px;
+      font-size: 0.72rem;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 0.04em;
+      border-radius: 20px;
+      border: 1px solid var(--border);
+      background: transparent;
+      color: var(--text-3);
+      cursor: pointer;
+      transition: all .15s;
+    }
+
+    .batch-tab.active {
+      background: var(--accent-soft);
+      color: var(--accent);
+      border-color: var(--accent);
+    }
+
+    .batch-tab:hover:not(.active) {
+      border-color: var(--border2);
+      color: var(--text-2);
+    }
+
+    .batch-search-input {
+      width: 100%;
+      padding: 8px 12px 8px 32px;
+      font-size: 0.8rem;
+      border-radius: var(--radius-sm);
+      border: 1px solid var(--border);
+      background: var(--surface2);
+      color: var(--text);
+      outline: none;
+      transition: border-color .15s;
+      background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='13' height='13' viewBox='0 0 24 24' fill='none' stroke='%2360787e' stroke-width='2'%3E%3Ccircle cx='11' cy='11' r='8'/%3E%3Cpath d='m21 21-4.35-4.35'/%3E%3C/svg%3E");
+      background-repeat: no-repeat;
+      background-position: 10px center;
+    }
+
+    .batch-search-input:focus {
+      border-color: var(--accent);
+    }
+
+    .batch-list {
+      flex: 1;
+      overflow-y: auto;
+      padding: 10px;
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+    }
+
+    .batch-card {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--radius-sm);
+      padding: 12px;
+      cursor: pointer;
+      transition: border-color .15s, background .15s, transform .15s;
+    }
+
+    .batch-card:hover {
+      border-color: var(--border2);
+      background: var(--surface2);
+    }
+
+    .batch-card.active {
+      border-color: var(--accent);
+      background: var(--accent-soft);
+    }
+
+    .batch-card-head {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 6px;
+    }
+
+    .batch-id-tag {
+      font-family: var(--font-mono);
+      font-size: 0.78rem;
+      color: var(--accent);
+      font-weight: 600;
+    }
+
+    .batch-count-badge {
+      font-size: 0.7rem;
+      padding: 2px 7px;
+      border-radius: 10px;
+      background: var(--surface3);
+      color: var(--text-2);
+      font-weight: 500;
+    }
+
+    .batch-time {
+      font-size: 0.72rem;
+      color: var(--text-3);
+    }
+
+    .batch-product-list {
+      margin-top: 8px;
+      padding-top: 8px;
+      border-top: 1px dashed var(--border);
+      display: flex;
+      flex-direction: column;
+      gap: 4px;
+    }
+
+    .product-item {
+      padding: 7px 9px;
+      border-radius: 6px;
+      font-size: 0.82rem;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      color: var(--text-2);
+      cursor: pointer;
+      transition: all .15s;
+    }
+
+    .product-item:hover {
+      background: var(--surface3);
+      color: var(--text);
+    }
+
+    .product-item.active {
+      background: var(--accent);
+      color: #080c0d;
+      font-weight: 600;
+    }
+
+    .status-dot {
+      width: 8px;
+      height: 8px;
+      border-radius: 50%;
+      display: inline-block;
+      flex-shrink: 0;
+    }
+
+    .dot-pending {
+      background: var(--warning);
+    }
+
+    .dot-reviewed {
+      background: var(--accent);
+    }
+
+    .dot-published {
+      background: var(--success);
+    }
+
+    /* Right Detail Workspace */
+    .detail-workspace {
+      flex: 1;
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 1px;
+      background: var(--border);
+      overflow-y: auto;
+    }
+
+    .workspace-column {
+      background: var(--surface);
+      padding: 22px;
+      overflow-y: auto;
+      display: flex;
+      flex-direction: column;
+      gap: 18px;
+    }
+
+    .column-title {
+      font-family: var(--font-head);
+      font-size: 1.05rem;
+      font-weight: 700;
+      letter-spacing: -0.01em;
+      color: var(--text);
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding-bottom: 12px;
+      border-bottom: 1px solid var(--border);
+    }
+
+    .form-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 14px;
+    }
+
+    .form-group {
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+    }
+
+    .form-group.full {
+      grid-column: 1 / -1;
+    }
+
+    .form-label {
+      font-size: 0.74rem;
+      font-weight: 600;
+      color: var(--text-3);
+      text-transform: uppercase;
+      letter-spacing: 0.04em;
+    }
+
+    .form-input,
+    .form-select,
+    .form-textarea {
+      padding: 9px 12px;
+      font-family: var(--font-body);
+      font-size: 0.84rem;
+      border-radius: var(--radius-sm);
+      border: 1px solid var(--border);
+      background: var(--bg-elev);
+      color: var(--text);
+      outline: none;
+      transition: border-color .15s, box-shadow .15s;
+    }
+
+    .form-input:focus,
+    .form-select:focus,
+    .form-textarea:focus {
+      border-color: var(--accent);
+      box-shadow: 0 0 0 3px var(--accent-soft);
+    }
+
+    .form-textarea {
+      resize: vertical;
+      min-height: 64px;
+      line-height: 1.45;
+    }
+
+    .badge-pill {
+      font-size: 0.7rem;
+      padding: 3px 9px;
+      border-radius: 12px;
+      font-weight: 600;
+      letter-spacing: 0.04em;
+      text-transform: uppercase;
+    }
+
+    .badge-pending {
+      background: var(--warning-soft);
+      color: var(--warning);
+      border: 1px solid rgba(245, 158, 11, 0.3);
+    }
+
+    .badge-reviewed {
+      background: var(--accent-soft);
+      color: var(--accent);
+      border: 1px solid rgba(34, 211, 238, 0.3);
+    }
+
+    .badge-published {
+      background: var(--accent2-soft);
+      color: var(--success);
+      border: 1px solid rgba(52, 211, 153, 0.3);
+    }
+
+    .action-btn-row {
+      display: flex;
+      gap: 12px;
+      margin-top: 10px;
+    }
+
+    .btn-custom {
+      flex: 1;
+      padding: 11px 18px;
+      border-radius: var(--radius-sm);
+      border: none;
+      font-weight: 600;
+      font-size: 0.86rem;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+      transition: opacity .15s, transform .12s, box-shadow .15s;
+    }
+
+    .btn-custom:hover:not(:disabled) {
+      opacity: 0.92;
+      transform: translateY(-1px);
+    }
+
+    .btn-custom:active:not(:disabled) {
+      transform: translateY(0);
+    }
+
+    .btn-custom:disabled {
+      opacity: 0.45;
+      cursor: not-allowed;
+    }
+
+    .btn-save {
+      background: var(--surface2);
+      color: var(--text);
+      border: 1px solid var(--border2);
+    }
+
+    .btn-generate {
+      background: var(--gradient-accent);
+      color: #ffffff;
+      font-weight: 700;
+      box-shadow: 0 4px 14px rgba(34, 211, 238, 0.35);
+    }
+
+    .btn-publish {
+      background: var(--success);
+      color: #080c0d;
+      font-weight: 700;
+      box-shadow: 0 4px 14px rgba(52, 211, 153, 0.35);
+    }
+
+    /* Image Preview Box */
+    .preview-box {
+      flex: 1;
+      min-height: 420px;
+      background: var(--bg-elev);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      overflow: hidden;
+      position: relative;
+      padding: 12px;
+      box-shadow: var(--shadow-sm);
+    }
+
+    .preview-box img {
+      max-width: 100%;
+      max-height: 100%;
+      object-fit: contain;
+      border-radius: 8px;
+    }
+
+    .preview-placeholder {
+      text-align: center;
+      color: var(--text-3);
+      font-size: 0.85rem;
+      padding: 20px;
+    }
+
+    .spinner {
+      width: 18px;
+      height: 18px;
+      border: 2px solid rgba(255, 255, 255, 0.3);
+      border-top-color: #ffffff;
+      border-radius: 50%;
+      animation: spin 0.6s linear infinite;
+    }
+
+    @keyframes spin {
+      to {
+        transform: rotate(360deg);
+      }
+    }
+
+    .empty-workspace {
+      grid-column: 1 / -1;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      color: var(--text-3);
+      gap: 12px;
+      padding: 60px;
+    }
+
+    .toast {
+      position: fixed;
+      bottom: 24px;
+      right: 24px;
+      padding: 12px 20px;
+      border-radius: var(--radius-sm);
+      background: var(--surface2);
+      border: 1px solid var(--border2);
+      color: var(--text);
+      font-size: 0.85rem;
+      box-shadow: var(--shadow-md);
+      z-index: 1000;
+      display: none;
+    }
+  </style>
+</head>
+
+<body>
+  <!-- Sidebar -->
+  <aside class="sidebar" id="sidebar">
+    <div class="sidebar-logo-row">
+      <div class="sidebar-logo-icon">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"
+          stroke-linejoin="round">
+          <path d="M13 2L3 14h7l-1 8 10-12h-7l1-8z" />
+        </svg>
+      </div>
+      <span class="sidebar-logo-text">ContentAI</span>
+    </div>
+    <nav class="sidebar-nav">
+      <a href="{{ BASE_URL }}/" class="nav-item">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"
+          stroke-linejoin="round">
+          <path
+            d="M12 2v4M12 18v4M4.93 4.93l2.83 2.83M16.24 16.24l2.83 2.83M2 12h4M18 12h4M4.93 19.07l2.83-2.83M16.24 7.76l2.83-2.83" />
+        </svg>
+        <span class="nav-label">Generator</span>
+        <span class="tooltip">Generator</span>
+      </a>
+      <a href="{{ BASE_URL }}/generate-repair" class="nav-item">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"
+          stroke-linejoin="round">
+          <path
+            d="M14.7 6.3a1 1 0 0 0 0 1.4l1.6 1.6a1 1 0 0 0 1.4 0l3.77-3.77a6 6 0 0 1-7.94 7.94l-6.91 6.91a2.12 2.12 0 0 1-3-3l6.91-6.91a6 6 0 0 1 7.94-7.94l-3.76 3.76z" />
+        </svg>
+        <span class="nav-label">Generate Repair</span>
+        <span class="tooltip">Generate Repair</span>
+      </a>
+      <a href="{{ BASE_URL }}/image-search" class="nav-item">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"
+          stroke-linejoin="round">
+          <circle cx="12" cy="12" r="9" />
+          <path d="M12 7v5l3 2" />
+        </svg>
+        <span class="nav-label">Image Search</span>
+        <span class="tooltip">Image Search</span>
+      </a>
+      <a href="{{ BASE_URL }}/history" class="nav-item">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"
+          stroke-linejoin="round">
+          <circle cx="12" cy="12" r="9" />
+          <path d="M12 7v5l3 2" />
+        </svg>
+        <span class="nav-label">History</span>
+        <span class="tooltip">History</span>
+      </a>
+      <a href="{{ BASE_URL }}/history-image-search" class="nav-item">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"
+          stroke-linejoin="round">
+          <circle cx="12" cy="12" r="9" />
+          <path d="M12 7v5l3 2" />
+        </svg>
+        <span class="nav-label">History Image</span>
+        <span class="tooltip">History Image</span>
+      </a>
+      <a href="{{ BASE_URL }}/review" class="nav-item">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"
+          stroke-linejoin="round">
+          <path d="M9 11l3 3L22 4" />
+          <path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11" />
+        </svg>
+        <span class="nav-label">Review</span>
+        <span class="tooltip">Review</span>
+      </a>
+      <a href="{{ BASE_URL }}/review-repair" class="nav-item active">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"
+          stroke-linejoin="round">
+          <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7" />
+          <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z" />
+        </svg>
+        <span class="nav-label">Review Repair</span>
+        <span class="tooltip">Review Repair</span>
+      </a>
+      <a href="{{ BASE_URL }}/review-image-search" class="nav-item">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"
+          stroke-linejoin="round">
+          <circle cx="12" cy="12" r="9" />
+          <path d="M12 7v5l3 2" />
+        </svg>
+        <span class="nav-label">Review Images</span>
+        <span class="tooltip">Review Images</span>
+      </a>
+      <a href="{{ BASE_URL }}/shop-config" class="nav-item">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"
+          stroke-linejoin="round">
+          <circle cx="12" cy="12" r="3" />
+          <path d="M19.07 4.93a10 10 0 0 1 0 14.14M4.93 4.93a10 10 0 0 0 0 14.14" />
+        </svg>
+        <span class="nav-label">Shop Config</span>
+        <span class="tooltip">Shop Config</span>
+      </a>
+    </nav>
+    <div class="sidebar-bottom">
+      <button class="sidebar-toggle-btn" id="sidebarToggleBtn" onclick="toggleSidebar()">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"
+          stroke-linejoin="round">
+          <polyline points="15 18 9 12 15 6" />
+        </svg>
+        <span class="sidebar-toggle-label">Collapse</span>
+      </button>
+      <div class="theme-row">
+        <div class="theme-toggle" id="themeToggle" role="switch" aria-label="Toggle theme"></div>
+        <span class="theme-row-label">Appearance</span>
+      </div>
+    </div>
+  </aside>
+
+  <!-- Main Container -->
+  <main class="main">
+    <header class="page-header">
+      <div>
+        <h1 class="page-title">Review Repair Infographics</h1>
+
+      </div>
+    </header>
+
+    <div class="workspace-wrapper">
+      <!-- Left Batch Panel -->
+      <aside class="batch-panel">
+        <div class="batch-header">
+          <div class="batch-title-row">
+            <span class="batch-panel-title">Batches &amp; Products</span>
+            <!-- <button class="batch-tab active" onclick="loadBatches()">Refresh</button> -->
+          </div>
+          <div class="batch-filter-bar">
+            <button class="batch-tab active" id="tab-all" onclick="setFilterTab('all')">All</button>
+            <button class="batch-tab" id="tab-pending" onclick="setFilterTab('pending')">Pending</button>
+            <button class="batch-tab" id="tab-published" onclick="setFilterTab('published')">Published</button>
+          </div>
+          <input type="text" class="batch-search-input" id="batchSearch" placeholder="Search batch or SKU..."
+            oninput="onSearchInput()">
+        </div>
+        <div class="batch-list" id="batchList">
+          <div style="text-align:center; padding: 20px; color: var(--text-3);">Loading batches...</div>
+        </div>
+      </aside>
+
+      <!-- Right Detail Workspace (Split in 2 Column Parts) -->
+      <div class="detail-workspace" id="detailWorkspace">
+        <div class="empty-workspace" id="emptyWorkspace">
+          <svg viewBox="0 0 24 24" width="48" height="48" fill="none" stroke="currentColor" stroke-width="1.5">
+            <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z" />
+            <polyline points="14 2 14 8 20 8" />
+          </svg>
+          <div>Select a product from a batch on the left to start reviewing details.</div>
+        </div>
+
+        <!-- Left Part: Details Form & Edit & Generate Image -->
+        <div class="workspace-column" id="detailsColumn" style="display:none;">
+          <div class="column-title">
+            <span>Product Details &amp; Spec Edit</span>
+            <span class="badge-pill" id="statusBadge">Pending</span>
+          </div>
+
+          <div class="form-grid">
+            <div class="form-group full">
+              <label class="form-label">Product Title</label>
+              <input type="text" class="form-input" id="field-title">
+            </div>
+            <div class="form-group">
+              <label class="form-label">Part Number / SKU</label>
+              <input type="text" class="form-input" id="field-part">
+            </div>
+            <div class="form-group">
+              <label class="form-label">Brand</label>
+              <input type="text" class="form-input" id="field-brand">
+            </div>
+            <div class="form-group">
+              <label class="form-label">Appliance Type</label>
+              <input type="text" class="form-input" id="field-appliance">
+            </div>
+            <div class="form-group">
+              <label class="form-label">Part Type</label>
+              <input type="text" class="form-input" id="field-part-type">
+            </div>
+            <div class="form-group full">
+              <label class="form-label">Shopify URL</label>
+              <input type="text" class="form-input" id="field-shopify-url">
+            </div>
+            <div class="form-group full">
+              <label class="form-label">Product Image URL</label>
+              <input type="text" class="form-input" id="field-image-url">
+            </div>
+
+            <div class="form-group">
+              <label class="form-label">Repair Difficulty</label>
+              <select class="form-select" id="field-difficulty">
+                <option value="EASY">Easy</option>
+                <option value="MODERATE">Moderate</option>
+                <option value="DIFFICULT">Difficult</option>
+              </select>
+            </div>
+            <div class="form-group">
+              <label class="form-label">Estimated Repair Time</label>
+              <input type="text" class="form-input" id="field-time">
+            </div>
+
+            <div class="form-group full">
+              <label class="form-label">Safety Tip</label>
+              <textarea class="form-textarea" id="field-safety"></textarea>
+            </div>
+
+            <div class="form-group full">
+              <label class="form-label">OEM Quality Bullet</label>
+              <input type="text" class="form-input" id="field-oem">
+            </div>
+            <div class="form-group full">
+              <label class="form-label">Reliable Performance Bullet</label>
+              <input type="text" class="form-input" id="field-reliable">
+            </div>
+            <div class="form-group full">
+              <label class="form-label">Durable Construction Bullet</label>
+              <input type="text" class="form-input" id="field-durable">
+            </div>
+            <div class="form-group full">
+              <label class="form-label">Perfect Fit Bullet</label>
+              <input type="text" class="form-input" id="field-fit">
+            </div>
+          </div>
+
+          <div class="action-btn-row">
+            <button class="btn-custom btn-save" id="btnSaveDetails" onclick="saveProductDetails()">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z" />
+                <polyline points="17 21 17 13 7 13 7 21" />
+                <polyline points="7 3 7 8 15 8" />
+              </svg>
+              Save Details
+            </button>
+            <button class="btn-custom btn-generate" id="btnGenerateImage" onclick="generateRepairImage()">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <path
+                  d="M12 2v4M12 18v4M4.93 4.93l2.83 2.83M16.24 16.24l2.83 2.83M2 12h4M18 12h4M4.93 19.07l2.83-2.83M16.24 7.76l2.83-2.83" />
+              </svg>
+              Generate Image
+            </button>
+          </div>
+        </div>
+
+        <!-- Right Part: Image Preview & Publish Action -->
+        <div class="workspace-column" id="previewColumn" style="display:none;">
+          <div class="column-title">
+            <span>Generated Repair Infographic</span>
+            <span style="font-size:0.75rem; color:var(--text-3);" id="imageResolutionLabel">1024 × 1024 PNG</span>
+          </div>
+
+          <div class="preview-box" id="previewBox">
+            <div class="preview-placeholder" id="previewPlaceholder">
+              Click <strong>Generate Image</strong> to build high-res repair infographic poster.
+            </div>
+            <img id="previewImage" style="display:none;" alt="Generated Repair Infographic">
+          </div>
+
+          <div class="action-btn-row">
+            <button class="btn-custom btn-publish" id="btnPublishImage" onclick="publishToShopify()">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <polyline points="20 6 9 17 4 12" />
+              </svg>
+              Publish to Shopify
+            </button>
+            <button class="btn-custom btn-download" id="btnDownloadImage" onclick="downloadImage()">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4" />
+                <polyline points="7 10 12 15 17 10" />
+                <line x1="12" y1="15" x2="12" y2="3" />
+              </svg>
+              Download
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </main>
+
+  <div class="toast" id="toastMsg"></div>
+
+  <script>
+    const API_BASE_URL = "{{ BASE_URL }}";
+    let allBatches = [];
+    let currentFilterTab = 'all';
+    let activeProduct = null;
+
+    /* Theme Init */
+    (function () {
+      var root = document.documentElement, toggle = document.getElementById('themeToggle'), saved = localStorage.getItem('theme') || 'dark';
+      root.setAttribute('data-theme', saved);
+      if (toggle) {
+        toggle.addEventListener('click', function () {
+          var n = root.getAttribute('data-theme') === 'dark' ? 'light' : 'dark';
+          root.setAttribute('data-theme', n);
+          localStorage.setItem('theme', n);
+        });
+      }
+    })();
+
+    document.addEventListener('DOMContentLoaded', function () {
+      loadBatches();
+    });
+
+    function toggleSidebar() {
+      document.getElementById('sidebar').classList.toggle('collapsed');
+    }
+
+    function showToast(msg) {
+      const t = document.getElementById('toastMsg');
+      t.textContent = msg;
+      t.style.display = 'block';
+      setTimeout(() => { t.style.display = 'none'; }, 3500);
+    }
+
+    async function loadBatches() {
+      try {
+        const res = await fetch(`${API_BASE_URL}/api/review-repair/batches`);
+        if (!res.ok) return;
+        const data = await res.json();
+        allBatches = data.batches || [];
+        renderBatches();
+      } catch (e) {
+        console.error(e);
+      }
+    }
+
+    function setFilterTab(tab) {
+      currentFilterTab = tab;
+      document.querySelectorAll('.batch-filter-bar .batch-tab').forEach(b => b.classList.remove('active'));
+      document.getElementById(`tab-${tab}`).classList.add('active');
+      renderBatches();
+    }
+
+    function onSearchInput() {
+      renderBatches();
+    }
+
+    function renderBatches() {
+      const container = document.getElementById('batchList');
+      const search = document.getElementById('batchSearch').value.toLowerCase().trim();
+
+      let html = '';
+
+      allBatches.forEach(b => {
+        let prods = b.products || [];
+        if (currentFilterTab !== 'all') {
+          prods = prods.filter(p => p.review_status === currentFilterTab);
+        }
+        if (search) {
+          prods = prods.filter(p =>
+            (p.product_title && p.product_title.toLowerCase().includes(search)) ||
+            (p.part_number && p.part_number.toLowerCase().includes(search)) ||
+            (b.batch_id && b.batch_id.toLowerCase().includes(search))
+          );
+        }
+
+        if (prods.length === 0 && currentFilterTab !== 'all') return;
+
+        const shortId = b.batch_id ? b.batch_id.substring(0, 8) : 'batch';
+
+        html += `
+          <div class="batch-card">
+            <div class="batch-card-head">
+              <span class="batch-id-tag">#${shortId}</span>
+              <span class="batch-count-badge">${prods.length} items</span>
+            </div>
+            <div class="batch-time">${b.created_at || 'Recently'}</div>
+            <div class="batch-product-list">
+              ${prods.map(p => `
+                <div class="product-item ${activeProduct && activeProduct.id === p.id ? 'active' : ''}" onclick="selectProduct(${p.id})">
+                  <span style="overflow:hidden; text-overflow:ellipsis; white-space:nowrap; max-width:200px;">
+                    ${p.part_number ? `<b>[${p.part_number}]</b> ` : ''}${p.product_title || 'Product'}
+                  </span>
+                  <span class="status-dot dot-${p.review_status || 'pending'}"></span>
+                </div>
+              `).join('')}
+            </div>
+          </div>
+        `;
+      });
+
+      if (!html) {
+        html = `<div style="text-align:center; padding:20px; color:var(--text-3); font-size:0.85rem;">No matching products found.</div>`;
+      }
+
+      container.innerHTML = html;
+    }
+
+    async function selectProduct(id) {
+      try {
+        const res = await fetch(`${API_BASE_URL}/api/review-repair/products`);
+        if (!res.ok) return;
+        const data = await res.json();
+        const found = (data.products || []).find(p => p.id === id);
+        if (found) {
+          activeProduct = found;
+          populateWorkspace(found);
+          renderBatches();
+        }
+      } catch (e) {
+        console.error(e);
+      }
+    }
+
+    function populateWorkspace(p) {
+      document.getElementById('emptyWorkspace').style.display = 'none';
+      document.getElementById('detailsColumn').style.display = 'flex';
+      document.getElementById('previewColumn').style.display = 'flex';
+
+      document.getElementById('field-title').value = p.product_title || '';
+      document.getElementById('field-part').value = p.part_number || '';
+      document.getElementById('field-brand').value = p.brand || '';
+      document.getElementById('field-appliance').value = p.appliance_type || '';
+      document.getElementById('field-part-type').value = p.part_type || '';
+      document.getElementById('field-shopify-url').value = p.shopify_url || '';
+      document.getElementById('field-image-url').value = p.product_image_url || '';
+
+      let diffVal = (p.repair_difficulty || 'EASY').toUpperCase().trim();
+      if (diffVal.includes('MED') || diffVal.includes('MOD')) diffVal = 'MODERATE';
+      else if (diffVal.includes('HARD') || diffVal.includes('DIFF') || diffVal.includes('ADV')) diffVal = 'DIFFICULT';
+      else diffVal = 'EASY';
+      document.getElementById('field-difficulty').value = diffVal;
+      document.getElementById('field-time').value = p.repair_time || '15–30 Minutes';
+      document.getElementById('field-safety').value = p.safety_tip || '';
+
+      document.getElementById('field-oem').value = p.oem_quality || '';
+      document.getElementById('field-reliable').value = p.reliable_performance || '';
+      document.getElementById('field-durable').value = p.durable_construction || '';
+      document.getElementById('field-fit').value = p.perfect_fit || '';
+
+      const badge = document.getElementById('statusBadge');
+      badge.textContent = (p.review_status || 'pending').toUpperCase();
+      badge.className = `badge-pill badge-${p.review_status || 'pending'}`;
+
+      const imgView = document.getElementById('previewImage');
+      const placeholder = document.getElementById('previewPlaceholder');
+
+      if (p.generated_image_url) {
+        imgView.src = p.generated_image_url;
+        imgView.style.display = 'block';
+        placeholder.style.display = 'none';
+      } else {
+        imgView.style.display = 'none';
+        placeholder.style.display = 'block';
+      }
+    }
+
+    async function saveProductDetails() {
+      if (!activeProduct) return;
+      const btn = document.getElementById('btnSaveDetails');
+      btn.disabled = true;
+      btn.innerHTML = `<div class="spinner"></div> Saving...`;
+
+      const payload = {
+        id: activeProduct.id,
+        product_title: document.getElementById('field-title').value,
+        part_number: document.getElementById('field-part').value,
+        brand: document.getElementById('field-brand').value,
+        appliance_type: document.getElementById('field-appliance').value,
+        part_type: document.getElementById('field-part-type').value,
+        shopify_url: document.getElementById('field-shopify-url').value,
+        product_image_url: document.getElementById('field-image-url').value,
+        repair_difficulty: document.getElementById('field-difficulty').value,
+        repair_time: document.getElementById('field-time').value,
+        safety_tip: document.getElementById('field-safety').value,
+        oem_quality: document.getElementById('field-oem').value,
+        reliable_performance: document.getElementById('field-reliable').value,
+        durable_construction: document.getElementById('field-durable').value,
+        perfect_fit: document.getElementById('field-fit').value
+      };
+
+      try {
+        const res = await fetch(`${API_BASE_URL}/api/review-repair/update`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(payload)
+        });
+        const data = await res.json();
+        if (data.success) {
+          showToast('Product details saved to database successfully!');
+          if (data.product) activeProduct = data.product;
+        } else {
+          alert('Save failed: ' + (data.error || 'Unknown error'));
+        }
+      } catch (e) {
+        alert('Save error: ' + e);
+      } finally {
+        btn.disabled = false;
+        btn.innerHTML = `<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"/><polyline points="17 21 17 13 7 13 7 21"/><polyline points="7 3 7 8 15 8"/></svg> Save Details`;
+      }
+    }
+
+    async function generateRepairImage() {
+      if (!activeProduct) return;
+      await saveProductDetails();
+
+      const btn = document.getElementById('btnGenerateImage');
+      btn.disabled = true;
+      btn.innerHTML = `<div class="spinner"></div> Generating Image...`;
+
+      try {
+        const res = await fetch(`${API_BASE_URL}/api/review-repair/generate-image/${activeProduct.id}`, {
+          method: 'POST'
+        });
+        const data = await res.json();
+        if (data.success) {
+          showToast('Infographic image generated successfully!');
+          activeProduct = data.product;
+          populateWorkspace(activeProduct);
+          renderBatches();
+        } else {
+          alert('Image generation failed: ' + (data.error || 'Unknown error'));
+        }
+      } catch (e) {
+        alert('Generation error: ' + e);
+      } finally {
+        btn.disabled = false;
+        btn.innerHTML = `<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2v4M12 18v4M4.93 4.93l2.83 2.83M16.24 16.24l2.83 2.83M2 12h4M18 12h4M4.93 19.07l2.83-2.83M16.24 7.76l2.83-2.83"/></svg> Generate Image`;
+      }
+    }
+
+    async function publishToShopify() {
+      if (!activeProduct) return;
+      const btn = document.getElementById('btnPublishImage');
+      btn.disabled = true;
+      btn.innerHTML = `<div class="spinner"></div> Publishing...`;
+
+      try {
+        const res = await fetch(`${API_BASE_URL}/api/review-repair/publish/${activeProduct.id}`, {
+          method: 'POST'
+        });
+        const data = await res.json();
+        if (data.success) {
+          showToast('Image published to Shopify product successfully!');
+          if (data.product) activeProduct = data.product;
+          populateWorkspace(activeProduct);
+          renderBatches();
+        } else {
+          alert('Publish failed: ' + (data.error || 'Unknown error'));
+        }
+      } catch (e) {
+        alert('Publish error: ' + e);
+      } finally {
+        btn.disabled = false;
+        btn.innerHTML = `<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="20 6 9 17 4 12"/></svg> Publish to Shopify`;
+      }
+    }
+
+    function downloadImage() {
+      const imgView = document.getElementById('previewImage');
+      if (!imgView || !imgView.src) {
+        alert('No image available to download.');
+        return;
+      }
+      const a = document.createElement('a');
+      a.href = imgView.src;
+      a.download = `repair_${activeProduct ? activeProduct.part_number || activeProduct.id : 'image'}.png`;
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
+    }
+  </script>
+</body>
+
+</html>
