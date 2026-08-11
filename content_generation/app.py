@@ -3863,12 +3863,14 @@ Return ONLY valid raw JSON.
 
         if ps_duration:
             repair_time = ps_duration
+            repair_time_source = "partselect"
             logger.info(
                 "[REPAIR-AI] [SOURCE: REAL PARTSELECT SCRAPED] repair_time = '%s'",
                 repair_time,
             )
         else:
             ai_estimated_time = data.get("estimated_time") or data.get("repair_time")
+            repair_time_source = "ai" 
             if ai_estimated_time:
                 repair_time = str(ai_estimated_time).strip()
                 logger.info(
@@ -3955,6 +3957,7 @@ Return ONLY valid raw JSON.
         return {
             "repair_time": repair_time,
             "repair_difficulty": repair_difficulty,
+            "repair_time_source": repair_time_source,
             "oem_quality": oem,
             "reliable_performance": reliable,
             "durable_construction": durable,
@@ -3983,6 +3986,7 @@ Return ONLY valid raw JSON.
         return {
             "repair_time": final_dur,
             "repair_difficulty": final_diff,
+            "repair_time_source": "partselect" if ps_duration else "ai",
             "oem_quality": "Build to meet original equipment standards",
             "reliable_performance": "Featuring a simple design, you can easily install this part.",
             "durable_construction": "Built with robust materials, it offers excellent resistance to wear.",
@@ -4016,6 +4020,7 @@ def generate_repair_api():
     data = request.json or {}
     products = data.get("products", [])
     shop_id = data.get("shop_id") or None
+    source = (data.get("source") or "manual").strip().lower()  
 
     if not products or not isinstance(products, list):
         return jsonify({"error": "Products list is required."}), 400
@@ -4051,6 +4056,7 @@ def generate_repair_api():
         rec = RepairImageGeneration(
             batch_id=batch_id,
             shop_id=shop_id,
+            source=source,
             product_title=p_title,
             part_number=p_number,
             brand=brand,
@@ -4060,6 +4066,7 @@ def generate_repair_api():
             product_image_url=product_image_url,
             repair_time=ai_details["repair_time"],
             repair_difficulty=ai_details["repair_difficulty"],
+            repair_time_source=ai_details["repair_time_source"],
             oem_quality=ai_details["oem_quality"],
             reliable_performance=ai_details["reliable_performance"],
             durable_construction=ai_details["durable_construction"],
@@ -4084,6 +4091,7 @@ def generate_repair_api():
                 "product_image_url": rec.product_image_url,
                 "repair_time": rec.repair_time,
                 "repair_difficulty": rec.repair_difficulty,
+                "repair_time_source": rec.repair_time_source,
                 "oem_quality": rec.oem_quality,
                 "reliable_performance": rec.reliable_performance,
                 "durable_construction": rec.durable_construction,
@@ -4169,6 +4177,61 @@ def get_review_repair_products():
     return jsonify({"products": out})
 
 
+# @app.route("/api/review-repair/batches", methods=["GET"])
+# @reviewer_required
+# def get_review_repair_batches():
+#     shop_id = request.args.get("shop_id", type=int)
+#     query = RepairImageGeneration.query
+#     if shop_id:
+#         query = query.filter(RepairImageGeneration.shop_id == shop_id)
+
+#     records = query.all()
+#     batch_map = {}
+#     for r in records:
+#         bid = r.batch_id or "single"
+#         if bid not in batch_map:
+#             batch_map[bid] = {
+#                 "batch_id": bid,
+#                 "count": 0,
+#                 "latest_created_at": r.created_at,
+#                 "products": [],
+#             }
+#         batch_map[bid]["count"] += 1
+#         batch_map[bid]["products"].append(
+#             {
+#                 "id": r.id,
+#                 "product_title": r.product_title,
+#                 "part_number": r.part_number,
+#                 "review_status": r.review_status,
+#                 "generated_image_url": r.generated_image_url,
+#             }
+#         )
+#         if r.created_at and (
+#             not batch_map[bid]["latest_created_at"]
+#             or r.created_at > batch_map[bid]["latest_created_at"]
+#         ):
+#             batch_map[bid]["latest_created_at"] = r.created_at
+
+#     batches = list(batch_map.values())
+#     batches.sort(key=lambda x: x["latest_created_at"] or datetime.min, reverse=True)
+
+#     out = []
+#     for b in batches:
+#         out.append(
+#             {
+#                 "batch_id": b["batch_id"],
+#                 "count": b["count"],
+#                 "created_at": (
+#                     b["latest_created_at"].strftime("%Y-%m-%d %H:%M:%S")
+#                     if b["latest_created_at"]
+#                     else ""
+#                 ),
+#                 "products": b["products"],
+#             }
+#         )
+
+#     return jsonify({"batches": out})
+
 @app.route("/api/review-repair/batches", methods=["GET"])
 @reviewer_required
 def get_review_repair_batches():
@@ -4186,6 +4249,7 @@ def get_review_repair_batches():
                 "batch_id": bid,
                 "count": 0,
                 "latest_created_at": r.created_at,
+                "source": r.source or "manual", 
                 "products": [],
             }
         batch_map[bid]["count"] += 1
@@ -4196,6 +4260,19 @@ def get_review_repair_batches():
                 "part_number": r.part_number,
                 "review_status": r.review_status,
                 "generated_image_url": r.generated_image_url,
+                "brand": r.brand,                                     # <-- add
+                "appliance_type": r.appliance_type,                   # <-- add
+                "part_type": r.part_type,                             # <-- add
+                "shopify_url": r.shopify_url,                         # <-- add
+                "product_image_url": r.product_image_url,             # <-- add
+                "repair_time": r.repair_time,                         # <-- add
+                "repair_time_source": r.repair_time_source,           # <-- add
+                "repair_difficulty": r.repair_difficulty,             # <-- add
+                "oem_quality": r.oem_quality,                         # <-- add
+                "reliable_performance": r.reliable_performance,       # <-- add
+                "durable_construction": r.durable_construction,       # <-- add
+                "perfect_fit": r.perfect_fit,                         # <-- add
+                "safety_tip": r.safety_tip,                           # <-- add
             }
         )
         if r.created_at and (
@@ -4213,6 +4290,7 @@ def get_review_repair_batches():
             {
                 "batch_id": b["batch_id"],
                 "count": b["count"],
+                "source": b["source"],                                # <-- add
                 "created_at": (
                     b["latest_created_at"].strftime("%Y-%m-%d %H:%M:%S")
                     if b["latest_created_at"]
@@ -4223,7 +4301,6 @@ def get_review_repair_batches():
         )
 
     return jsonify({"batches": out})
-
 
 @app.route("/api/review-repair/update", methods=["POST", "PUT"])
 @reviewer_required
@@ -4571,22 +4648,38 @@ def _generate_repair_infographic_image(rec: RepairImageGeneration) -> str:
 
     # Bottom bar features
     bar_h_font, bar_b_font = fnt_bold(13), fnt_reg(13)
-    sections_x = [(146, 325), (435, 645), (751, 945), (1060, 1228)]
+    # tx0 values match the fixed icon positions baked into template.png — do not recompute these.
+    # tx1 values now match the actual divider lines baked into template.png (measured at
+    # x=325, x=644, x=944, and the page's right margin at x=1183), minus a small padding,
+    # so every column gets the same breathing room as the first two sections instead of
+    # the narrower, inconsistent widths used before.
+    DIVIDER_PAD = 10
+    sections_x = [(146, 325 - DIVIDER_PAD), (435, 644 - DIVIDER_PAD), (751, 944 - DIVIDER_PAD), (1060, 1183)]
     feats = product_data["features"]
     for (tx0, tx1), item in zip(sections_x, feats[:4]):
         hdr = item.get("title", "")
         desc = item.get("description", "")
-        draw.text((tx0, 1095), hdr, font=bar_h_font, fill=(255, 255, 255))
-        hb = draw.textbbox((0, 0), hdr, font=bar_h_font)
+        col_w = tx1 - tx0
+ 
+        # Auto-shrink the header font if it would otherwise run into the divider line,
+        # so long titles (e.g. "DURABLE CONSTRUCTION") always keep clear space from it.
+        hfont = bar_h_font
+        hb = draw.textbbox((0, 0), hdr, font=hfont)
+        while (hb[2] - hb[0]) > col_w and hfont.size > 10:
+            hfont = fnt_bold(hfont.size - 1)
+            hb = draw.textbbox((0, 0), hdr, font=hfont)
         hh = hb[3] - hb[1]
+ 
+        draw.text((tx0, 1095), hdr, font=hfont, fill=(255, 255, 255))
+        gap = 12
         draw_wt(
             draw,
-            (tx0, 1095 + hh + 9, tx1, 1235),
+            (tx0, 1095 + hh + gap, tx1, 1235),
             desc,
             bar_b_font,
             (215, 225, 245),
             align="left",
-            line_spacing=3,
+            line_spacing=4,
         )
 
     base = base.resize((1024, 1024), Image.LANCZOS)
